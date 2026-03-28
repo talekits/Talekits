@@ -825,6 +825,63 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, att
   console.log(`Email sent to ${to} | Plan: ${plan} | Attachments: ${attachments.length} | ID: ${data?.id}`);
 }
 
+async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer, pbFilename }) {
+  if (!process.env.RESEND_API_KEY || !to) return;
+
+  const planLabel = { cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || plan;
+  const resend    = new Resend(process.env.RESEND_API_KEY);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background-color:#FAFAF8;font-family:Georgia,'Times New Roman',serif;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FAFAF8;">
+  <tr><td align="center" style="padding:40px 16px;">
+    <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">
+      <tr><td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
+        <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">Talekit — Picture Book</p>
+        <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
+          ${childName}'s illustrated<br/>picture book is <em style="color:#6B6860;">ready</em>
+        </h1>
+      </td></tr>
+      <tr><td style="background:#FFFFFF;padding:36px 40px;">
+        <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#6B6860;line-height:1.7;">Hi there,</p>
+        <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
+          Kit has finished illustrating <strong>${storyTitle}</strong>. The full picture book is attached — open it on a tablet or iPad in landscape mode for the best reading experience.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
+          <tr><td style="background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:10px;padding:16px 20px;">
+            <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#085041;">Picture book tip</p>
+            <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#085041;line-height:1.6;">
+              Each spread shows the story text on the left and the illustration on the right — just like a real picture book. Works beautifully on iPad, tablet, or printed at home.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="background:#F3F2EE;border-radius:0 0 14px 14px;padding:24px 40px;border-top:1px solid #E0DED8;text-align:center;">
+        <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">You're on the Talekit ${planLabel} plan. A new story arrives every day.</p>
+        <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekit — a new story, every day</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+  const { error } = await resend.emails.send({
+    from:    'Talekit <onboarding@resend.dev>',
+    to:      [to],
+    subject: `${storyTitle} — ${childName}'s illustrated picture book is ready`,
+    html,
+    text:    `${childName}'s illustrated picture book is ready\n\nKit has finished illustrating "${storyTitle}". The picture book PDF is attached — open it on a tablet in landscape mode for the best experience.\n\nTalekit — a new story, every day`,
+    attachments: [{
+      filename: pbFilename,
+      content:  pbBuffer.toString('base64'),
+    }],
+  });
+
+  if (error) throw new Error(`Picture book email failed: ${error.message}`);
+}
+
 /* ─────────────────────────────────────────────────────────────
    Main export
 ───────────────────────────────────────────────────────────── */
@@ -910,7 +967,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Build picture book PDF (landscape, iPad-friendly) once images are ready
+  // Build picture book PDF once images are ready
   let pbBuffer = null;
   if (planConfig.picturebook && imageResults.length) {
     try {
@@ -924,12 +981,11 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Send email with appropriate attachments based on plan
+  // Send single combined email once all PDFs are ready
   if (email) {
     try {
       const attachments = [];
 
-      // Story PDF — all plans
       if (pdfBuffer) {
         attachments.push({
           filename: `${base}.pdf`,
@@ -937,7 +993,6 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
         });
       }
 
-      // Picture book PDF — Cub when generated
       if (pbBuffer) {
         attachments.push({
           filename: `${base}-picturebook.pdf`,
@@ -954,6 +1009,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
           plan,
           attachments,
         });
+        console.log(`Email sent to: ${email} with ${attachments.length} attachment(s)`);
       }
     } catch (err) {
       console.error('Email send failed:', err.message);

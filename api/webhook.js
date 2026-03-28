@@ -5,8 +5,8 @@ const { generateStory } = require('./generate-story');
 // Disable body parser so Stripe signature verification works
 module.exports.config = { api: { bodyParser: false } };
 
-// Allow up to 60 seconds — story generation takes time
-module.exports.maxDuration = 60;
+// Allow up to 300 seconds — image generation takes time
+module.exports.maxDuration = 300;
 
 async function getRawBody(req) {
   return new Promise((resolve, reject) => {
