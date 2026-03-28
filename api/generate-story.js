@@ -809,7 +809,7 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, att
   const planLabel = { kit: 'free trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || plan;
 
   const { data, error } = await resend.emails.send({
-    from:    'Talekit <onboarding@resend.dev>',
+    from:    'Kit from Talekit <kit@talekits.com>',
     to:      [to],
     subject: `${storyTitle} — ${childName}'s ${isPaid ? 'first' : 'first'} Talekit story`,
     html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel),
@@ -868,7 +868,7 @@ async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer,
 </body></html>`;
 
   const { error } = await resend.emails.send({
-    from:    'Talekit <onboarding@resend.dev>',
+    from:    'Kit from Talekit <kit@talekits.com>',
     to:      [to],
     subject: `${storyTitle} — ${childName}'s illustrated picture book is ready`,
     html,
@@ -921,6 +921,8 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     throw new Error('Story response could not be parsed as JSON');
   }
 
+  console.log(`[GS-1] Story parsed: "${story.title}" | ${story.illustrations?.length || 0} illustration prompts`);
+
   const base       = profileFilename.replace('talekits-profile-', 'talekits-story-').replace('.txt', '');
   const outputs    = [];
   const planConfig = PLAN_OUTPUTS[plan] || PLAN_OUTPUTS.kit;
@@ -930,29 +932,30 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     const txt  = buildStoryTxt(story, childName);
     const blob = await put(`stories/${base}.txt`, txt, { ...saveOpts, contentType: 'text/plain' });
     outputs.push({ type: 'story-txt', filename: `${base}.txt`, url: blob.url });
-    console.log(`Saved: ${base}.txt`);
+    console.log(`[GS-2] Saved story txt`);
   }
 
   if (planConfig.illustrationsTxt) {
     const txt  = buildIllustrationsTxt(story, childName);
     const blob = await put(`stories/${base}-illustrations.txt`, txt, { ...saveOpts, contentType: 'text/plain' });
     outputs.push({ type: 'illustrations-txt', filename: `${base}-illustrations.txt`, url: blob.url });
-    console.log(`Saved: ${base}-illustrations.txt`);
+    console.log(`[GS-3] Saved illustrations txt`);
   }
 
   let pdfBuffer = null;
   if (planConfig.pdf) {
+    console.log(`[GS-4] Building story PDF...`);
     pdfBuffer      = await buildPdf(story, childName, plan);
     const blob     = await put(`stories/${base}.pdf`, pdfBuffer, { ...saveOpts, contentType: 'application/pdf' });
     outputs.push({ type: 'story-pdf', filename: `${base}.pdf`, url: blob.url });
-    console.log(`Saved: ${base}.pdf`);
+    console.log(`[GS-4] Saved story PDF`);
   }
 
   // Generate illustrations for plans with images enabled
   let imageResults = [];
   if (planConfig.images && story.illustrations?.length) {
     try {
-      console.log(`Generating ${story.illustrations.length} illustrations for: ${childName}`);
+      console.log(`[GS-5] Generating ${story.illustrations.length} DALL-E 3 illustrations...`);
       imageResults = await generateIllustrations(
         story.illustrations,
         base,
@@ -960,10 +963,10 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       );
       const saved  = imageResults.filter(i => i.url);
       const failed = imageResults.filter(i => !i.url);
-      console.log(`Illustrations: ${saved.length} saved, ${failed.length} failed`);
+      console.log(`[GS-5] Illustrations done: ${saved.length} saved, ${failed.length} failed`);
       outputs.push({ type: 'illustrations-images', count: saved.length, images: imageResults });
     } catch (err) {
-      console.error('Illustration generation failed:', err.message);
+      console.error(`[GS-5] Illustration generation failed: ${err.message}`);
     }
   }
 
@@ -971,13 +974,13 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   let pbBuffer = null;
   if (planConfig.picturebook && imageResults.length) {
     try {
-      console.log(`Building picture book PDF for: ${childName}`);
+      console.log(`[GS-6] Building picture book PDF...`);
       pbBuffer       = await buildPictureBookPdf(story, childName, imageResults);
       const pbBlob   = await put(`stories/${base}-picturebook.pdf`, pbBuffer, { ...saveOpts, contentType: 'application/pdf' });
       outputs.push({ type: 'picturebook-pdf', filename: `${base}-picturebook.pdf`, url: pbBlob.url });
-      console.log(`Saved: ${base}-picturebook.pdf`);
+      console.log(`[GS-6] Saved picture book PDF`);
     } catch (err) {
-      console.error('Picture book PDF failed:', err.message);
+      console.error(`[GS-6] Picture book PDF failed: ${err.message}`);
     }
   }
 
@@ -1001,6 +1004,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       }
 
       if (attachments.length) {
+        console.log(`[GS-7] Sending email to ${email} with ${attachments.length} attachment(s)...`);
         await sendStoryEmail({
           to:         email,
           childName,
@@ -1009,11 +1013,15 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
           plan,
           attachments,
         });
-        console.log(`Email sent to: ${email} with ${attachments.length} attachment(s)`);
+        console.log(`[GS-7] Email sent successfully`);
+      } else {
+        console.warn(`[GS-7] No attachments to send — skipping email`);
       }
     } catch (err) {
-      console.error('Email send failed:', err.message);
+      console.error(`[GS-7] Email send failed: ${err.message}`);
     }
+  } else {
+    console.warn(`[GS-7] No email address — skipping email`);
   }
 
   return outputs;
