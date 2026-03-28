@@ -273,13 +273,13 @@ function buildPdf(story, childName, plan) {
        .text('Talekit  —  Story selections', PAD, 24, { width: W, align: 'center' });
 
     doc.font(fonts.italic).fontSize(22).fillColor(C.text)
-       .text('What Claude picked', PAD, 40, { width: W, align: 'center' });
+       .text('What Kit picked', PAD, 40, { width: W, align: 'center' });
 
     rule(98);
 
     doc.font(fonts.sans).fontSize(11).fillColor(C.text2)
        .text(
-         `Every story Claude generates uses random selection from ${childName}'s saved preferences. Here is exactly what was chosen for this story.`,
+         `Kit the fox chooses something different for every story. Here is exactly what he picked when writing this one for ${childName}.`,
          PAD, 114, { width: W, lineGap: 4 }
        );
 
