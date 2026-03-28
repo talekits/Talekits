@@ -545,7 +545,7 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, pdfBuffer
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const { data, error } = await resend.emails.send({
-    from:    'Talekits <onboarding@resend.dev>',
+    from:    'Talekit <onboarding@resend.dev>',
     to:      [to],
     subject: `${storyTitle} — ${childName}'s first Talekit story`,
     html:    buildEmailHtml(childName, storyTitle, parentNote),
