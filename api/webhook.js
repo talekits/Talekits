@@ -54,38 +54,44 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ received: true });
   }
 
-  // Respond to Stripe immediately — must reply within 30s or Stripe retries
-  res.status(200).json({ received: true });
-
-  // Continue processing asynchronously after responding
   try {
     // 1. Find and fetch the pending profile
+    console.log(`[1] Looking for pending profile: pending/${filename}`);
     const { blobs } = await list({ prefix: `pending/${filename}` });
+    console.log(`[1] Blobs found: ${blobs.length}`);
 
     if (!blobs.length) {
-      console.warn(`No pending profile found for: ${filename}`);
-      return;
+      console.warn(`[1] No pending profile found for: ${filename}`);
+      return res.status(200).json({ received: true });
     }
 
     const pendingBlob    = blobs[0];
+    console.log(`[2] Fetching profile from: ${pendingBlob.url}`);
     const profileContent = await fetch(pendingBlob.url).then(r => r.text());
+    console.log(`[2] Profile fetched, length: ${profileContent.length} chars`);
 
     // 2. Confirm profile — save to profiles/
-    const confirmed = await put(`profiles/${filename}`, profileContent, {
-      access: 'public',
-      contentType: 'text/plain',
+    console.log(`[3] Saving confirmed profile: profiles/${filename}`);
+    await put(`profiles/${filename}`, profileContent, {
+      access:          'public',
+      contentType:     'text/plain',
       addRandomSuffix: false,
     });
     await del(pendingBlob.url);
-    console.log(`Profile confirmed: ${filename} | Plan: ${plan} | Child: ${child}`);
+    console.log(`[3] Profile confirmed: ${filename} | Plan: ${plan} | Child: ${child}`);
 
-    // 3. Generate story and plan-appropriate output files
-    console.log(`Generating story for: ${child} | Plan: ${plan} | Email: ${email}`);
+    // 3. Generate story and all output files — email sent at end of generateStory
+    console.log(`[4] Starting story generation | Child: ${child} | Plan: ${plan} | Email: ${email}`);
     const outputs = await generateStory(profileContent, child, filename, plan, email);
-    outputs.forEach(o => console.log(`Output saved: ${o.type} → ${o.url}`));
+    console.log(`[4] Story generation complete. Outputs: ${outputs.length}`);
+    outputs.forEach(o => console.log(`[4] Output: ${o.type} → ${o.url || o.count}`));
 
   } catch (err) {
-    console.error('Post-checkout processing error:', err.message);
+    console.error(`[ERROR] Post-checkout processing error: ${err.message}`);
+    console.error(err.stack);
   }
+
+  // Respond to Stripe after all processing is complete
+  return res.status(200).json({ received: true });
 };
 
