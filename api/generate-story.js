@@ -1,6 +1,7 @@
-const { put }    = require('@vercel/blob');
-const PDFDocument = require('pdfkit');
-const { Resend }  = require('resend');
+const { put }              = require('@vercel/blob');
+const PDFDocument           = require('pdfkit');
+const { Resend }            = require('resend');
+const { generateIllustrations } = require('./generate-images');
 
 /* ─────────────────────────────────────────────────────────────
    Brand colour palette — exact match to the webpage
@@ -41,11 +42,11 @@ function ensureFonts() { /* no-op — built-ins need no registration */ }
    Plan output rules
 ───────────────────────────────────────────────────────────── */
 const PLAN_OUTPUTS = {
-  kit:   { storyTxt: true, illustrationsTxt: false, pdf: true },
-  cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true },
-  scout: { storyTxt: true, illustrationsTxt: true,  pdf: true },
-  den:   { storyTxt: true, illustrationsTxt: true,  pdf: true },
-  pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true },
+  kit:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false },
+  cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
+  scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: false, picturebook: false },
+  den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: false, picturebook: false },
+  pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: false, picturebook: false },
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -74,14 +75,23 @@ STORY WRITING RULES:
 - Match vocabulary and sentence complexity to the Age Bracket and Reading Level.
 - Educational Focus must feel like part of the story, never a moral tacked on at the end.
 - End on a warm, satisfying note.
-- Each illustration prompt should describe: characters present, setting, action happening, mood, and the chosen art style.
+
+ILLUSTRATION PROMPT RULES — these prompts are sent directly to DALL-E 3:
+- Write 8-10 prompts, one per page spread.
+- Each prompt must be a full descriptive paragraph in natural language — no keyword lists, no Midjourney-style parameters.
+- Start every prompt with "A children's book illustration of..." to anchor the aesthetic.
+- Describe the protagonist consistently in EVERY prompt using the same physical details (species, colour, size, expression) so the character looks the same across all images.
+- Describe the scene in full: who is present, where they are, what is happening, lighting, mood, and camera framing.
+- End every prompt with the art style written as a sentence, e.g. "Painted in soft watercolour with warm pastel tones." — never as a keyword.
+- Always end with: "No text, no speech bubbles, no borders, no watermarks, safe for children."
+- Example of a correct prompt: "A children's book illustration of a small red fox named Kit with bright amber eyes and a bushy white-tipped tail, standing at the entrance to a glowing underground burrow carved from the roots of an ancient oak tree. Warm golden lantern light spills out from the doorway, casting long soft shadows on the mossy forest floor. Kit looks back over his shoulder with a curious, excited expression. Wide landscape composition. Painted in soft watercolour with warm pastel tones, reminiscent of classic picture book illustration. No text, no speech bubbles, no borders, no watermarks, safe for children."
 
 Respond with a valid JSON object only. No markdown fences, no preamble, nothing else.
 
 {
   "title": "Story title",
   "story": "Full story text. Use \\n\\n to separate paragraphs.",
-  "illustrations": ["Page 1: ...", "Page 2: ...", "...8 to 10 prompts total"],
+  "illustrations": ["Full DALL-E 3 prompt for page 1", "Full DALL-E 3 prompt for page 2", "...8 to 10 prompts"],
   "parentNote": "One sentence explaining the educational or emotional theme for parents.",
   "selections": {
     "storyLength": "selected value",
@@ -359,6 +369,291 @@ function buildPdf(story, childName, plan) {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Picture book PDF — landscape, iPad-friendly
+   Left half: story text paragraph | Right half: illustration
+   A4 Landscape = 841.89 × 595.28 pts
+───────────────────────────────────────────────────────────── */
+function buildPictureBookPdf(story, childName, imageResults) {
+  return new Promise((resolve, reject) => {
+    const doc    = new PDFDocument({ margin: 0, size: 'A4', layout: 'landscape', bufferPages: true });
+    const chunks = [];
+
+    doc.on('data',  c   => chunks.push(c));
+    doc.on('end',   ()  => resolve(Buffer.concat(chunks)));
+    doc.on('error', err => reject(err));
+
+    ensureFonts();
+
+    const PW     = doc.page.width;   // 841.89
+    const PH     = doc.page.height;  // 595.28
+    const HALF   = PW / 2;
+    const PAD    = 44;
+    const FOOTER = 32;
+    const date   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Build a map of page number → image buffer (fetch all images upfront)
+    const imageMap = {};
+    (imageResults || []).forEach(img => {
+      if (img.url && img.page) imageMap[img.page] = img.url;
+    });
+
+    // Split story into paragraphs — one paragraph per spread
+    const paragraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
+
+    /* ── Helper: draw one spread ── */
+    async function drawSpread(paraIndex, para, isFirst, pageIndex, totalPages) {
+      // Background
+      doc.rect(0, 0, PW, PH).fill(C.bg);
+
+      // Vertical divider between halves
+      doc.moveTo(HALF, PAD).lineTo(HALF, PH - FOOTER - PAD)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
+
+      // ── LEFT HALF: text ──
+      const textX = PAD;
+      const textW = HALF - PAD * 2;
+      let   ty    = PAD + 16;
+
+      if (isFirst) {
+        // Eyebrow
+        doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
+           .text('Talekit  —  Children\'s Storybook', textX, ty, { width: textW, align: 'center' });
+        ty += 16;
+
+        // Title
+        doc.font(fonts.italic).fontSize(20).fillColor(C.text).lineGap(3)
+           .text(story.title, textX, ty, { width: textW, align: 'center' });
+        ty = doc.y + 10;
+
+        // Rule
+        doc.moveTo(textX, ty).lineTo(HALF - PAD, ty)
+           .lineWidth(0.5).strokeColor(C.border).stroke();
+        ty += 14;
+
+        // Child + date
+        doc.font(fonts.sans).fontSize(9).fillColor(C.text2)
+           .text(`A story for ${childName}`, textX, ty, { width: textW / 2 });
+        doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
+           .text(date, textX, ty, { width: textW, align: 'right' });
+        ty += 20;
+      } else {
+        // Page number top-left
+        doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
+           .text(`${pageIndex}`, textX, ty, { width: textW });
+        ty += 20;
+      }
+
+      // Paragraph text
+      const bodySize = 13;
+      if (isFirst && para) {
+        // Drop cap
+        const letter  = para.charAt(0);
+        const rest    = para.slice(1);
+        const capSize = 42;
+        doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
+           .text(letter, textX, ty - 4, { lineBreak: false });
+        const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 5;
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(5)
+           .text(rest, textX + capW, ty + 6, { width: textW - capW });
+      } else if (para) {
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(6)
+           .text(para, textX, ty, { width: textW });
+      }
+
+      // ── RIGHT HALF: illustration ──
+      const imgX   = HALF + PAD;
+      const imgY   = PAD;
+      const imgW   = HALF - PAD * 2;
+      const imgH   = PH - FOOTER - PAD * 2;
+
+      const imgUrl = imageMap[paraIndex + 1]; // images are 1-indexed
+
+      if (imgUrl) {
+        try {
+          // Fetch image buffer
+          const imgRes = await fetch(imgUrl);
+          if (imgRes.ok) {
+            const imgBuf = Buffer.from(await imgRes.arrayBuffer());
+            doc.image(imgBuf, imgX, imgY, {
+              width:  imgW,
+              height: imgH,
+              fit:    [imgW, imgH],
+              align:  'center',
+              valign: 'center',
+            });
+          } else {
+            drawImagePlaceholder(imgX, imgY, imgW, imgH, paraIndex + 1);
+          }
+        } catch {
+          drawImagePlaceholder(imgX, imgY, imgW, imgH, paraIndex + 1);
+        }
+      } else {
+        drawImagePlaceholder(imgX, imgY, imgW, imgH, paraIndex + 1);
+      }
+    }
+
+    /* ── Helper: placeholder when image is missing ── */
+    function drawImagePlaceholder(x, y, w, h, pageNum) {
+      doc.roundedRect(x, y, w, h, 10)
+         .fill(C.surface);
+      doc.roundedRect(x, y, w, h, 10)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
+      doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
+         .text(`Illustration ${pageNum}`, x, y + h / 2 - 8, { width: w, align: 'center' });
+    }
+
+    /* ── Helper: cover page ── */
+    function drawCover() {
+      doc.rect(0, 0, PW, PH).fill(C.surface);
+
+      // Decorative border
+      doc.roundedRect(20, 20, PW - 40, PH - 40, 14)
+         .lineWidth(1).strokeColor(C.border).stroke();
+
+      // Eyebrow
+      doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
+         .text('Talekit  —  Children\'s Storybook', PAD, PH / 2 - 70, { width: PW - PAD * 2, align: 'center' });
+
+      // Title
+      doc.font(fonts.italic).fontSize(34).fillColor(C.text).lineGap(6)
+         .text(story.title, PAD, PH / 2 - 50, { width: PW - PAD * 2, align: 'center' });
+
+      const titleBottom = doc.y + 16;
+
+      // Rule
+      const ruleW = 120;
+      doc.moveTo((PW - ruleW) / 2, titleBottom)
+         .lineTo((PW + ruleW) / 2, titleBottom)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
+
+      // Child name
+      doc.font(fonts.sans).fontSize(12).fillColor(C.text2)
+         .text(`A story for ${childName}`, PAD, titleBottom + 14, { width: PW - PAD * 2, align: 'center' });
+
+      // Date bottom right
+      doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
+         .text(date, PAD, PH - 48, { width: PW - PAD * 2, align: 'right' });
+    }
+
+    /* ── Helper: final page with parent note + selections summary ── */
+    function drawEndPage() {
+      doc.addPage();
+      doc.rect(0, 0, PW, PH).fill(C.bg);
+
+      // Left half — parent note
+      const lx = PAD;
+      const lw = HALF - PAD * 2;
+      let   ly = PAD + 16;
+
+      doc.font(fonts.italic).fontSize(16).fillColor(C.text)
+         .text('A note for', lx, ly, { width: lw });
+      ly = doc.y;
+      doc.font(fonts.italic).fontSize(16).fillColor(C.text2)
+         .text('parents', lx, ly, { width: lw });
+      ly = doc.y + 16;
+
+      doc.moveTo(lx, ly).lineTo(HALF - PAD, ly)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
+      ly += 16;
+
+      // Amber card
+      const noteH = doc.font(fonts.body).fontSize(11).heightOfString(story.parentNote || '', { width: lw - 32 }) + 36;
+      doc.roundedRect(lx, ly, lw, noteH, 10).fill(C.amberBg);
+      doc.roundedRect(lx, ly, lw, noteH, 10).lineWidth(0.5).strokeColor(C.amberBorder).stroke();
+      doc.font(fonts.sansBold).fontSize(9).fillColor(C.amberText)
+         .text('PARENT NOTE', lx + 16, ly + 10, { characterSpacing: 1, width: lw - 32 });
+      doc.font(fonts.body).fontSize(11).fillColor(C.amberText).lineGap(4)
+         .text(story.parentNote || '', lx + 16, ly + 26, { width: lw - 32 });
+
+      // Right half — Kit's picks summary
+      const rx = HALF + PAD;
+      const rw = HALF - PAD * 2;
+
+      doc.moveTo(HALF, PAD).lineTo(HALF, PH - FOOTER - PAD)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
+
+      doc.font(fonts.italic).fontSize(16).fillColor(C.text)
+         .text('What Kit', rx, PAD + 16, { width: rw });
+      doc.font(fonts.italic).fontSize(16).fillColor(C.text2)
+         .text('picked', rx, doc.y, { width: rw });
+
+      const sel = story.selections || {};
+      let ry    = doc.y + 20;
+
+      const rows = [
+        { label: 'Themes',    value: sel.themes,          bg: C.purpleBg, text: C.purpleText, border: C.purpleBorder },
+        { label: 'Art style', value: sel.artStyle,         bg: C.tealBg,   text: C.tealText,   border: C.tealBorder   },
+        { label: 'Focus',     value: sel.educationalFocus, bg: C.amberBg,  text: C.amberText,  border: C.amberBorder  },
+        { label: 'Tone',      value: sel.tone,             bg: C.blueBg,   text: C.blueText,   border: C.blueBorder   },
+      ];
+
+      rows.forEach(row => {
+        if (!row.value || (Array.isArray(row.value) && !row.value.length)) return;
+        if (ry > PH - FOOTER - 40) return;
+
+        doc.font(fonts.sansBold).fontSize(8).fillColor(C.text3)
+           .text(row.label.toUpperCase(), rx, ry, { characterSpacing: 0.8 });
+        ry += 13;
+
+        const vals = Array.isArray(row.value) ? row.value : [row.value];
+        let   px   = rx;
+
+        vals.forEach(v => {
+          if (!v) return;
+          const tw   = doc.font(fonts.sans).fontSize(9).widthOfString(v);
+          const pw   = tw + 20;
+          if (px + pw > PW - PAD) { px = rx; ry += 22; }
+
+          doc.roundedRect(px, ry, pw, 18, 9).fill(row.bg);
+          doc.roundedRect(px, ry, pw, 18, 9).lineWidth(0.5).strokeColor(row.border).stroke();
+          doc.font(fonts.sans).fontSize(9).fillColor(row.text)
+             .text(v, px + 10, ry + 4, { width: tw, lineBreak: false });
+
+          px += pw + 5;
+        });
+        ry += 28;
+      });
+    }
+
+    /* ── Build the PDF asynchronously ── */
+    (async () => {
+      try {
+        // Cover
+        drawCover();
+
+        // One spread per paragraph
+        for (let i = 0; i < paragraphs.length; i++) {
+          doc.addPage();
+          await drawSpread(i, paragraphs[i], i === 0, i + 1, paragraphs.length);
+        }
+
+        // End page
+        drawEndPage();
+
+        /* ── Footers on all pages except cover ── */
+        const range = doc.bufferedPageRange();
+        for (let i = 1; i < range.count; i++) {
+          doc.switchToPage(range.start + i);
+          doc.rect(0, PH - FOOTER, PW, FOOTER).fill(C.surface);
+          doc.moveTo(0, PH - FOOTER).lineTo(PW, PH - FOOTER)
+             .lineWidth(0.5).strokeColor(C.border).stroke();
+          doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
+             .text(
+               `Talekit  ·  ${story.title}  ·  Page ${i} of ${range.count - 1}`,
+               PAD, PH - FOOTER + 11,
+               { width: PW - PAD * 2, align: 'center' }
+             );
+        }
+
+        doc.end();
+      } catch (err) {
+        reject(err);
+      }
+    })();
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
    Email — Kit free trial delivery
 ───────────────────────────────────────────────────────────── */
 function buildEmailHtml(childName, storyTitle, parentNote, trialDaysLeft = 7) {
@@ -597,6 +892,38 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     const blob     = await put(`stories/${base}.pdf`, pdfBuffer, { ...saveOpts, contentType: 'application/pdf' });
     outputs.push({ type: 'story-pdf', filename: `${base}.pdf`, url: blob.url });
     console.log(`Saved: ${base}.pdf`);
+  }
+
+  // Generate illustrations for plans with images enabled
+  let imageResults = [];
+  if (planConfig.images && story.illustrations?.length) {
+    try {
+      console.log(`Generating ${story.illustrations.length} illustrations for: ${childName}`);
+      imageResults = await generateIllustrations(
+        story.illustrations,
+        base,
+        story.selections?.artStyle || 'children\'s book illustration'
+      );
+      const saved  = imageResults.filter(i => i.url);
+      const failed = imageResults.filter(i => !i.url);
+      console.log(`Illustrations: ${saved.length} saved, ${failed.length} failed`);
+      outputs.push({ type: 'illustrations-images', count: saved.length, images: imageResults });
+    } catch (err) {
+      console.error('Illustration generation failed:', err.message);
+    }
+  }
+
+  // Build picture book PDF (landscape, iPad-friendly) once images are ready
+  if (planConfig.picturebook && imageResults.length) {
+    try {
+      console.log(`Building picture book PDF for: ${childName}`);
+      const pbBuffer = await buildPictureBookPdf(story, childName, imageResults);
+      const pbBlob   = await put(`stories/${base}-picturebook.pdf`, pbBuffer, { ...saveOpts, contentType: 'application/pdf' });
+      outputs.push({ type: 'picturebook-pdf', filename: `${base}-picturebook.pdf`, url: pbBlob.url });
+      console.log(`Saved: ${base}-picturebook.pdf`);
+    } catch (err) {
+      console.error('Picture book PDF failed:', err.message);
+    }
   }
 
   // Send story by email for Kit (free trial) — PDF attached
