@@ -1098,6 +1098,9 @@ function buildProfileText() {
 
 let selectedPlan = null;
 
+// Capture the original pricing modal HTML so it can be restored after the success state
+const MODAL_ORIGINAL_HTML = document.querySelector('.modal').innerHTML;
+
 function selectPlan(planId) {
   selectedPlan = planId;
   document.querySelectorAll('.pricing-card').forEach(card => {
@@ -1110,6 +1113,13 @@ function selectPlan(planId) {
 
 function openImagineModal() {
   selectedPlan = null;
+
+  // Restore original modal content if it was replaced by the success state
+  const modal = document.querySelector('.modal');
+  if (!document.getElementById('continue-btn')) {
+    modal.innerHTML = MODAL_ORIGINAL_HTML;
+  }
+
   document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('continue-btn').disabled = true;
   document.getElementById('pricing-backdrop').classList.add('visible');
@@ -1135,28 +1145,31 @@ async function confirmImagine() {
   const dateStr  = new Date().toISOString().slice(0, 10);
   const filename = `talekits-profile-${safeName}-${dateStr}.txt`;
 
-  // Update button to loading state
   const btn = document.getElementById('continue-btn');
-  btn.disabled = true;
-  btn.innerHTML = 'Redirecting…';
+  btn.disabled  = true;
+  btn.innerHTML = 'Setting up…';
 
-  // Save profile to backend
-  try {
-    await fetch('/api/save-profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename, content: text, childName: name, email }),
-    });
-  } catch (err) {
-    console.warn('Profile save error:', err);
+  // ── Kit free trial — no checkout, show success immediately ──
+  if (selectedPlan === 'kit') {
+    try {
+      await fetch('/api/start-trial', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ filename, content: text, childName: name, email }),
+      });
+    } catch (err) {
+      console.warn('Trial start error:', err);
+    }
+    showTrialSuccess(name, email);
+    return;
   }
 
-  // Create Stripe checkout session and redirect
+  // ── Paid plans — create Stripe checkout session and redirect ──
   try {
     const res  = await fetch('/api/create-checkout', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planId: selectedPlan, childName: name, email, filename }),
+      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, filename, content: text }),
     });
     const data = await res.json();
 
@@ -1167,10 +1180,45 @@ async function confirmImagine() {
     }
   } catch (err) {
     console.error('Checkout error:', err);
-    btn.disabled = false;
+    btn.disabled  = false;
     btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
-    alert('Something went wrong starting checkout. Please try again.');
+    alert('Something went wrong. Please try again.');
   }
+}
+
+function showTrialSuccess(childName, email) {
+  // Swap modal content to success state
+  document.querySelector('.modal').innerHTML = `
+    <div style="text-align:center;padding:2rem 1.5rem;">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--green-bg);border:0.5px solid var(--green-border);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--green-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3,12 8.5,17.5 19,6"/>
+        </svg>
+      </div>
+      <p style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin:0 0 10px;font-family:var(--font);">
+        Free trial started
+      </p>
+      <h2 style="font-family:var(--font-serif);font-style:italic;font-size:1.6rem;font-weight:500;color:var(--text);margin:0 0 12px;line-height:1.25;">
+        ${childName ? `${childName}'s` : 'Your'} first story<br/>is on its way
+      </h2>
+      <p style="font-family:var(--font);font-size:15px;color:var(--text-2);line-height:1.7;margin:0 0 10px;max-width:380px;margin-left:auto;margin-right:auto;">
+        We're writing it right now. In a few minutes it will arrive in your inbox as a beautifully designed PDF, ready to read together.
+      </p>
+      ${email ? `
+      <p style="font-family:var(--font);font-size:13px;color:var(--text-3);margin:0 0 28px;">
+        Sending to <strong style="color:var(--text-2);font-weight:500;">${email}</strong>
+      </p>` : `<div style="margin-bottom:28px;"></div>`}
+      <div style="background:var(--amber-bg);border:0.5px solid var(--amber-border);border-radius:var(--radius-md);padding:14px 18px;text-align:left;margin-bottom:28px;max-width:380px;margin-left:auto;margin-right:auto;">
+        <p style="font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--amber-text);margin:0 0 4px;">What happens next</p>
+        <p style="font-family:var(--font);font-size:13px;color:var(--amber-text);line-height:1.6;margin:0;">
+          You'll receive a new story every day for 7 days. Each one is unique — Claude randomly picks from ${childName ? `${childName}'s` : 'your'} saved preferences every time.
+        </p>
+      </div>
+      <button onclick="closePricingModal()" style="background:var(--text);color:var(--bg);border:none;border-radius:var(--radius-pill);padding:10px 28px;font-family:var(--font-serif);font-style:italic;font-size:15px;cursor:pointer;">
+        Done
+      </button>
+    </div>
+  `;
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePricingModal(); });
