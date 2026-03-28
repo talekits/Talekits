@@ -371,6 +371,132 @@
   .empty h3 { font-size: 16px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; }
   .empty p  { font-size: 14px; color: var(--text-3); }
 
+  /* ── Pricing modal ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(28,27,24,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+    padding: 1.5rem;
+  }
+  .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border-md);
+    padding: 2rem 2rem 1.5rem;
+    max-width: 760px;
+    width: 100%;
+    transform: translateY(14px);
+    transition: transform 0.22s;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .modal-backdrop.visible .modal { transform: translateY(0); }
+
+  .modal-header { margin-bottom: 1.75rem; }
+  .modal-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .modal-title { font-family: var(--font-serif); font-size: clamp(1.3rem,3vw,1.7rem); font-weight: 500; line-height: 1.2; color: var(--text); }
+  .modal-title em { font-style: italic; color: var(--text-2); }
+  .modal-subtitle { font-size: 14px; color: var(--text-2); margin-top: 6px; line-height: 1.6; }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .pricing-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .pricing-card:hover { border-color: var(--border-md); }
+  .pricing-card.featured {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+  .pricing-badge {
+    position: absolute; top: -1px; right: 14px;
+    background: var(--amber-bg); color: var(--amber-text);
+    border: 0.5px solid var(--amber-border);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 2px 8px;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  }
+  .pricing-tier-name {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 1.1rem; font-weight: 500;
+  }
+  .pricing-card.featured .pricing-tier-name { color: var(--bg); }
+  .pricing-price { display: flex; align-items: baseline; gap: 3px; }
+  .pricing-amount {
+    font-size: 1.6rem; font-weight: 600; line-height: 1;
+    color: var(--text);
+  }
+  .pricing-card.featured .pricing-amount { color: var(--bg); }
+  .pricing-period { font-size: 12px; color: var(--text-3); }
+  .pricing-card.featured .pricing-period { color: rgba(255,255,255,0.5); }
+  .pricing-trial { font-size: 12px; color: var(--teal-text); font-weight: 500; }
+  .pricing-card.featured .pricing-trial { color: rgba(255,255,255,0.7); }
+  .pricing-divider { height: 0.5px; background: var(--border); }
+  .pricing-card.featured .pricing-divider { background: rgba(255,255,255,0.15); }
+  .pricing-includes {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;
+  }
+  .pricing-card.featured .pricing-includes { color: rgba(255,255,255,0.45); }
+  .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .pricing-features li {
+    font-size: 12.5px; color: var(--text-2); line-height: 1.45;
+    display: flex; gap: 6px; align-items: flex-start;
+  }
+  .pricing-card.featured .pricing-features li { color: rgba(255,255,255,0.75); }
+  .pricing-features li::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--text-3); flex-shrink: 0; margin-top: 5px;
+  }
+  .pricing-card.featured .pricing-features li::before { background: rgba(255,255,255,0.4); }
+
+  .modal-footer-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    padding-top: 1.25rem;
+    border-top: 0.5px solid var(--border);
+  }
+  .modal-footer-note { font-size: 13px; color: var(--text-3); line-height: 1.5; }
+  .modal-footer-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-modal-dismiss {
+    background: none; border: 0.5px solid var(--border-md); color: var(--text-2);
+    border-radius: var(--radius-pill); padding: 7px 16px;
+    font-family: var(--font); font-size: 13px; cursor: pointer;
+    transition: background 0.12s; white-space: nowrap;
+  }
+  .btn-modal-dismiss:hover { background: var(--surface); color: var(--text); }
+  .btn-modal-confirm {
+    background: var(--text); color: var(--bg); border: none;
+    border-radius: var(--radius-pill); padding: 7px 20px;
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: opacity 0.12s; white-space: nowrap;
+  }
+  .btn-modal-confirm:hover { opacity: 0.82; }
+
+  @media (max-width: 600px) {
+    .pricing-grid { grid-template-columns: 1fr 1fr; }
+    .modal { padding: 1.5rem 1.25rem 1.25rem; }
+  }
+  @media (max-width: 400px) {
+    .pricing-grid { grid-template-columns: 1fr; }
+  }
+
   /* ── Footer ── */
   .footer {
     margin-top: 4rem;
@@ -497,6 +623,115 @@
     <p>Confidential &mdash; Internal use only</p>
   </footer>
 
+</div>
+
+<!-- Pricing modal -->
+<div class="modal-backdrop" id="pricing-backdrop" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <p class="modal-eyebrow">Talekit &mdash; Choose your plan</p>
+      <h2 class="modal-title">A new story, <em>every day</em></h2>
+      <p class="modal-subtitle">Select the plan that suits your family. Your child&rsquo;s profile will be saved when you continue.</p>
+    </div>
+
+    <div class="pricing-grid">
+
+      <!-- Kit -->
+      <div class="pricing-card">
+        <p class="pricing-tier-name">Kit</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$0</span>
+          <span class="pricing-period">/ 7 days</span>
+        </div>
+        <p class="pricing-trial">Free trial &mdash; no card needed</p>
+        <div class="pricing-divider"></div>
+        <p class="pricing-includes">Includes</p>
+        <ul class="pricing-features">
+          <li>1 story per day</li>
+          <li>Text only</li>
+          <li>No illustrations</li>
+          <li>No audio</li>
+        </ul>
+      </div>
+
+      <!-- Cub -->
+      <div class="pricing-card">
+        <p class="pricing-tier-name">Cub</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$7.99</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <p class="pricing-includes">Includes</p>
+        <ul class="pricing-features">
+          <li>1 story per day</li>
+          <li>Text + picture book (PDF)</li>
+          <li>1 child profile</li>
+        </ul>
+      </div>
+
+      <!-- Scout -->
+      <div class="pricing-card featured">
+        <span class="pricing-badge">Most popular</span>
+        <p class="pricing-tier-name">Scout</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$14.99</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <p class="pricing-includes">Includes</p>
+        <ul class="pricing-features">
+          <li>1 story per day</li>
+          <li>Text + picture book + audiobook with SFX</li>
+          <li>Up to 3 child profiles</li>
+        </ul>
+      </div>
+
+      <!-- Den -->
+      <div class="pricing-card">
+        <p class="pricing-tier-name">Den</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$24.99</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <p class="pricing-includes">Includes</p>
+        <ul class="pricing-features">
+          <li>Up to 3 stories per day</li>
+          <li>All formats</li>
+          <li>5 child profiles</li>
+          <li>Print-on-demand credits</li>
+          <li>Story archive</li>
+        </ul>
+      </div>
+
+      <!-- Pack -->
+      <div class="pricing-card">
+        <p class="pricing-tier-name">Pack</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$49.99</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <p class="pricing-includes">Includes</p>
+        <ul class="pricing-features">
+          <li>Educator dashboard</li>
+          <li>30 student profiles</li>
+          <li>Curriculum themes</li>
+          <li>Progress tracking</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="modal-footer-row">
+      <p class="modal-footer-note">All plans billed monthly. Cancel any time.</p>
+      <div class="modal-footer-actions">
+        <button class="btn-modal-dismiss" onclick="closePricingModal()">Maybe later</button>
+        <button class="btn-modal-confirm" onclick="confirmImagine()">Save my profile</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -786,6 +1021,23 @@ function buildProfileText() {
 }
 
 function openImagineModal() {
+  // Show pricing modal first
+  document.getElementById('pricing-backdrop').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePricingModal() {
+  document.getElementById('pricing-backdrop').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('pricing-backdrop')) closePricingModal();
+}
+
+function confirmImagine() {
+  closePricingModal();
+
   const name  = document.getElementById('child-name').value.trim();
   const email = document.getElementById('email').value.trim();
   const text  = buildProfileText();
@@ -794,7 +1046,7 @@ function openImagineModal() {
   const dateStr  = new Date().toISOString().slice(0, 10);
   const filename = `talekits-profile-${safeName}-${dateStr}.txt`;
 
-  // 1. Trigger local download immediately
+  // 1. Trigger local download
   const blob = new Blob([text], { type: 'text/plain' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -803,7 +1055,7 @@ function openImagineModal() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  // 2. Also save to backend
+  // 2. Save to backend
   fetch('/api/save-profile', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -820,7 +1072,7 @@ function openImagineModal() {
   .catch(err => console.warn('Backend save error:', err));
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') {} });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePricingModal(); });
 
 /* ── Pre-select all tags in these categories on load ── */
 const PRESELECT_CATS   = new Set(['themes', 'art', 'edu', 'char']);
