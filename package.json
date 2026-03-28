@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@fontsource/instrument-sans": "^5.0.0",
+    "@fontsource/lora": "^5.0.0",
     "@vercel/blob": "^0.27.0",
+    "pdfkit": "^0.15.0",
+    "resend": "^3.0.0",
     "stripe": "^14.0.0"
   }
 }
