@@ -410,19 +410,57 @@
   }
   .pricing-card {
     background: var(--surface);
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
     display: flex; flex-direction: column; gap: 10px;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
     position: relative;
+    cursor: pointer;
+    user-select: none;
   }
   .pricing-card:hover { border-color: var(--border-md); }
+  .pricing-card.selected {
+    border: 2px solid var(--text);
+    box-shadow: 0 0 0 3px rgba(28,27,24,0.08);
+  }
   .pricing-card.featured {
     background: var(--text);
     border-color: var(--text);
     color: var(--bg);
   }
+  .pricing-card.featured.selected {
+    border: 2px solid var(--text);
+    box-shadow: 0 0 0 3px rgba(28,27,24,0.18);
+  }
+  .pricing-select-indicator {
+    position: absolute; top: 12px; right: 12px;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid var(--border-md);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .pricing-card.featured .pricing-select-indicator {
+    border-color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.1);
+  }
+  .pricing-card.selected .pricing-select-indicator {
+    background: var(--text); border-color: var(--text);
+  }
+  .pricing-card.featured.selected .pricing-select-indicator {
+    background: var(--bg); border-color: var(--bg);
+  }
+  .pricing-select-indicator svg {
+    display: none; width: 10px; height: 10px;
+  }
+  .pricing-card.selected .pricing-select-indicator svg { display: block; }
+  .pricing-check-dark { stroke: var(--bg); }
+  .pricing-check-light { stroke: var(--text); display: none; }
+  .pricing-card.featured.selected .pricing-check-dark { display: none; }
+  .pricing-card.featured.selected .pricing-check-light { display: block; }
+
   .pricing-badge {
     position: absolute; top: -1px; right: 14px;
     background: var(--amber-bg); color: var(--amber-text);
@@ -486,8 +524,11 @@
     font-family: var(--font-serif); font-style: italic;
     font-size: 14px; font-weight: 500; cursor: pointer;
     transition: opacity 0.12s; white-space: nowrap;
+    display: flex; align-items: center; gap: 7px;
   }
-  .btn-modal-confirm:hover { opacity: 0.82; }
+  .btn-modal-confirm:hover:not(:disabled) { opacity: 0.82; }
+  .btn-modal-confirm:disabled { opacity: 0.35; cursor: not-allowed; font-style: normal; }
+  .btn-modal-confirm svg { width: 12px; height: 12px; flex-shrink: 0; }
 
   @media (max-width: 600px) {
     .pricing-grid { grid-template-columns: 1fr 1fr; }
@@ -631,13 +672,19 @@
     <div class="modal-header">
       <p class="modal-eyebrow">Talekit &mdash; Choose your plan</p>
       <h2 class="modal-title">A new story, <em>every day</em></h2>
-      <p class="modal-subtitle">Select the plan that suits your family. Your child&rsquo;s profile will be saved when you continue.</p>
+      <p class="modal-subtitle">Select a plan below. Your child&rsquo;s profile will be saved when you continue.</p>
     </div>
 
     <div class="pricing-grid">
 
       <!-- Kit -->
-      <div class="pricing-card">
+      <div class="pricing-card" data-plan="kit" onclick="selectPlan('kit')">
+        <div class="pricing-select-indicator">
+          <svg viewBox="0 0 10 10" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="pricing-check-dark" points="1.5,5.5 4,8 8.5,2"/>
+            <polyline class="pricing-check-light" points="1.5,5.5 4,8 8.5,2"/>
+          </svg>
+        </div>
         <p class="pricing-tier-name">Kit</p>
         <div class="pricing-price">
           <span class="pricing-amount">$0</span>
@@ -655,7 +702,13 @@
       </div>
 
       <!-- Cub -->
-      <div class="pricing-card">
+      <div class="pricing-card" data-plan="cub" onclick="selectPlan('cub')">
+        <div class="pricing-select-indicator">
+          <svg viewBox="0 0 10 10" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="pricing-check-dark" points="1.5,5.5 4,8 8.5,2"/>
+            <polyline class="pricing-check-light" points="1.5,5.5 4,8 8.5,2"/>
+          </svg>
+        </div>
         <p class="pricing-tier-name">Cub</p>
         <div class="pricing-price">
           <span class="pricing-amount">$7.99</span>
@@ -671,8 +724,14 @@
       </div>
 
       <!-- Scout -->
-      <div class="pricing-card featured">
+      <div class="pricing-card featured" data-plan="scout" onclick="selectPlan('scout')">
         <span class="pricing-badge">Most popular</span>
+        <div class="pricing-select-indicator">
+          <svg viewBox="0 0 10 10" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="pricing-check-dark" points="1.5,5.5 4,8 8.5,2"/>
+            <polyline class="pricing-check-light" points="1.5,5.5 4,8 8.5,2"/>
+          </svg>
+        </div>
         <p class="pricing-tier-name">Scout</p>
         <div class="pricing-price">
           <span class="pricing-amount">$14.99</span>
@@ -688,7 +747,13 @@
       </div>
 
       <!-- Den -->
-      <div class="pricing-card">
+      <div class="pricing-card" data-plan="den" onclick="selectPlan('den')">
+        <div class="pricing-select-indicator">
+          <svg viewBox="0 0 10 10" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="pricing-check-dark" points="1.5,5.5 4,8 8.5,2"/>
+            <polyline class="pricing-check-light" points="1.5,5.5 4,8 8.5,2"/>
+          </svg>
+        </div>
         <p class="pricing-tier-name">Den</p>
         <div class="pricing-price">
           <span class="pricing-amount">$24.99</span>
@@ -706,7 +771,13 @@
       </div>
 
       <!-- Pack -->
-      <div class="pricing-card">
+      <div class="pricing-card" data-plan="pack" onclick="selectPlan('pack')">
+        <div class="pricing-select-indicator">
+          <svg viewBox="0 0 10 10" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="pricing-check-dark" points="1.5,5.5 4,8 8.5,2"/>
+            <polyline class="pricing-check-light" points="1.5,5.5 4,8 8.5,2"/>
+          </svg>
+        </div>
         <p class="pricing-tier-name">Pack</p>
         <div class="pricing-price">
           <span class="pricing-amount">$49.99</span>
@@ -728,7 +799,12 @@
       <p class="modal-footer-note">All plans billed monthly. Cancel any time.</p>
       <div class="modal-footer-actions">
         <button class="btn-modal-dismiss" onclick="closePricingModal()">Maybe later</button>
-        <button class="btn-modal-confirm" onclick="confirmImagine()">Save my profile</button>
+        <button class="btn-modal-confirm" id="continue-btn" onclick="confirmImagine()" disabled>
+          Continue
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -1020,8 +1096,22 @@ function buildProfileText() {
   return lines.join('\n').trimEnd();
 }
 
+let selectedPlan = null;
+
+function selectPlan(planId) {
+  selectedPlan = planId;
+  document.querySelectorAll('.pricing-card').forEach(card => {
+    card.classList.toggle('selected', card.dataset.plan === planId);
+  });
+  const btn = document.getElementById('continue-btn');
+  btn.disabled = false;
+  btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+}
+
 function openImagineModal() {
-  // Show pricing modal first
+  selectedPlan = null;
+  document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('continue-btn').disabled = true;
   document.getElementById('pricing-backdrop').classList.add('visible');
   document.body.style.overflow = 'hidden';
 }
@@ -1035,41 +1125,52 @@ function handleBackdropClick(e) {
   if (e.target === document.getElementById('pricing-backdrop')) closePricingModal();
 }
 
-function confirmImagine() {
-  closePricingModal();
+async function confirmImagine() {
+  if (!selectedPlan) return;
 
-  const name  = document.getElementById('child-name').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const text  = buildProfileText();
-
+  const name     = document.getElementById('child-name').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const text     = buildProfileText();
   const safeName = name ? name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'unnamed';
   const dateStr  = new Date().toISOString().slice(0, 10);
   const filename = `talekits-profile-${safeName}-${dateStr}.txt`;
 
-  // 1. Trigger local download
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // Update button to loading state
+  const btn = document.getElementById('continue-btn');
+  btn.disabled = true;
+  btn.innerHTML = 'Redirecting…';
 
-  // 2. Save to backend
-  fetch('/api/save-profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename, content: text, childName: name, email }),
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      console.log('Profile saved to backend:', data.url);
+  // Save profile to backend
+  try {
+    await fetch('/api/save-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename, content: text, childName: name, email }),
+    });
+  } catch (err) {
+    console.warn('Profile save error:', err);
+  }
+
+  // Create Stripe checkout session and redirect
+  try {
+    const res  = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId: selectedPlan, childName: name, email, filename }),
+    });
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
     } else {
-      console.warn('Backend save failed:', data.error);
+      throw new Error(data.error || 'No checkout URL returned');
     }
-  })
-  .catch(err => console.warn('Backend save error:', err));
+  } catch (err) {
+    console.error('Checkout error:', err);
+    btn.disabled = false;
+    btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+    alert('Something went wrong starting checkout. Please try again.');
+  }
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePricingModal(); });
