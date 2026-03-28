@@ -1,8 +1,6 @@
-const { put }     = require('@vercel/blob');
-const PDFDocument  = require('pdfkit');
-const path         = require('path');
-const fs           = require('fs');
-const { Resend }   = require('resend');
+const { put }    = require('@vercel/blob');
+const PDFDocument = require('pdfkit');
+const { Resend }  = require('resend');
 
 /* ─────────────────────────────────────────────────────────────
    Brand colour palette — exact match to the webpage
@@ -17,13 +15,27 @@ const C = {
   text3:       '#9C9A94',
   accent:      '#2B5CE6',
 
-  // Category colours
   purpleBg:    '#EEEDFE', purpleText:  '#3C3489', purpleBorder: '#AFA9EC',
   tealBg:      '#E1F5EE', tealText:    '#085041', tealBorder:   '#5DCAA5',
   amberBg:     '#FAEEDA', amberText:   '#633806', amberBorder:  '#EF9F27',
   blueBg:      '#E6F1FB', blueText:    '#0C447C', blueBorder:   '#85B7EB',
   greenBg:     '#EAF3DE', greenText:   '#27500A', greenBorder:  '#97C459',
 };
+
+/* ─────────────────────────────────────────────────────────────
+   Fonts — pdfkit built-ins only (always available in serverless)
+   Times-Roman / Times-Italic / Times-Bold  →  serif body (closest to Lora)
+   Helvetica / Helvetica-Bold               →  sans UI (closest to Instrument Sans)
+───────────────────────────────────────────────────────────── */
+const fonts = {
+  body:     'Times-Roman',
+  italic:   'Times-Italic',
+  bold:     'Times-Bold',
+  sans:     'Helvetica',
+  sansBold: 'Helvetica-Bold',
+};
+
+function ensureFonts() { /* no-op — built-ins need no registration */ }
 
 /* ─────────────────────────────────────────────────────────────
    Plan output rules
@@ -35,51 +47,6 @@ const PLAN_OUTPUTS = {
   den:   { storyTxt: true, illustrationsTxt: true,  pdf: true },
   pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true },
 };
-
-/* ─────────────────────────────────────────────────────────────
-   Font loading
-   @fontsource packages include WOFF2 files which pdfkit/fontkit
-   supports natively. Paths are relative to project root.
-───────────────────────────────────────────────────────────── */
-function loadFont(pkg, file) {
-  try {
-    const fontPath = path.resolve(process.cwd(), `node_modules/@fontsource/${pkg}/files/${file}`);
-    return fs.readFileSync(fontPath);
-  } catch {
-    console.warn(`Font not found: ${pkg}/${file} — falling back to built-in`);
-    return null;
-  }
-}
-
-let fontsLoaded = false;
-let fonts = {};
-
-function ensureFonts(doc) {
-  if (fontsLoaded) return;
-
-  const loraReg  = loadFont('lora', 'lora-latin-400-normal.woff2');
-  const loraItal = loadFont('lora', 'lora-latin-400-italic.woff2');
-  const loraBold = loadFont('lora', 'lora-latin-700-normal.woff2');
-  const sansReg  = loadFont('instrument-sans', 'instrument-sans-latin-400-normal.woff2');
-  const sansSemi = loadFont('instrument-sans', 'instrument-sans-latin-600-normal.woff2');
-
-  if (loraReg)  { doc.registerFont('Lora',            loraReg);  fonts.body   = 'Lora'; }
-  else          { fonts.body   = 'Times-Roman'; }
-
-  if (loraItal) { doc.registerFont('Lora-Italic',     loraItal); fonts.italic = 'Lora-Italic'; }
-  else          { fonts.italic = 'Times-Italic'; }
-
-  if (loraBold) { doc.registerFont('Lora-Bold',       loraBold); fonts.bold   = 'Lora-Bold'; }
-  else          { fonts.bold   = 'Times-Bold'; }
-
-  if (sansReg)  { doc.registerFont('Sans',            sansReg);  fonts.sans   = 'Sans'; }
-  else          { fonts.sans   = 'Helvetica'; }
-
-  if (sansSemi) { doc.registerFont('Sans-Semi',       sansSemi); fonts.sansBold = 'Sans-Semi'; }
-  else          { fonts.sansBold = 'Helvetica-Bold'; }
-
-  fontsLoaded = true;
-}
 
 /* ─────────────────────────────────────────────────────────────
    Claude system prompt
@@ -177,7 +144,7 @@ function buildPdf(story, childName, plan) {
     doc.on('end',   ()  => resolve(Buffer.concat(chunks)));
     doc.on('error', err => reject(err));
 
-    ensureFonts(doc);
+    ensureFonts();
 
     const PW   = doc.page.width;
     const PH   = doc.page.height;
