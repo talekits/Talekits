@@ -656,7 +656,38 @@ function buildPictureBookPdf(story, childName, imageResults) {
 /* ─────────────────────────────────────────────────────────────
    Email — Kit free trial delivery
 ───────────────────────────────────────────────────────────── */
-function buildEmailHtml(childName, storyTitle, parentNote, trialDaysLeft = 7) {
+function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial') {
+  const isPaid      = plan !== 'kit';
+  const heading     = isPaid
+    ? `${childName}'s story<br/>is <em style="color:#6B6860;">ready</em>`
+    : `${childName}'s first story<br/>is <em style="color:#6B6860;">ready</em>`;
+  const intro       = isPaid
+    ? `Kit the fox has just written <strong>${childName}</strong> a brand-new personalised story — and we think they're going to love it.`
+    : `We've just written <strong>${childName}</strong> their very first Talekit story — and we think they're going to love it.`;
+  const attachMsg   = isPaid
+    ? `Two files are attached to this email — the full story PDF and your illustrated picture book, designed to be read together on a tablet or printed at home. Open the picture book for the full illustrated experience.`
+    : `The full story is attached to this email as a PDF — designed to be read together at bedtime, on the weekend, or whenever the moment feels right.`;
+  const footerCta   = isPaid ? '' : `
+            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
+              You're currently on your <strong>7-day free trial</strong>. Every day a brand-new story lands — each one personalised, never repeated, always made just for ${childName}.
+            </p>
+            <p style="margin:0 0 32px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
+              When you're ready to keep the stories coming, choosing a plan takes less than a minute.
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td align="center">
+                  <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'}"
+                     style="display:inline-block;background:#1C1B18;color:#FAFAF8;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:15px;font-weight:400;text-decoration:none;padding:12px 32px;border-radius:999px;">
+                    Explore your plan options
+                  </a>
+                </td>
+              </tr>
+            </table>`;
+  const footerNote  = isPaid
+    ? `You're on the Talekit ${planLabel} plan. A new story arrives every day.`
+    : `You received this because you signed up for a Talekit free trial.`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -670,94 +701,57 @@ function buildEmailHtml(childName, storyTitle, parentNote, trialDaysLeft = 7) {
     <td align="center" style="padding:40px 16px;">
       <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">
 
-        <!-- Header -->
         <tr>
           <td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
             <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">
               Talekit — Children's Storybook
             </p>
             <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
-              ${childName}'s first story<br/>is <em style="color:#6B6860;">ready</em>
+              ${heading}
             </h1>
           </td>
         </tr>
 
-        <!-- Body -->
         <tr>
           <td style="background:#FFFFFF;padding:36px 40px;">
 
-            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#6B6860;line-height:1.7;">
-              Hi there,
-            </p>
+            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#6B6860;line-height:1.7;">Hi there,</p>
 
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              We've just written <strong>${childName}</strong> their very first Talekit story — and we think they're going to love it.
+              ${intro}
             </p>
 
-            <!-- Story title card -->
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
                 <td style="background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:10px;padding:20px 24px;">
-                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9C9A94;">
-                    Today's story
-                  </p>
-                  <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:20px;color:#3C3489;line-height:1.3;">
-                    ${storyTitle}
-                  </p>
+                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9C9A94;">Today's story</p>
+                  <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:20px;color:#3C3489;line-height:1.3;">${storyTitle}</p>
                 </td>
               </tr>
             </table>
 
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              The full story is attached to this email as a PDF — designed to be read together at bedtime, on the weekend, or whenever the moment feels right. Open it up, find a cosy spot, and enjoy.
+              ${attachMsg}
             </p>
 
-            <!-- Parent note -->
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
                 <td style="background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:10px;padding:16px 20px;">
-                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#633806;">
-                    Parent note
-                  </p>
-                  <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#633806;line-height:1.6;">
-                    ${parentNote}
-                  </p>
+                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#633806;">Parent note</p>
+                  <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#633806;line-height:1.6;">${parentNote}</p>
                 </td>
               </tr>
             </table>
 
-            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              You're currently on your <strong>${trialDaysLeft}-day free trial</strong>. Every day a brand-new story lands — each one personalised, never repeated, always made just for ${childName}.
-            </p>
-
-            <p style="margin:0 0 32px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              When you're ready to keep the stories coming, choosing a plan takes less than a minute.
-            </p>
-
-            <!-- CTA -->
-            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-              <tr>
-                <td align="center">
-                  <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'}"
-                     style="display:inline-block;background:#1C1B18;color:#FAFAF8;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:15px;font-weight:400;text-decoration:none;padding:12px 32px;border-radius:999px;">
-                    Explore your plan options
-                  </a>
-                </td>
-              </tr>
-            </table>
+            ${footerCta}
 
           </td>
         </tr>
 
-        <!-- Footer -->
         <tr>
           <td style="background:#F3F2EE;border-radius:0 0 14px 14px;padding:24px 40px;border-top:1px solid #E0DED8;text-align:center;">
-            <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">
-              You received this because you signed up for a Talekit free trial.
-            </p>
-            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">
-              Talekit — a new story, every day
-            </p>
+            <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">${footerNote}</p>
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekit — a new story, every day</p>
           </td>
         </tr>
 
@@ -769,8 +763,16 @@ function buildEmailHtml(childName, storyTitle, parentNote, trialDaysLeft = 7) {
 </html>`;
 }
 
-function buildEmailText(childName, storyTitle, parentNote, trialDaysLeft = 7) {
-  return `${childName}'s first Talekit story is ready
+function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial') {
+  const isPaid   = plan !== 'kit';
+  const attachMsg = isPaid
+    ? `Two files are attached — the full story PDF and your illustrated picture book. Open the picture book on a tablet for the full illustrated experience.`
+    : `The full story is attached as a PDF. Find a cosy spot and enjoy reading it together.`;
+  const closing  = isPaid
+    ? `You're on the Talekit ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
+    : `You're on a 7-day free trial. Visit ${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'} to choose a plan and keep the stories coming.`;
+
+  return `${childName}'s Talekit story is ready
 
 ─────────────────────────────────────
 Today's story: ${storyTitle}
@@ -778,23 +780,20 @@ Today's story: ${storyTitle}
 
 Hi there,
 
-We've just written ${childName} their very first Talekit story — and we think they're going to love it.
+${isPaid ? `Kit the fox has just written ${childName} a brand-new personalised story.` : `We've just written ${childName} their very first Talekit story.`}
 
-The full story is attached to this email as a PDF. Find a cosy spot, open it up, and enjoy reading it together.
+${attachMsg}
 
 PARENT NOTE
 ${parentNote}
 
-You're currently on your ${trialDaysLeft}-day free trial. Every day a brand-new story lands — each one personalised, never repeated, always made just for ${childName}.
-
-When you're ready to keep the stories coming, visit ${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'} to choose your plan.
+${closing}
 
 ─────────────────────────────────────
-Talekit — a new story, every day
-You received this because you signed up for a free trial.`;
+Talekit — a new story, every day`;
 }
 
-async function sendStoryEmail({ to, childName, storyTitle, parentNote, pdfBuffer, pdfFilename }) {
+async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, attachments }) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set — skipping email');
     return;
@@ -806,18 +805,16 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, pdfBuffer
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
+  const isPaid    = plan !== 'kit';
+  const planLabel = { kit: 'free trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || plan;
+
   const { data, error } = await resend.emails.send({
     from:    'Talekit <onboarding@resend.dev>',
     to:      [to],
-    subject: `${storyTitle} — ${childName}'s first Talekit story`,
-    html:    buildEmailHtml(childName, storyTitle, parentNote),
-    text:    buildEmailText(childName, storyTitle, parentNote),
-    attachments: [
-      {
-        filename: pdfFilename,
-        content:  pdfBuffer.toString('base64'),
-      },
-    ],
+    subject: `${storyTitle} — ${childName}'s ${isPaid ? 'first' : 'first'} Talekit story`,
+    html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel),
+    text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel),
+    attachments,
   });
 
   if (error) {
@@ -825,7 +822,7 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, pdfBuffer
     throw new Error(`Email failed: ${error.message}`);
   }
 
-  console.log(`Email sent to ${to} | ID: ${data?.id}`);
+  console.log(`Email sent to ${to} | Plan: ${plan} | Attachments: ${attachments.length} | ID: ${data?.id}`);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -914,10 +911,11 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   }
 
   // Build picture book PDF (landscape, iPad-friendly) once images are ready
+  let pbBuffer = null;
   if (planConfig.picturebook && imageResults.length) {
     try {
       console.log(`Building picture book PDF for: ${childName}`);
-      const pbBuffer = await buildPictureBookPdf(story, childName, imageResults);
+      pbBuffer       = await buildPictureBookPdf(story, childName, imageResults);
       const pbBlob   = await put(`stories/${base}-picturebook.pdf`, pbBuffer, { ...saveOpts, contentType: 'application/pdf' });
       outputs.push({ type: 'picturebook-pdf', filename: `${base}-picturebook.pdf`, url: pbBlob.url });
       console.log(`Saved: ${base}-picturebook.pdf`);
@@ -926,19 +924,38 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Send story by email for Kit (free trial) — PDF attached
-  if (plan === 'kit' && pdfBuffer && email) {
+  // Send email with appropriate attachments based on plan
+  if (email) {
     try {
-      await sendStoryEmail({
-        to:          email,
-        childName,
-        storyTitle:  story.title,
-        parentNote:  story.parentNote,
-        pdfBuffer,
-        pdfFilename: `${base}.pdf`,
-      });
+      const attachments = [];
+
+      // Story PDF — all plans
+      if (pdfBuffer) {
+        attachments.push({
+          filename: `${base}.pdf`,
+          content:  pdfBuffer.toString('base64'),
+        });
+      }
+
+      // Picture book PDF — Cub when generated
+      if (pbBuffer) {
+        attachments.push({
+          filename: `${base}-picturebook.pdf`,
+          content:  pbBuffer.toString('base64'),
+        });
+      }
+
+      if (attachments.length) {
+        await sendStoryEmail({
+          to:         email,
+          childName,
+          storyTitle: story.title,
+          parentNote: story.parentNote,
+          plan,
+          attachments,
+        });
+      }
     } catch (err) {
-      // Log but don't throw — a failed email shouldn't fail the whole generation
       console.error('Email send failed:', err.message);
     }
   }
