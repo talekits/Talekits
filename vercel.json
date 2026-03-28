@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/webhook.js": {
+      "maxDuration": 60
+    },
+    "api/generate-story.js": {
+      "maxDuration": 60
+    },
+    "api/start-trial.js": {
+      "maxDuration": 60
+    }
+  }
+}

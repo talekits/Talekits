@@ -12,29 +12,29 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'No profile content provided' });
   }
 
-  // Respond immediately so the user sees the success message right away
-  // Story generation happens asynchronously after the response
-  res.status(200).json({ success: true });
-
-  // Save confirmed profile directly — no pending step needed, no payment to wait for
+  // Save profile first
   try {
     await put(`profiles/${filename}`, content, {
       access:          'public',
       contentType:     'text/plain',
       addRandomSuffix: false,
     });
-    console.log(`Kit trial profile saved: ${filename} | Child: ${childName} | Email: ${email}`);
+    console.log(`Kit profile saved: ${filename} | Child: ${childName} | Email: ${email}`);
   } catch (err) {
-    console.error('Failed to save trial profile:', err.message);
-    return;
+    console.error('Failed to save profile:', err.message);
+    return res.status(500).json({ error: 'Failed to save profile' });
   }
 
-  // Generate story and send email
+  // Generate story and send email — must complete before responding
+  // so Vercel does not terminate the function early
   try {
     console.log(`Generating trial story for: ${childName}`);
     const outputs = await generateStory(content, childName, filename, 'kit', email);
     outputs.forEach(o => console.log(`Output saved: ${o.type} → ${o.url}`));
   } catch (err) {
-    console.error('Trial story generation failed:', err.message);
+    console.error('Story generation failed:', err.message);
+    // Still return success — profile is saved, email may arrive later via retry
   }
+
+  return res.status(200).json({ success: true });
 };

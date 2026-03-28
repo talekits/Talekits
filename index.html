@@ -1149,18 +1149,18 @@ async function confirmImagine() {
   btn.disabled  = true;
   btn.innerHTML = 'Setting up…';
 
-  // ── Kit free trial — no checkout, show success immediately ──
+  // ── Kit free trial — show success immediately, API runs in background ──
   if (selectedPlan === 'kit') {
-    try {
-      await fetch('/api/start-trial', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ filename, content: text, childName: name, email }),
-      });
-    } catch (err) {
-      console.warn('Trial start error:', err);
-    }
+    // Show success screen right away — don't await the API
     showTrialSuccess(name, email);
+
+    // Fire and forget — story generation and email happen server-side
+    fetch('/api/start-trial', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ filename, content: text, childName: name, email }),
+    }).catch(err => console.warn('Trial start error:', err));
+
     return;
   }
 
