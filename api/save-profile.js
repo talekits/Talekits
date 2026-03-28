@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
     console.log('BLOB token present:', !!process.env.BLOB_READ_WRITE_TOKEN);
 
     const blob = await put(`profiles/${filename}`, content, {
-      access: 'private',
+      access: 'public',
       contentType: 'text/plain',
       addRandomSuffix: false,
     });
