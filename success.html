@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome to Talekit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #FAFAF8;
+  --surface:   #F3F2EE;
+  --surface-2: #ECEAE4;
+  --border:    rgba(60,56,46,0.12);
+  --border-md: rgba(60,56,46,0.22);
+  --text:      #1C1B18;
+  --text-2:    #6B6860;
+  --text-3:    #9C9A94;
+  --accent:    #2B5CE6;
+
+  --amber-bg:  #FAEEDA; --amber-text:  #633806; --amber-border:  #EF9F27;
+  --green-bg:  #EAF3DE; --green-text:  #27500A; --green-border:  #97C459;
+  --blue-bg:   #E6F1FB; --blue-text:   #0C447C; --blue-border:   #85B7EB;
+  --purple-bg: #EEEDFE; --purple-text: #3C3489; --purple-border: #AFA9EC;
+
+  --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
+  --font: 'Instrument Sans', sans-serif;
+  --font-serif: 'Lora', serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181816; --surface: #21201D; --surface-2: #2A2926;
+    --border: rgba(255,253,245,0.1); --border-md: rgba(255,253,245,0.18);
+    --text: #F0EEE8; --text-2: #9C9A94; --text-3: #6B6860; --accent: #6B8FF5;
+    --amber-bg: #412402; --amber-text: #FAC775; --amber-border: #BA7517;
+    --green-bg: #173404; --green-text: #C0DD97; --green-border: #3B6D11;
+    --blue-bg:  #042C53; --blue-text:  #B5D4F4; --blue-border:  #185FA5;
+    --purple-bg:#26215C; --purple-text:#CECBF6; --purple-border:#534AB7;
+  }
+}
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+
+.card {
+  background: var(--bg);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+
+.icon-wrap {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--green-bg);
+  border: 0.5px solid var(--green-border);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+.icon-wrap svg { width: 24px; height: 24px; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 10px;
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.5rem, 4vw, 1.9rem);
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+h1 em { color: var(--text-2); }
+
+.subtitle {
+  font-size: 15px; color: var(--text-2);
+  line-height: 1.7; margin-bottom: 10px;
+  max-width: 380px; margin-left: auto; margin-right: auto;
+}
+
+.email-line {
+  font-size: 13px; color: var(--text-3);
+  margin-bottom: 1.75rem;
+}
+.email-line strong { color: var(--text-2); font-weight: 500; }
+
+/* Plan badge */
+.plan-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 14px 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 600;
+  margin-bottom: 1.75rem;
+  border: 0.5px solid;
+}
+
+/* What's included card */
+.includes-card {
+  background: var(--amber-bg);
+  border: 0.5px solid var(--amber-border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  text-align: left;
+  margin-bottom: 1.75rem;
+}
+.includes-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--amber-text); margin-bottom: 8px;
+}
+.includes-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.includes-list li {
+  font-size: 13px; color: var(--amber-text);
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+}
+.includes-list li::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--amber-text); flex-shrink: 0; margin-top: 5px; opacity: 0.6;
+}
+
+.divider {
+  height: 0.5px; background: var(--border);
+  margin: 0 0 1.5rem;
+}
+
+.next-steps {
+  font-size: 13px; color: var(--text-3);
+  line-height: 1.65; margin-bottom: 1.75rem;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: var(--radius-pill);
+  padding: 10px 28px;
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 15px; cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.12s;
+}
+.btn:hover { opacity: 0.82; }
+
+.footer-note {
+  margin-top: 1.5rem;
+  font-size: 12px; color: var(--text-3); line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <!-- Populated by JS -->
+</div>
+
+<script>
+const PLANS = {
+  cub: {
+    label:    'Cub',
+    colour:   { bg: 'var(--blue-bg)', text: 'var(--blue-text)', border: 'var(--blue-border)' },
+    includes: [
+      '1 new story every day',
+      'Full story text as a PDF',
+      '1 child profile',
+    ],
+    nextSteps: 'Your first story is being written right now. It will arrive in your inbox shortly as a beautifully designed PDF, ready to read together.',
+  },
+  scout: {
+    label:    'Scout',
+    colour:   { bg: 'var(--purple-bg)', text: 'var(--purple-text)', border: 'var(--purple-border)' },
+    includes: [
+      '1 new story every day',
+      'Full story text + picture book PDF',
+      'Audiobook with sound effects',
+      'Up to 3 child profiles',
+    ],
+    nextSteps: 'Your first story is being written right now. It will arrive in your inbox shortly as a beautifully designed PDF, ready to read together.',
+  },
+  den: {
+    label:    'Den',
+    colour:   { bg: 'var(--green-bg)', text: 'var(--green-text)', border: 'var(--green-border)' },
+    includes: [
+      'Up to 3 new stories every day',
+      'All formats — text, picture book PDF, audiobook',
+      '5 child profiles',
+      'Print-on-demand credits',
+      'Story archive',
+    ],
+    nextSteps: 'Your first stories are being written right now. They will arrive in your inbox shortly as beautifully designed PDFs.',
+  },
+  pack: {
+    label:    'Pack',
+    colour:   { bg: 'var(--amber-bg)', text: 'var(--amber-text)', border: 'var(--amber-border)' },
+    includes: [
+      'Educator dashboard',
+      '30 student profiles',
+      'Curriculum-aligned themes',
+      'Progress tracking',
+    ],
+    nextSteps: 'Your classroom is being set up. Your first set of stories will arrive shortly.',
+  },
+};
+
+function esc(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function render() {
+  const params    = new URLSearchParams(window.location.search);
+  const planId    = params.get('plan') || 'cub';
+  const childName = params.get('child') ? decodeURIComponent(params.get('child')) : '';
+  const email     = params.get('email') ? decodeURIComponent(params.get('email')) : '';
+  const plan      = PLANS[planId] || PLANS.cub;
+
+  const nameDisplay = childName ? `${esc(childName)}'s` : 'Your';
+  const nameLabel   = childName ? esc(childName) : 'your child';
+
+  document.title = `Welcome to Talekit — ${plan.label}`;
+
+  document.getElementById('card').innerHTML = `
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4,13 9,18 20,7"/>
+      </svg>
+    </div>
+
+    <p class="eyebrow">${esc(plan.label)} plan activated</p>
+
+    <h1>${nameDisplay} first story<br/>is on its <em>way</em></h1>
+
+    <p class="subtitle">
+      Welcome to Talekit. Kit the fox is writing ${nameLabel}'s first personalised story right now.
+    </p>
+
+    ${email ? `
+    <p class="email-line">
+      Sending to <strong>${esc(email)}</strong>
+    </p>` : ''}
+
+    <span class="plan-badge" style="background:${plan.colour.bg};color:${plan.colour.text};border-color:${plan.colour.border};">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="1.5,6.5 4.5,9.5 10.5,2.5"/>
+      </svg>
+      ${esc(plan.label)}
+    </span>
+
+    <div class="includes-card">
+      <p class="includes-label">What&rsquo;s included</p>
+      <ul class="includes-list">
+        ${plan.includes.map(i => `<li>${esc(i)}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="next-steps">${esc(plan.nextSteps)}</p>
+
+    <a href="/" class="btn">Back to my profile</a>
+
+    <p class="footer-note">
+      A new story lands every day. Each one is unique &mdash; Kit never writes the same story twice.
+    </p>
+  `;
+}
+
+render();
+</script>
+
+</body>
+</html>

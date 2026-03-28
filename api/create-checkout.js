@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
           metadata: { childName, filename, plan: 'kit' },
         },
         metadata: { childName, filename, plan: 'kit', email: email || '' },
-        success_url: `${baseUrl}/success?plan=kit&child=${encodeURIComponent(childName || '')}`,
+        success_url: `${baseUrl}/success?plan=kit&child=${encodeURIComponent(childName || '')}&email=${encodeURIComponent(email || '')}`,
         cancel_url:  `${baseUrl}/?cancelled=true`,
       });
       return res.status(200).json({ url: session.url });
@@ -68,7 +68,7 @@ module.exports = async function handler(req, res) {
       subscription_data: {
         metadata: { childName, filename, plan: planId, email: email || '' },
       },
-      success_url: `${baseUrl}/success?plan=${planId}&child=${encodeURIComponent(childName || '')}`,
+      success_url: `${baseUrl}/success?plan=${planId}&child=${encodeURIComponent(childName || '')}&email=${encodeURIComponent(email || '')}`,
       cancel_url:  `${baseUrl}/?cancelled=true`,
     });
 
