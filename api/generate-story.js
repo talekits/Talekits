@@ -113,7 +113,12 @@ AGES 8–10 (CONFIDENT READER)
 SELECTION RULES — follow these exactly
 ═══════════════════════════════════════
 1. AGE SAFETY: Apply the Age Bracket Rails above before writing a single word. If a selected preference conflicts with the age bracket (e.g. complex structure for a 2–3 year old), override the preference to match the age bracket.
-2. STORY LENGTH: Randomly pick exactly 1 from the available options — but never exceed the word count ceiling for the Age Bracket.
+2. STORY LENGTH: The profile will contain "Short", "Medium", or "Long" (relative to the age bracket). Map it to the exact word count target below — never exceed the ceiling for the Age Bracket.
+   - Ages 2–3:  Short = ~100 words  |  Medium = ~150 words  |  Long = ~200 words
+   - Ages 4–5:  Short = ~200 words  |  Medium = ~275 words  |  Long = ~350 words
+   - Ages 6–7:  Short = ~400 words  |  Medium = ~475 words  |  Long = ~550 words
+   - Ages 8–10: Short = ~550 words  |  Medium = ~675 words  |  Long = ~800 words
+   If no story length is specified, randomly pick one.
 3. TONE & MOOD: Randomly pick exactly 1. If it conflicts with the Age Bracket (e.g. "Mysterious" for Ages 2–3), soften it to fit.
 4. STORY STRUCTURE: Randomly pick exactly 1. If it conflicts with the Age Bracket, default to the simplest appropriate structure.
 5. ART STYLE: Randomly pick exactly 1 (used for illustration prompts).

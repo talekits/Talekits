@@ -362,6 +362,45 @@
     .tray-more  { display: none; }
   }
 
+  /* ── Inline detail boxes (pet / friend / family) ── */
+  .tag-detail-box {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    margin-top: 8px;
+    animation: fadeIn 0.15s ease;
+  }
+  .tag-detail-box.visible { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .tag-detail-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--green-text);
+  }
+  .tag-detail-input {
+    width: 100%;
+    font-family: var(--font);
+    font-size: 13px;
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    outline: none;
+    padding: 8px 12px;
+    resize: vertical;
+    min-height: 60px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    caret-color: var(--accent);
+  }
+  .tag-detail-input::placeholder { color: var(--text-3); }
+  .tag-detail-input:focus {
+    border-color: var(--green-text);
+    box-shadow: 0 0 0 3px rgba(39,80,10,0.08);
+  }
+  .tag-detail-hint {
+    font-size: 11px; color: var(--text-3); line-height: 1.5;
+  }
+
   /* ── Highlight on search ── */
   mark { background: rgba(239,159,39,0.35); color: inherit; border-radius: 2px; padding: 0 1px; }
 
@@ -646,6 +685,9 @@
 
   <div id="output"></div>
 
+  <!-- Inline detail boxes — shown when relevant tags are selected -->
+  <div id="detail-boxes" style="margin-top:1rem; display:flex; flex-direction:column; gap:12px;"></div>
+
   <div class="tray" id="tray">
     <span class="tray-count" id="tray-count">0</span>
     <span class="tray-label">included</span>
@@ -822,10 +864,15 @@ const LIBRARY = {
     cls: "age",
     groups: {
       // RADIO GROUP — only 1 selectable at a time
-      "Age brackets": ["Ages 2–3 (toddler: simple words, heavy repetition, large illustrations)","Ages 4–5 (preschool: short sentences, single moral lesson, bright art)","Ages 6–7 (early reader: longer sentences, basic chapter structure)","Ages 8–10 (confident reader: plot complexity, subtext, humour)"],
+      "Age brackets": [
+        "Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words",
+        "Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words",
+        "Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words",
+        "Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words"
+      ],
       // RADIO GROUP — only 1 selectable at a time
       "Reading level": ["Pre-reader (read-aloud only, adult required)","Emergent reader (guided with adult)","Independent early reader","Fluent independent reader"],
-      "Story length": ["Short (300–400 words)","Medium (400–600 words)","Long (600–800 words)"],
+      "Story length": ["Short — lower end of age range","Medium — middle of age range","Long — upper end of age range"],
       "Tone & mood": ["Funny & silly","Gentle & cosy","Exciting & adventurous","Spooky (mild)","Heartwarming","Educational & informative","Mysterious"],
       "Story structure": ["Classic (clear beginning, middle, end)","Circular (story ends where it began)","Episodic (a series of small linked events)","Mystery (a problem to identify and solve)","Quest (a journey toward a goal)","Dual narrator (two perspectives on the same event)"]
     }
@@ -877,9 +924,10 @@ const LIBRARY = {
     cls: "char",
     groups: {
       "Protagonist type": ["Human child","Animal hero","Robot or AI companion","Mythical creature","Everyday object come to life","Historical figure (child version)","Alien or space explorer","Nature spirit or elemental"],
-      // Removed: "Child's physical appearance reflected in illustrations"
-      // Changed: "Named sidekick that persists across days" → "Child's friend incorporated as sidekick"
-      "Protagonist personalisation": ["Child's own name as the hero","Child's real pet as a supporting character","Family members woven into the story","Child's stated interests incorporated into the plot","Recurring protagonist across all daily stories","Child's friend incorporated as sidekick"],
+      // Removed: "Child's stated interests incorporated into the plot"
+      // Removed: "Recurring protagonist across all daily stories"
+      // Pet/friend/family tags trigger inline text boxes when selected
+      "Protagonist personalisation": ["Child's own name as the hero","Child's real pet as a supporting character","Family members woven into the story","Child's friend incorporated as sidekick"],
       "Cultural representation": ["Protagonist reflects child's own ethnicity","Diverse ensemble cast of characters","Specific cultural setting and traditions","Disability representation","Neurodiversity representation","Non-traditional family structures","Gender-neutral protagonist"],
       "Recurring elements": ["Same protagonist in every story","Running sidekick or best friend","A magical object that reappears across stories","A recurring mild antagonist","A consistent home base (village, treehouse, spaceship, etc.)","A mentor or wise elder figure","Post-story teaser hinting at tomorrow's adventure"]
     }
@@ -888,6 +936,38 @@ const LIBRARY = {
 
 /* Radio groups — only one item selectable at a time within these groups */
 const RADIO_GROUPS = new Set(["Age brackets", "Reading level"]);
+
+/* Tags that trigger an inline detail text box when selected */
+const DETAIL_BOX_TAGS = {
+  "Child's real pet as a supporting character": {
+    id:          'detail-pet',
+    label:       "Tell us about the pet",
+    placeholder: "e.g. Biscuit, a golden retriever who loves chasing sticks and is very loyal…",
+    hint:        "The more details you share, the better Kit can bring them to life in the story.",
+    rows:        3,
+  },
+  "Child's friend incorporated as sidekick": {
+    id:          'detail-friend',
+    label:       "Friend's name",
+    placeholder: "e.g. Mia",
+    hint:        "",
+    rows:        1,
+  },
+  "Family members woven into the story": {
+    id:          'detail-family',
+    label:       "Family members",
+    placeholder: "e.g. Grandma Rose, little brother Leo, Dad…",
+    hint:        "List whoever you'd like to appear in the story.",
+    rows:        2,
+  },
+};
+
+/* Tags that are only valid when "Child's own name as the hero" is selected */
+const CHILD_NAME_DEPENDENT = new Set([
+  "Child's real pet as a supporting character",
+  "Family members woven into the story",
+  "Child's friend incorporated as sidekick",
+]);
 
 let activeTab = 'all';
 let query = '';
@@ -915,33 +995,94 @@ function textFromKey(k)  { return k.split('|').slice(2).join('|'); }
 
 function toggleTag(key, el) {
   const groupName = groupFromKey(key);
-  const isRadio = RADIO_GROUPS.has(groupName);
+  const tagText   = textFromKey(key);
+  const isRadio   = RADIO_GROUPS.has(groupName);
 
   if (selected.has(key)) {
-    // Deselect
     selected.delete(key);
     el.classList.remove('selected');
   } else {
-    // If radio group, deselect any other in same group first
     if (isRadio) {
       [...selected].filter(k => groupFromKey(k) === groupName).forEach(k => {
         selected.delete(k);
-        // Deselect the DOM element too
         const els = document.querySelectorAll('.tag.selected');
-        els.forEach(t => {
-          if (t.dataset.key === k) t.classList.remove('selected');
-        });
+        els.forEach(t => { if (t.dataset.key === k) t.classList.remove('selected'); });
       });
     }
     selected.add(key);
     el.classList.add('selected');
   }
+  updateDetailBoxes();
   updateTray();
 }
+
+function updateDetailBoxes() {
+  const container = document.getElementById('detail-boxes');
+  const childNameKey = tagKey('char', 'Protagonist personalisation', "Child's own name as the hero");
+  const childNameSelected = selected.has(childNameKey);
+
+  // Build set of currently active detail box tags
+  const activeDetailTags = new Set();
+  [...selected].forEach(k => {
+    const t = textFromKey(k);
+    if (DETAIL_BOX_TAGS[t]) {
+      // Only show if child name is selected (for dependent tags), or always for non-dependent
+      if (!CHILD_NAME_DEPENDENT.has(t) || childNameSelected) {
+        activeDetailTags.add(t);
+      }
+    }
+  });
+
+  // If child name deselected, also deselect dependent tags
+  if (!childNameSelected) {
+    CHILD_NAME_DEPENDENT.forEach(depText => {
+      const depKey = tagKey('char', 'Protagonist personalisation', depText);
+      if (selected.has(depKey)) {
+        selected.delete(depKey);
+        document.querySelectorAll('.tag.selected').forEach(t => {
+          if (t.dataset.key === depKey) t.classList.remove('selected');
+        });
+      }
+    });
+  }
+
+  // Render detail boxes
+  let html = '';
+  activeDetailTags.forEach(tagText => {
+    const cfg  = DETAIL_BOX_TAGS[tagText];
+    const rows = cfg.rows === 1 ? '' : `rows="${cfg.rows}"`;
+    html += `
+      <div class="tag-detail-box visible" id="${cfg.id}-wrap">
+        <label class="tag-detail-label" for="${cfg.id}-input">${escHtml(cfg.label)}</label>
+        <textarea
+          class="tag-detail-input"
+          id="${cfg.id}-input"
+          placeholder="${escHtml(cfg.placeholder)}"
+          ${rows}
+        >${escHtml(getDetailValue(cfg.id))}</textarea>
+        ${cfg.hint ? `<p class="tag-detail-hint">${escHtml(cfg.hint)}</p>` : ''}
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+/* Preserve detail box values across re-renders */
+const detailValues = {};
+function getDetailValue(id) { return detailValues[id] || ''; }
+
+/* Intercept input changes on detail boxes */
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('tag-detail-input')) {
+    const id = e.target.id.replace('-input', '');
+    detailValues[id] = e.target.value;
+  }
+});
 
 function clearSelections() {
   selected.clear();
   document.querySelectorAll('.tag.selected').forEach(t => t.classList.remove('selected'));
+  Object.keys(detailValues).forEach(k => delete detailValues[k]);
+  updateDetailBoxes();
   updateTray();
 }
 
@@ -990,6 +1131,32 @@ function clearSearch() {
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+/* Word count ranges per age bracket — mapped to the hard rails in generate-story.js */
+const AGE_WORD_COUNTS = {
+  '2': { short: '~100 words', medium: '~150 words', long: '~200 words' },
+  '4': { short: '~200 words', medium: '~275 words', long: '~350 words' },
+  '6': { short: '~400 words', medium: '~475 words', long: '~550 words' },
+  '8': { short: '~550 words', medium: '~675 words', long: '~800 words' },
+};
+
+function getSelectedAgeBracketKey() {
+  const ageBracketKey = [...selected].find(k => groupFromKey(k) === 'Age brackets');
+  if (!ageBracketKey) return null;
+  const text = textFromKey(ageBracketKey);
+  if (text.startsWith('Ages 2')) return '2';
+  if (text.startsWith('Ages 4')) return '4';
+  if (text.startsWith('Ages 6')) return '6';
+  if (text.startsWith('Ages 8')) return '8';
+  return null;
+}
+
+function getStoryLengthHint() {
+  const ageKey = getSelectedAgeBracketKey();
+  if (!ageKey) return 'Select an age bracket above to see exact word counts.';
+  const wc = AGE_WORD_COUNTS[ageKey];
+  return `For the selected age bracket: Short = ${wc.short} &nbsp;·&nbsp; Medium = ${wc.medium} &nbsp;·&nbsp; Long = ${wc.long}`;
+}
 function highlight(text, q) {
   if (!q) return escHtml(text);
   const escaped = escHtml(text);
@@ -1029,6 +1196,7 @@ function render() {
             return `<span class="tag ${cat.cls}${isSel ? ' selected' : ''}" data-key="${escHtml(k)}" onclick="toggleTag('${safeKey}', this)">${checkSvg()}${highlight(t, q)}</span>`;
           }).join('')}
         </div>
+        ${groupName === 'Story length' ? `<p id="story-length-hint" style="font-size:12px;color:var(--text-3);margin-top:8px;min-height:16px;font-style:italic;">${getStoryLengthHint()}</p>` : ''}
       </div>`;
     });
 
@@ -1069,9 +1237,9 @@ function buildProfileText() {
   const grouped = {};
 
   [...selected].forEach(k => {
-    const cat = catFromKey(k);
+    const cat   = catFromKey(k);
     const group = groupFromKey(k);
-    const text = textFromKey(k);
+    const text  = textFromKey(k);
     if (!grouped[cat]) grouped[cat] = {};
     if (!grouped[cat][group]) grouped[cat][group] = [];
     grouped[cat][group].push(text);
@@ -1089,6 +1257,15 @@ function buildProfileText() {
     lines.push(cat.label.toUpperCase());
     Object.entries(grouped[catKey]).forEach(([groupName, vals]) => {
       lines.push(`  ${groupName}: ${vals.join(', ')}`);
+
+      // Append detail box values inline with the relevant tag
+      vals.forEach(val => {
+        const cfg = DETAIL_BOX_TAGS[val];
+        if (cfg) {
+          const detail = detailValues[cfg.id]?.trim();
+          if (detail) lines.push(`    → ${cfg.label}: ${detail}`);
+        }
+      });
     });
     lines.push('');
   });
@@ -1237,6 +1414,7 @@ Object.entries(LIBRARY).forEach(([catKey, cat]) => {
 
 render();
 updateTray();
+updateDetailBoxes();
 </script>
 </body>
 </html>
