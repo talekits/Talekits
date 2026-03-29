@@ -222,11 +222,18 @@ function buildStoryTxt(story, childName) {
 }
 
 function buildIllustrationsTxt(story, childName) {
+  const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
+  const artSentence = `Painted in ${artStyle.toLowerCase().replace(/^painted in /i, '')}.`;
+  const coverPrompt = `A children's book cover illustration inspired by the title "${story.title}". The image should feel iconic and inviting — a single strong visual moment that captures the heart of the story. Centre the main character or key element of the story in a warm, beautifully lit scene that makes a child want to open the book immediately. Wide landscape composition with a natural sky or atmospheric background. ${artSentence} No text, no title, no lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
+
   const lines = [
     `ILLUSTRATION PROMPTS — ${story.title.toUpperCase()}`,
     '─'.repeat(50),
     `A Talekit story for ${childName}`,
     `Art style: ${story.selections?.artStyle || 'Not specified'}`,
+    '',
+    'COVER',
+    coverPrompt,
     '',
   ];
   (story.illustrations || []).forEach((p, i) => {
@@ -507,163 +514,224 @@ function buildPictureBookPdf(story, childName, imageResults) {
     const FOOTER = 32;
     const date   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Build a map of page number → image buffer (fetch all images upfront)
+    // Build a map of page number → image URL
+    // Page 0 = cover illustration, pages 1+ = story spreads
     const imageMap = {};
     (imageResults || []).forEach(img => {
-      if (img.url && img.page) imageMap[img.page] = img.url;
+      if (img.url && img.page !== undefined) imageMap[img.page] = img.url;
     });
 
     // Split story into paragraphs — one paragraph per spread
     const paragraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
 
-    /* ── Helper: draw one spread ── */
-    async function drawSpread(paraIndex, para, isFirst, pageIndex, totalPages) {
-      // Background
-      doc.rect(0, 0, PW, PH).fill(C.bg);
-
-      // Vertical divider between halves
-      doc.moveTo(HALF, PAD).lineTo(HALF, PH - FOOTER - PAD)
-         .lineWidth(0.5).strokeColor(C.border).stroke();
-
-      // ── LEFT HALF: text ──
-      const textX = PAD;
-      const textW = HALF - PAD * 2;
-      let   ty    = PAD + 16;
-
-      if (isFirst) {
-        // Eyebrow
-        doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
-           .text('Talekit  —  Children\'s Storybook', textX, ty, { width: textW, align: 'center' });
-        ty += 16;
-
-        // Title
-        doc.font(fonts.italic).fontSize(20).fillColor(C.text).lineGap(3)
-           .text(story.title, textX, ty, { width: textW, align: 'center' });
-        ty = doc.y + 10;
-
-        // Rule
-        doc.moveTo(textX, ty).lineTo(HALF - PAD, ty)
-           .lineWidth(0.5).strokeColor(C.border).stroke();
-        ty += 14;
-
-        // Child + date
-        doc.font(fonts.sans).fontSize(9).fillColor(C.text2)
-           .text(`A story for ${childName}`, textX, ty, { width: textW / 2 });
-        doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
-           .text(date, textX, ty, { width: textW, align: 'right' });
-        ty += 20;
-      } else {
-        // Page number top-left
-        doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
-           .text(`${pageIndex}`, textX, ty, { width: textW });
-        ty += 20;
-      }
-
-      // ── Dynamic font size based on paragraph length ──
-      // Short paragraphs get larger text so the page feels full, not empty
-      const wordCount  = (para || '').split(/\s+/).filter(Boolean).length;
-      const bodySize   = wordCount <= 15  ? 22
-                       : wordCount <= 25  ? 18
-                       : wordCount <= 40  ? 15
-                       : wordCount <= 60  ? 13
-                       : 12;
-      const lineGapVal = bodySize >= 18 ? 8 : bodySize >= 15 ? 6 : 5;
-
-      // Vertically centre text for very short paragraphs
-      const textAreaH  = PH - FOOTER - PAD * 2 - (isFirst ? 80 : 36);
-      const textHeight = doc.font(fonts.body).fontSize(bodySize).heightOfString(para || '', { width: textW, lineGap: lineGapVal });
-      if (!isFirst && textHeight < textAreaH * 0.5) {
-        ty += Math.floor((textAreaH - textHeight) / 2);
-      }
-
-      if (isFirst && para) {
-        // Drop cap — scale with body size
-        const letter  = para.charAt(0);
-        const rest    = para.slice(1);
-        const capSize = Math.max(bodySize * 2.2, 38);
-        doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
-           .text(letter, textX, ty - 4, { lineBreak: false });
-        const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 5;
-        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
-           .text(rest, textX + capW, ty + Math.floor(capSize * 0.3), { width: textW - capW });
-      } else if (para) {
-        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
-           .text(para, textX, ty, { width: textW });
-      }
-
-      // ── RIGHT HALF: illustration ──
-      const imgX   = HALF + PAD;
-      const imgY   = PAD;
-      const imgW   = HALF - PAD * 2;
-      const imgH   = PH - FOOTER - PAD * 2;
-
-      const imgUrl = imageMap[paraIndex + 1]; // images are 1-indexed
-
-      if (imgUrl) {
-        try {
-          // Fetch image buffer
-          const imgRes = await fetch(imgUrl);
-          if (imgRes.ok) {
-            const imgBuf = Buffer.from(await imgRes.arrayBuffer());
-            doc.image(imgBuf, imgX, imgY, {
-              width:  imgW,
-              height: imgH,
-              fit:    [imgW, imgH],
-              align:  'center',
-              valign: 'center',
-            });
-          } else {
-            drawImagePlaceholder(imgX, imgY, imgW, imgH, paraIndex + 1);
-          }
-        } catch {
-          drawImagePlaceholder(imgX, imgY, imgW, imgH, paraIndex + 1);
-        }
-      } else {
-        drawImagePlaceholder(imgX, imgY, imgW, imgH, paraIndex + 1);
-      }
+    // Determine layout mode based on word count per paragraph
+    // Short paragraphs (toddler/short stories) get full-bleed image with text overlay
+    // Longer paragraphs get the split layout with a wider text column
+    function getLayoutMode(para) {
+      const wc = (para || '').split(/\s+/).filter(Boolean).length;
+      return wc <= 20 ? 'fullbleed' : 'split';
     }
 
-    /* ── Helper: placeholder when image is missing ── */
-    function drawImagePlaceholder(x, y, w, h, pageNum) {
-      doc.roundedRect(x, y, w, h, 10)
-         .fill(C.surface);
-      doc.roundedRect(x, y, w, h, 10)
-         .lineWidth(0.5).strokeColor(C.border).stroke();
-      doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
-         .text(`Illustration ${pageNum}`, x, y + h / 2 - 8, { width: w, align: 'center' });
+    /* ── Helper: draw one spread ── */
+    async function drawSpread(paraIndex, para, isFirst, pageIndex) {
+      const mode     = isFirst ? 'split' : getLayoutMode(para);
+      const imgUrl   = imageMap[paraIndex + 1];
+      const wordCount = (para || '').split(/\s+/).filter(Boolean).length;
+
+      // Fetch image buffer upfront for both layout modes
+      let imgBuf = null;
+      if (imgUrl) {
+        try {
+          const imgRes = await fetch(imgUrl);
+          if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
+        } catch { /* fall through to placeholder */ }
+      }
+
+      if (mode === 'fullbleed') {
+        // ── FULL-BLEED LAYOUT ──
+        // Image fills the entire page. Text sits on a semi-transparent bar at the bottom.
+
+        // Full page background
+        doc.rect(0, 0, PW, PH).fill(C.surface);
+
+        if (imgBuf) {
+          // Image fills entire page
+          doc.image(imgBuf, 0, 0, { width: PW, height: PH, cover: [PW, PH], align: 'center', valign: 'center' });
+        }
+
+        // Text bar at bottom — semi-transparent warm white
+        const barH   = 130;
+        const barY   = PH - barH - FOOTER;
+
+        // Gradient-style bar using layered rects with decreasing opacity
+        doc.save()
+           .rect(0, barY - 30, PW, 30).fillOpacity(0.3).fillColor('#FAFAF8').fill()
+           .rect(0, barY, PW, barH).fillOpacity(0.92).fillColor('#FAFAF8').fill()
+           .restore();
+
+        // Text inside bar
+        const bodySize   = wordCount <= 10 ? 24 : wordCount <= 15 ? 20 : 17;
+        const lineGapVal = bodySize >= 20 ? 8 : 6;
+        const textPad    = 40;
+
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
+           .text(para || '', textPad, barY + 14, { width: PW - textPad * 2, align: 'center' });
+
+        // Page number small, bottom right above footer
+        doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
+           .text(`${pageIndex}`, PW - PAD - 20, barY + 6, { width: 20, align: 'right' });
+
+      } else {
+        // ── SPLIT LAYOUT ──
+        // Text on left (40% width), image on right (60%) edge-to-edge top/bottom
+
+        const TEXT_COL_W = Math.floor(PW * 0.40); // 40% for text
+        const IMG_X      = TEXT_COL_W;
+        const IMG_W      = PW - TEXT_COL_W;        // 60% for image, no padding
+        const IMG_Y      = 0;
+        const IMG_H      = PH - FOOTER;
+
+        // Page background
+        doc.rect(0, 0, PW, PH).fill(C.bg);
+
+        // ── Image: right 60%, bleeds top/bottom/right ──
+        if (imgBuf) {
+          doc.image(imgBuf, IMG_X, IMG_Y, {
+            width:  IMG_W,
+            height: IMG_H,
+            cover:  [IMG_W, IMG_H],
+            align:  'center',
+            valign: 'center',
+          });
+        } else {
+          doc.rect(IMG_X, IMG_Y, IMG_W, IMG_H).fill(C.surface);
+          doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
+             .text(`Illustration ${paraIndex + 1}`, IMG_X, IMG_Y + IMG_H / 2 - 8, { width: IMG_W, align: 'center' });
+        }
+
+        // Subtle inner shadow on left edge of image to separate from text panel
+        for (let sx = 0; sx < 20; sx++) {
+          const opacity = Math.round(((20 - sx) / 20) * 30);
+          const hex = opacity.toString(16).padStart(2, '0');
+          doc.rect(IMG_X + sx, 0, 1, IMG_H).fill(`#1C1B18${hex}`);
+        }
+
+        // ── Text: left 40% with generous internal padding ──
+        const textX   = PAD;
+        const textW   = TEXT_COL_W - PAD - 16;
+        let   ty      = PAD + 16;
+
+        if (isFirst) {
+          // Eyebrow
+          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
+             .text('Talekit', textX, ty, { width: textW });
+          ty += 14;
+
+          // Title
+          doc.font(fonts.italic).fontSize(18).fillColor(C.text).lineGap(3)
+             .text(story.title, textX, ty, { width: textW });
+          ty = doc.y + 8;
+
+          // Rule
+          doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 16, ty)
+             .lineWidth(0.5).strokeColor(C.border).stroke();
+          ty += 12;
+
+          // Child + date
+          doc.font(fonts.sans).fontSize(8).fillColor(C.text2)
+             .text(`A story for ${childName}`, textX, ty, { width: textW });
+          ty += 10;
+          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
+             .text(date, textX, ty, { width: textW });
+          ty += 18;
+        } else {
+          // Page number
+          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
+             .text(`${pageIndex}`, textX, ty, { width: textW });
+          ty += 18;
+        }
+
+        // Dynamic font size
+        const bodySize   = wordCount <= 20 ? 18
+                         : wordCount <= 35 ? 15
+                         : wordCount <= 55 ? 13
+                         : 11;
+        const lineGapVal = bodySize >= 16 ? 8 : bodySize >= 13 ? 6 : 5;
+
+        // Vertical centering for short paragraphs
+        const textAreaH = IMG_H - ty - PAD;
+        const textH     = doc.font(fonts.body).fontSize(bodySize).heightOfString(para || '', { width: textW, lineGap: lineGapVal });
+        if (!isFirst && textH < textAreaH * 0.6) {
+          ty += Math.floor((textAreaH - textH) / 2);
+        }
+
+        if (isFirst && para) {
+          const letter  = para.charAt(0);
+          const rest    = para.slice(1);
+          const capSize = Math.max(bodySize * 2.4, 36);
+          doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
+             .text(letter, textX, ty - 4, { lineBreak: false });
+          const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 4;
+          doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
+             .text(rest, textX + capW, ty + Math.floor(capSize * 0.28), { width: textW - capW });
+        } else if (para) {
+          doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
+             .text(para || '', textX, ty, { width: textW });
+        }
+      }
     }
 
     /* ── Helper: cover page ── */
-    function drawCover() {
-      doc.rect(0, 0, PW, PH).fill(C.surface);
+    async function drawCover() {
+      // Cover illustration is stored at page 0 in imageMap
+      const coverBuf = imageMap[0]
+        ? await (async () => {
+            try {
+              const r = await fetch(imageMap[0]);
+              return r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+            } catch { return null; }
+          })()
+        : null;
 
-      // Decorative border
-      doc.roundedRect(20, 20, PW - 40, PH - 40, 14)
-         .lineWidth(1).strokeColor(C.border).stroke();
+      if (coverBuf) {
+        // Full bleed illustration
+        doc.image(coverBuf, 0, 0, {
+          width:  PW,
+          height: PH,
+          cover:  [PW, PH],
+          align:  'center',
+          valign: 'center',
+        });
 
-      // Eyebrow
-      doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
-         .text('Talekit  —  Children\'s Storybook', PAD, PH / 2 - 70, { width: PW - PAD * 2, align: 'center' });
+        // Dark gradient overlays — top and bottom — for text legibility
+        for (let i = 0; i < 100; i++) {
+          const topA = Math.round(((100 - i) / 100) * 160).toString(16).padStart(2, '0');
+          const botA = Math.round((i / 100) * 130).toString(16).padStart(2, '0');
+          doc.rect(0, i, PW, 1).fill(`#1C1B18${topA}`);
+          doc.rect(0, PH - 100 + i, PW, 1).fill(`#1C1B18${botA}`);
+        }
 
-      // Title
-      doc.font(fonts.italic).fontSize(34).fillColor(C.text).lineGap(6)
-         .text(story.title, PAD, PH / 2 - 50, { width: PW - PAD * 2, align: 'center' });
+        // Title text — white on dark overlay
+        doc.font(fonts.sans).fontSize(10).fillColor('#FAFAF8AA')
+           .text('Talekit  —  Children\'s Storybook', PAD, 22, { width: PW - PAD * 2, align: 'center', opacity: 0.7 });
 
-      const titleBottom = doc.y + 16;
+        doc.font(fonts.italic).fontSize(42).fillColor('#FFFFFF').lineGap(6)
+           .text(story.title, PAD, 42, { width: PW - PAD * 2, align: 'center' });
 
-      // Rule
-      const ruleW = 120;
-      doc.moveTo((PW - ruleW) / 2, titleBottom)
-         .lineTo((PW + ruleW) / 2, titleBottom)
-         .lineWidth(0.5).strokeColor(C.border).stroke();
+        doc.font(fonts.sans).fontSize(12).fillColor('#F0EEE8')
+           .text(`A story for ${childName}`, PAD, PH - 52, { width: PW - PAD * 2, align: 'center' });
 
-      // Child name
-      doc.font(fonts.sans).fontSize(12).fillColor(C.text2)
-         .text(`A story for ${childName}`, PAD, titleBottom + 14, { width: PW - PAD * 2, align: 'center' });
-
-      // Date bottom right
-      doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
-         .text(date, PAD, PH - 48, { width: PW - PAD * 2, align: 'right' });
+      } else {
+        // Fallback cover when no illustration available
+        doc.rect(0, 0, PW, PH).fill(C.surface);
+        doc.roundedRect(20, 20, PW - 40, PH - 40, 14).lineWidth(1).strokeColor(C.border).stroke();
+        doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
+           .text('Talekit  —  Children\'s Storybook', PAD, PH / 2 - 70, { width: PW - PAD * 2, align: 'center' });
+        doc.font(fonts.italic).fontSize(38).fillColor(C.text).lineGap(6)
+           .text(story.title, PAD, PH / 2 - 50, { width: PW - PAD * 2, align: 'center' });
+        doc.font(fonts.sans).fontSize(12).fillColor(C.text2)
+           .text(`A story for ${childName}`, PAD, doc.y + 20, { width: PW - PAD * 2, align: 'center' });
+      }
     }
 
     /* ── Helper: final page with parent note + selections summary ── */
@@ -749,13 +817,13 @@ function buildPictureBookPdf(story, childName, imageResults) {
     /* ── Build the PDF asynchronously ── */
     (async () => {
       try {
-        // Cover
-        drawCover();
+        // Cover — async because it fetches the first illustration
+        await drawCover();
 
         // One spread per paragraph
         for (let i = 0; i < paragraphs.length; i++) {
           doc.addPage();
-          await drawSpread(i, paragraphs[i], i === 0, i + 1, paragraphs.length);
+          await drawSpread(i, paragraphs[i], i === 0, i + 1);
         }
 
         // End page
@@ -765,13 +833,14 @@ function buildPictureBookPdf(story, childName, imageResults) {
         const range = doc.bufferedPageRange();
         for (let i = 1; i < range.count; i++) {
           doc.switchToPage(range.start + i);
-          doc.rect(0, PH - FOOTER, PW, FOOTER).fill(C.surface);
+          // Footer bar — drawn on top of everything including full-bleed images
+          doc.rect(0, PH - FOOTER, PW, FOOTER).fill(C.surface).fillOpacity(1);
           doc.moveTo(0, PH - FOOTER).lineTo(PW, PH - FOOTER)
              .lineWidth(0.5).strokeColor(C.border).stroke();
-          doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
+          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
              .text(
                `Talekit  ·  ${story.title}  ·  Page ${i} of ${range.count - 1}`,
-               PAD, PH - FOOTER + 11,
+               PAD, PH - FOOTER + 12,
                { width: PW - PAD * 2, align: 'center' }
              );
         }
@@ -1089,14 +1158,30 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   let imageResults = [];
   if (planConfig.images && story.illustrations?.length) {
     try {
-      console.log(`[GS-5] Generating ${story.illustrations.length} DALL-E 3 illustrations...`);
-      imageResults = await generateIllustrations(
-        story.illustrations,
+      // Build a cover illustration prompt from the story title and selected art style
+      const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
+      const artSentence = `Painted in ${artStyle.toLowerCase().replace(/^painted in /i, '')}.`;
+      const coverPrompt = `A children's book cover illustration inspired by the title "${story.title}". The image should feel iconic and inviting — a single strong visual moment that captures the heart of the story. Centre the main character or key element of the story in a warm, beautifully lit scene that makes a child want to open the book immediately. Wide landscape composition with a natural sky or atmospheric background. ${artSentence} No text, no title, no lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
+
+      // Prepend cover prompt — it becomes page 0, story illustrations start at page 1
+      const allPrompts = [coverPrompt, ...story.illustrations];
+
+      console.log(`[GS-5] Generating ${allPrompts.length} DALL-E 3 illustrations (1 cover + ${story.illustrations.length} pages)...`);
+      const allResults = await generateIllustrations(
+        allPrompts,
         base,
         story.selections?.artStyle || 'children\'s book illustration'
       );
-      const saved  = imageResults.filter(i => i.url);
-      const failed = imageResults.filter(i => !i.url);
+
+      // Split cover (index 0) from page illustrations (index 1+)
+      const coverResult = allResults[0] ? { ...allResults[0], page: 0 } : null;
+      imageResults      = allResults.slice(1).map((r, i) => ({ ...r, page: i + 1 }));
+
+      // Merge cover back in so picture book builder can find it at page 0
+      if (coverResult) imageResults = [coverResult, ...imageResults];
+
+      const saved  = allResults.filter(i => i.url);
+      const failed = allResults.filter(i => !i.url);
       console.log(`[GS-5] Illustrations done: ${saved.length} saved, ${failed.length} failed`);
       outputs.push({ type: 'illustrations-images', count: saved.length, images: imageResults });
     } catch (err) {
