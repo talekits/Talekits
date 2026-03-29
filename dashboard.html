@@ -27,6 +27,7 @@
   --purple-bg:#EEEDFE; --purple-text:#3C3489; --purple-border:#AFA9EC;
   --teal-bg:  #E1F5EE; --teal-text:  #085041; --teal-border:  #5DCAA5;
   --red-bg:   #FDECEC; --red-text:   #7A1F1F; --red-border:   #E07070;
+  --pink-bg:  #FBEAF0; --pink-text:  #72243E; --pink-border:  #ED93B1;
 
   --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
   --font: 'Instrument Sans', sans-serif;
@@ -321,6 +322,16 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .site-header-link { font-size: 13px; color: var(--text-2); text-decoration: none; padding: 5px 12px; border-radius: 999px; transition: all 0.12s; }
 .site-header-link:hover { background: var(--surface); color: var(--text); }
 @media (prefers-color-scheme: dark) { .site-header { background: rgba(24,24,22,0.92); } }
+
+/* ── Gender pills ── */
+.gender-pill { display:inline-flex;align-items:center;padding:4px 11px;font-size:13px;font-weight:400;border-radius:var(--radius-pill);border:1px solid;cursor:pointer;user-select:none;transition:border-color 0.12s,font-weight 0.1s;line-height:1.5; }
+.gender-pill-boy   { background:var(--blue-bg); color:var(--blue-text); border-color:var(--blue-border); }
+.gender-pill-girl  { background:var(--pink-bg); color:var(--pink-text); border-color:var(--pink-border); }
+.gender-pill-other { background:var(--green-bg);color:var(--green-text);border-color:var(--green-border); }
+.gender-pill.selected { font-weight:600; }
+.gender-pill-boy.selected   { border:2px solid var(--blue-text); }
+.gender-pill-girl.selected  { border:2px solid var(--pink-text); }
+.gender-pill-other.selected { border:2px solid var(--green-text); }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
@@ -768,86 +779,261 @@ function storyCardHtml(story) {
 /* ─────────────────────────────────────────────
    Child profiles
 ─────────────────────────────────────────────── */
+const PROFILE_LIMITS = { kit: 1, cub: 1, scout: 3, den: 5, pack: 30 };
+
 function renderProfiles(area, actions) {
   const profiles = subscriberData?.child_profiles || [];
   const plan     = subscriberData?.plan || 'kit';
-  const LIMITS   = { kit: 1, cub: 1, scout: 3, den: 5, pack: 30 };
-  const limit    = LIMITS[plan] || 1;
+  const limit    = PROFILE_LIMITS[plan] || 1;
+  const canAdd   = profiles.length < limit;
 
-  actions.innerHTML = profiles.length < limit
+  actions.innerHTML = canAdd
     ? `<button class="btn-primary" onclick="showAddProfile()">+ Add profile</button>` : '';
 
+  const overLimit = profiles.length > limit;
+
   area.innerHTML = `
-    <div class="banner banner-blue">
+    ${overLimit ? `
+    <div class="banner" style="background:var(--red-bg);color:var(--red-text);border-color:var(--red-border);margin-bottom:1.25rem;">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 11v.5"/></svg>
+      <div>Your ${PLAN_LABELS[plan]} plan supports up to <strong>${limit} child profile${limit > 1 ? 's' : ''}</strong> but you have ${profiles.length}. Please remove ${profiles.length - limit} profile${profiles.length - limit > 1 ? 's' : ''} to stay within your plan limit.</div>
+    </div>` : `
+    <div class="banner banner-blue" style="margin-bottom:1.25rem;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
-      <div>Your ${PLAN_LABELS[plan]} plan supports up to <strong>${limit} child profile${limit > 1 ? 's' : ''}</strong>. Changes take effect on the next story generation.</div>
-    </div>
+      <div>Your <strong>${PLAN_LABELS[plan]}</strong> plan supports up to <strong>${limit} child profile${limit > 1 ? 's' : ''}</strong>. You have ${profiles.length} of ${limit} used. Changes to a profile take effect on the next story.</div>
+    </div>`}
 
     <div id="profiles-list">
-      ${profiles.length === 0 ? `<div class="empty-state"><p>No profiles yet.</p></div>` : profiles.map(profileCardHtml).join('')}
+      ${profiles.length === 0
+        ? `<div class="empty-state"><p>No profiles yet. Add one to get started.</p></div>`
+        : profiles.map(p => profileCardHtml(p, limit)).join('')}
     </div>
 
     <div id="add-profile-form" style="display:none;margin-top:1.5rem;">
       <div class="card">
-        <div class="card-header"><span class="card-header-title">Add child profile</span></div>
+        <div class="card-header">
+          <span class="card-header-title">Add child profile</span>
+          <button class="btn-secondary" style="font-size:12px;padding:4px 12px;" onclick="hideAddProfile()">Cancel</button>
+        </div>
         <div class="card-body">
-          <div class="form-grid" style="margin-bottom:1rem;">
-            <div class="form-group"><label class="form-label">Child's name</label><input class="form-input" id="np-name" type="text" placeholder="e.g. Mia" /></div>
-            <div class="form-group"><label class="form-label">Gender</label>
-              <select class="form-select" id="np-gender">
-                <option value="">Prefer not to say</option>
-                <option value="boy">Boy</option>
-                <option value="girl">Girl</option>
-                <option value="neutral">Gender neutral</option>
-              </select>
+          <div class="form-grid" style="margin-bottom:1.25rem;">
+            <div class="form-group">
+              <label class="form-label">Child's name</label>
+              <input class="form-input" id="np-name" type="text" placeholder="e.g. Mia" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <div style="display:flex;gap:6px;padding-top:4px;">
+                <span class="gender-pill gender-pill-boy"   onclick="selectNewProfileGender('boy',   this)">Boy</span>
+                <span class="gender-pill gender-pill-girl"  onclick="selectNewProfileGender('girl',  this)">Girl</span>
+                <span class="gender-pill gender-pill-other" onclick="selectNewProfileGender('other', this)">Other</span>
+              </div>
+              <input type="hidden" id="np-gender" value="" />
             </div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-primary" onclick="saveNewProfile()">Save profile</button>
-            <button class="btn-secondary" onclick="document.getElementById('add-profile-form').style.display='none'">Cancel</button>
-          </div>
+          <p id="np-error" style="font-size:12px;color:#E05050;min-height:14px;margin-bottom:8px;"></p>
+          <button class="btn-primary" onclick="saveNewProfile()">Save profile</button>
         </div>
       </div>
     </div>
   `;
 }
 
-function profileCardHtml(profile) {
-  const genderLabel = { boy: 'Boy', girl: 'Girl', neutral: 'Gender neutral' }[profile.gender] || '—';
+function profileCardHtml(profile, limit) {
+  const genderLabel  = { boy: 'Boy', girl: 'Girl', other: 'Other', neutral: 'Other' }[profile.gender] || '—';
+  const genderColour = { boy: 'var(--blue-text)', girl: 'var(--pink-text)', other: 'var(--green-text)', neutral: 'var(--green-text)' }[profile.gender] || 'var(--text-3)';
+  const added = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—';
+
   return `
-    <div class="profile-card">
-      <div class="profile-avatar">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="6" r="3.5"/><path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7"/></svg>
+    <div class="profile-card" id="profile-card-${profile.id}" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;">
+
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;">
+        <div class="profile-avatar">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="6" r="3.5"/><path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7"/></svg>
+        </div>
+        <div class="profile-info" style="flex:1;">
+          <p class="profile-name" id="pname-display-${profile.id}">${esc(profile.child_name)}</p>
+          <p class="profile-meta">
+            <span style="color:${genderColour};font-weight:500;">${genderLabel}</span>
+            &nbsp;·&nbsp; Added ${added}
+          </p>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-secondary" style="font-size:12px;padding:5px 12px;" onclick="toggleProfileEdit('${profile.id}')">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z"/></svg>
+            Edit
+          </button>
+          <button class="btn-secondary" style="font-size:12px;padding:5px 12px;color:var(--red-text);border-color:var(--red-border);" onclick="confirmRemoveProfile('${profile.id}', '${esc(profile.child_name)}')">
+            Remove
+          </button>
+        </div>
       </div>
-      <div class="profile-info">
-        <p class="profile-name">${esc(profile.child_name)}</p>
-        <p class="profile-meta">Gender: ${genderLabel} · Added ${new Date(profile.created_at).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}</p>
+
+      <!-- Inline edit panel (hidden by default) -->
+      <div id="profile-edit-${profile.id}" style="display:none;border-top:0.5px solid var(--border);padding:1.25rem 1.5rem;background:var(--bg);">
+        <div class="form-grid" style="margin-bottom:1rem;">
+          <div class="form-group">
+            <label class="form-label">Child's name</label>
+            <input class="form-input" id="pedit-name-${profile.id}" type="text" value="${esc(profile.child_name)}"
+              oninput="markProfileDirty('${profile.id}')" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <div style="display:flex;gap:6px;padding-top:4px;">
+              <span class="gender-pill gender-pill-boy${profile.gender === 'boy' ? ' selected' : ''}"
+                onclick="selectEditGender('${profile.id}', 'boy', this)">Boy</span>
+              <span class="gender-pill gender-pill-girl${profile.gender === 'girl' ? ' selected' : ''}"
+                onclick="selectEditGender('${profile.id}', 'girl', this)">Girl</span>
+              <span class="gender-pill gender-pill-other${(profile.gender === 'other' || profile.gender === 'neutral') ? ' selected' : ''}"
+                onclick="selectEditGender('${profile.id}', 'other', this)">Other</span>
+            </div>
+            <input type="hidden" id="pedit-gender-${profile.id}" value="${profile.gender || ''}" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn-primary" id="pedit-save-${profile.id}" onclick="saveProfileEdit('${profile.id}')" disabled>
+            Save changes
+          </button>
+          <button class="btn-secondary" onclick="toggleProfileEdit('${profile.id}')">Cancel</button>
+          <p id="pedit-status-${profile.id}" style="font-size:12px;min-height:14px;color:var(--green-text);margin-left:4px;"></p>
+        </div>
       </div>
-      <div class="profile-actions">
-        <a href="/?profile=${profile.id}" class="btn-secondary" style="font-size:12px;padding:5px 12px;">Edit preferences</a>
-      </div>
+
     </div>`;
 }
 
+/* ── Profile edit helpers ── */
+function toggleProfileEdit(id) {
+  const panel = document.getElementById(`profile-edit-${id}`);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) document.getElementById(`pedit-name-${id}`)?.focus();
+}
+
+function markProfileDirty(id) {
+  const btn = document.getElementById(`pedit-save-${id}`);
+  if (btn) btn.disabled = false;
+}
+
+function selectEditGender(id, value, el) {
+  const wrap = el.closest('div');
+  wrap.querySelectorAll('.gender-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  const hidden = document.getElementById(`pedit-gender-${id}`);
+  if (hidden) hidden.value = value;
+  markProfileDirty(id);
+}
+
+function selectNewProfileGender(value, el) {
+  document.querySelectorAll('#add-profile-form .gender-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('np-gender').value = value;
+}
+
+async function saveProfileEdit(id) {
+  const name   = document.getElementById(`pedit-name-${id}`)?.value.trim();
+  const gender = document.getElementById(`pedit-gender-${id}`)?.value;
+  const btn    = document.getElementById(`pedit-save-${id}`);
+  const status = document.getElementById(`pedit-status-${id}`);
+
+  if (!name) { if (status) { status.textContent = 'Name cannot be empty.'; status.style.color = '#E05050'; } return; }
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;"></span> Saving…'; }
+
+  try {
+    const res  = await fetch('/api/dashboard-api?action=update-profile', {
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+      body:    JSON.stringify({ profile_id: id, child_name: name, gender }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Could not save changes.');
+
+    // Update local subscriberData immediately so the UI stays in sync
+    const profile = subscriberData?.child_profiles?.find(p => p.id === id);
+    if (profile) { profile.child_name = name; profile.gender = gender; }
+
+    // Update the display name in the header row
+    const nameDisplay = document.getElementById(`pname-display-${id}`);
+    if (nameDisplay) nameDisplay.textContent = name;
+
+    if (status) { status.textContent = '✓ Saved'; status.style.color = 'var(--green-text)'; }
+    if (btn)    { btn.innerHTML = 'Save changes'; btn.disabled = true; }
+
+    // Hide status after 2 seconds
+    setTimeout(() => { if (status) status.textContent = ''; }, 2000);
+
+  } catch (err) {
+    if (status) { status.textContent = err.message; status.style.color = '#E05050'; }
+    if (btn)    { btn.innerHTML = 'Save changes'; btn.disabled = false; }
+  }
+}
+
+async function confirmRemoveProfile(id, name) {
+  if (!confirm(`Remove ${name}'s profile? This cannot be undone.`)) return;
+
+  const res  = await fetch('/api/dashboard-api?action=update-profile', {
+    method:  'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+    body:    JSON.stringify({ profile_id: id, is_active: false }),
+  });
+
+  if (res.ok) {
+    // Remove from local data and re-render
+    if (subscriberData?.child_profiles) {
+      subscriberData.child_profiles = subscriberData.child_profiles.filter(p => p.id !== id);
+    }
+    renderSection('profiles');
+  } else {
+    alert('Could not remove profile. Please try again.');
+  }
+}
+
 function showAddProfile() {
-  document.getElementById('add-profile-form').style.display = 'block';
-  document.getElementById('np-name').focus();
+  const form = document.getElementById('add-profile-form');
+  if (form) { form.style.display = 'block'; document.getElementById('np-name')?.focus(); }
+}
+
+function hideAddProfile() {
+  const form = document.getElementById('add-profile-form');
+  if (form) form.style.display = 'none';
 }
 
 async function saveNewProfile() {
-  const name   = document.getElementById('np-name').value.trim();
-  const gender = document.getElementById('np-gender').value;
-  if (!name) { alert('Please enter the child\'s name.'); return; }
+  const name   = document.getElementById('np-name')?.value.trim();
+  const gender = document.getElementById('np-gender')?.value;
+  const errEl  = document.getElementById('np-error');
+
+  if (!name) { if (errEl) errEl.textContent = 'Please enter the child\'s name.'; return; }
+  if (errEl) errEl.textContent = '';
 
   const res  = await fetch('/api/dashboard-api?action=add-profile', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-    body: JSON.stringify({ child_name: name, gender }),
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+    body:    JSON.stringify({ child_name: name, gender }),
   });
   const data = await res.json();
-  if (!res.ok) { alert(data.error || 'Could not add profile.'); return; }
 
-  // Refresh
-  await loadDashboard();
+  if (!res.ok) {
+    if (errEl) errEl.textContent = data.error || 'Could not add profile.';
+    return;
+  }
+
+  // Add to local data and re-render
+  if (subscriberData?.child_profiles) {
+    subscriberData.child_profiles.push({
+      id:           data.profile.id,
+      child_name:   data.profile.child_name,
+      gender:       data.profile.gender,
+      is_active:    true,
+      created_at:   new Date().toISOString(),
+    });
+  }
   renderSection('profiles');
 }
 
