@@ -459,6 +459,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v4l2.5 2"/></svg>
           Delivery time
         </button>
+        <button class="nav-item" data-section="narrator" id="nav-narrator" style="display:none;" onclick="showSection('narrator', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M4 9a4 4 0 0 0 8 0M8 13v2"/></svg>
+          Narrator voice
+        </button>
         <button class="nav-item" data-section="subscription" onclick="showSection('subscription', this)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 7h13"/></svg>
           Subscription
@@ -646,6 +650,11 @@ async function loadDashboard() {
     const stories = subscriberData?.story_deliveries?.length || '—';
     document.getElementById('story-count-badge').textContent = stories;
 
+    // Show narrator voice nav item only for plans with audio
+    const AUDIO_PLANS = new Set(['scout', 'den', 'pack']);
+    const narratorNav = document.getElementById('nav-narrator');
+    if (narratorNav) narratorNav.style.display = AUDIO_PLANS.has(plan) ? 'flex' : 'none';
+
     renderSection(currentSection);
     return true;
   } catch { return false; }
@@ -657,6 +666,7 @@ async function loadDashboard() {
 const SECTION_TITLES = {
   overview: 'Overview', archive: 'Story archive',
   profiles: 'Child profiles', delivery: 'Delivery time',
+  narrator: 'Narrator voice',
   subscription: 'Subscription', account: 'Account settings',
 };
 
@@ -678,6 +688,7 @@ function renderSection(name) {
     case 'archive':     renderArchive(area, actions);  break;
     case 'profiles':    renderProfiles(area, actions); break;
     case 'delivery':    renderDelivery(area, actions); break;
+    case 'narrator':    renderNarrator(area, actions); break;
     case 'subscription':renderSubscription(area);      break;
     case 'account':     renderAccount(area);           break;
     default:            area.innerHTML = '<p>Coming soon.</p>';
@@ -1157,8 +1168,152 @@ async function saveDeliverySettings() {
 }
 
 /* ─────────────────────────────────────────────
-   Subscription
+   Narrator voice
 ─────────────────────────────────────────────── */
+const VOICE_OPTIONS = [
+  {
+    id:      'au_female',
+    label:   'Australian Female',
+    desc:    'Warm and expressive — a great choice for bedtime stories',
+    flag:    '🇦🇺',
+    gender:  'female',
+  },
+  {
+    id:      'au_male',
+    label:   'Australian Male',
+    desc:    'Friendly and natural — works beautifully for adventure stories',
+    flag:    '🇦🇺',
+    gender:  'male',
+  },
+  {
+    id:      'us_female',
+    label:   'American Female',
+    desc:    'Clear and engaging — ideal for educational and exciting stories',
+    flag:    '🇺🇸',
+    gender:  'female',
+  },
+  {
+    id:      'us_male',
+    label:   'American Male',
+    desc:    'Confident and warm — a steady, reassuring narrator',
+    flag:    '🇺🇸',
+    gender:  'male',
+  },
+];
+
+function renderNarrator(area, actions) {
+  const plan    = subscriberData?.plan || 'kit';
+  const AUDIO_PLANS = new Set(['scout', 'den', 'pack']);
+
+  // Guard — should not be reachable for non-audio plans, but just in case
+  if (!AUDIO_PLANS.has(plan)) {
+    area.innerHTML = `
+      <div class="banner banner-amber">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
+        <div>Narrator voice is available on the <strong>Scout, Den, and Pack</strong> plans. <a href="#" onclick="showSection('subscription', null)" style="color:var(--amber-text);font-weight:600;">Upgrade your plan →</a></div>
+      </div>`;
+    return;
+  }
+
+  const current = subscriberData?.narrator_voice || 'au_female';
+
+  area.innerHTML = `
+    <div class="banner banner-blue" style="margin-bottom:1.5rem;">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M4 9a4 4 0 0 0 8 0M8 13v2"/></svg>
+      <div>Kit will use this voice to narrate <strong>${subscriberData?.child_profiles?.map(p => p.child_name).join(', ') || 'your children'}'s</strong> stories. The change takes effect on the next story generated.</div>
+    </div>
+
+    <div id="voice-cards" style="display:flex;flex-direction:column;gap:0.875rem;">
+      ${VOICE_OPTIONS.map(v => voiceCardHtml(v, current)).join('')}
+    </div>
+
+    <p id="voice-save-msg" style="font-size:13px;color:var(--green-text);min-height:18px;margin-top:1rem;"></p>
+  `;
+}
+
+function voiceCardHtml(voice, selectedId) {
+  const isSelected = voice.id === selectedId;
+  const genderColour = voice.gender === 'female' ? 'var(--pink-text)' : 'var(--blue-text)';
+  const genderBg     = voice.gender === 'female' ? 'var(--pink-bg)'   : 'var(--blue-bg)';
+  const genderBorder = voice.gender === 'female' ? 'var(--pink-border)': 'var(--blue-border)';
+
+  return `
+    <div
+      id="voice-card-${voice.id}"
+      onclick="selectVoice('${voice.id}')"
+      style="
+        display:flex; align-items:center; gap:1rem;
+        padding:1.125rem 1.5rem;
+        background:var(--surface);
+        border:${isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)'};
+        border-radius:var(--radius-lg);
+        cursor:pointer;
+        transition:border-color 0.12s, box-shadow 0.12s;
+      "
+    >
+      <!-- Flag + gender badge -->
+      <div style="flex-shrink:0;text-align:center;width:44px;">
+        <div style="font-size:1.75rem;line-height:1;">${voice.flag}</div>
+        <span style="
+          display:inline-block;margin-top:5px;
+          font-size:10px;font-weight:600;padding:1px 7px;
+          border-radius:999px;border:0.5px solid ${genderBorder};
+          background:${genderBg};color:${genderColour};
+          text-transform:capitalize;
+        ">${voice.gender}</span>
+      </div>
+
+      <!-- Label + description -->
+      <div style="flex:1;">
+        <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 3px;">${voice.label}</p>
+        <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.5;">${voice.desc}</p>
+      </div>
+
+      <!-- Selected indicator -->
+      <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;
+        border:${isSelected ? '2px solid var(--text)' : '1.5px solid var(--border-md)'};
+        background:${isSelected ? 'var(--text)' : 'transparent'};
+        display:flex;align-items:center;justify-content:center;
+        transition:all 0.12s;">
+        ${isSelected ? `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>` : ''}
+      </div>
+    </div>`;
+}
+
+async function selectVoice(voiceId) {
+  // Update UI immediately
+  document.querySelectorAll('[id^="voice-card-"]').forEach(card => {
+    const id         = card.id.replace('voice-card-', '');
+    const isSelected = id === voiceId;
+    card.style.border = isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)';
+    const dot = card.querySelector('div:last-child');
+    if (dot) {
+      dot.style.border     = isSelected ? '2px solid var(--text)' : '1.5px solid var(--border-md)';
+      dot.style.background = isSelected ? 'var(--text)' : 'transparent';
+      dot.innerHTML        = isSelected
+        ? `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>`
+        : '';
+    }
+  });
+
+  // Save to Supabase
+  const msg = document.getElementById('voice-save-msg');
+  try {
+    const res = await fetch('/api/dashboard-api?action=narrator-voice', {
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+      body:    JSON.stringify({ narrator_voice: voiceId }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
+
+    // Update local state
+    if (subscriberData) subscriberData.narrator_voice = voiceId;
+    if (msg) { msg.textContent = '✓ Voice saved — takes effect on your next story'; setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
+
+  } catch (err) {
+    if (msg) { msg.textContent = `Could not save: ${err.message}`; msg.style.color = '#E05050'; }
+  }
+}
 function renderSubscription(area) {
   const sub  = subscriberData;
   const plan = sub?.plan || 'kit';

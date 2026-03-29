@@ -1157,7 +1157,7 @@ function buildTextFromJson(profileJson) {
 /* ─────────────────────────────────────────────────────────────
    Main export
 ───────────────────────────────────────────────────────────── */
-async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null) {
+async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null, narratorVoice = 'au_female') {
   // Prefer structured JSON for the Claude prompt — eliminates comma-parsing issues
   const promptText = (profileJson && buildTextFromJson(profileJson)) || profileContent;
   if (!promptText) throw new Error('No profile content for story generation');
@@ -1233,7 +1233,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   if (planConfig.audio && story.story) {
     try {
       console.log(`[GS-4b] Generating ElevenLabs narration...`);
-      const audio = await generateAudio(story.title, story.story, childName, base);
+      const audio = await generateAudio(story.title, story.story, childName, base, narratorVoice);
       audioBuffer   = audio.buffer;
       audioFilename = audio.filename;
       outputs.push({ type: 'audio-mp3', filename: audio.filename, url: audio.url });

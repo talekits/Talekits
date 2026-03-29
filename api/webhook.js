@@ -187,7 +187,19 @@ module.exports = async function handler(req, res) {
     }
 
     console.log(`[4] Starting story generation | Child: ${child} | Plan: ${plan} | Email: ${email}`);
-    const outputs = await generateStory(profileContent, child, filename, plan, email);
+
+    // Fetch narrator_voice from subscriber record (defaults to au_female if not set)
+    let narratorVoice = 'au_female';
+    if (subscriberId) {
+      try {
+        const supabase = getSupabase();
+        const { data: subRow } = await supabase
+          .from('subscribers').select('narrator_voice').eq('id', subscriberId).maybeSingle();
+        if (subRow?.narrator_voice) narratorVoice = subRow.narrator_voice;
+      } catch { /* non-fatal */ }
+    }
+
+    const outputs = await generateStory(profileContent, child, filename, plan, email, profileJson, narratorVoice);
     console.log(`[4] Story generation complete. Outputs: ${outputs.length}`);
     outputs.forEach(o => console.log(`[4] Output: ${o.type} → ${o.url || o.count}`));
 

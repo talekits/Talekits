@@ -62,7 +62,7 @@ module.exports = async function handler(req, res) {
     const { data: subscriber } = await supabase
       .from('subscribers')
       .select(`
-        id, email, plan, status, delivery_time, delivery_timezone,
+        id, email, plan, status, delivery_time, delivery_timezone, narrator_voice,
         trial_ends_at, subscribed_at,
         child_profiles (id, child_name, gender, profile_content, profile_json, is_active, created_at)
       `)

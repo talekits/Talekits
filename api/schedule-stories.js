@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
     const { data: subscribers, error } = await supabase
       .from('subscribers')
       .select(`
-        id, email, plan, status, delivery_time, delivery_timezone,
+        id, email, plan, status, delivery_time, delivery_timezone, narrator_voice,
         child_profiles (id, child_name, gender, profile_content, profile_json, profile_blob_url, is_active)
       `)
       .in('status', ['active', 'trial'])
@@ -110,7 +110,8 @@ module.exports = async function handler(req, res) {
             filename,
             subscriber.plan,
             subscriber.email,
-            profileJson
+            profileJson,
+            subscriber.narrator_voice || 'au_female'
           );
 
           // Update delivery log with results

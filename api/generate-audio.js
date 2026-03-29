@@ -1,44 +1,57 @@
 const { put } = require('@vercel/blob');
 
 /* ─────────────────────────────────────────────────────────────
-   ElevenLabs voice ID
-   Set ELEVENLABS_VOICE_ID in Vercel env variables.
-   Find your voice ID in ElevenLabs dashboard → Voices → click voice → ID shown in URL.
-   e.g. "21m00Tcm4TlvDq8ikWAM" (Rachel) or your custom voice ID.
+   Voice map — 4 narrator options
+   Each key maps to an ElevenLabs voice ID set via Vercel env vars.
+   Set these in Vercel → Settings → Environment Variables:
+
+     ELEVENLABS_VOICE_AU_FEMALE  — Australian female narrator
+     ELEVENLABS_VOICE_AU_MALE    — Australian male narrator
+     ELEVENLABS_VOICE_US_FEMALE  — American female narrator
+     ELEVENLABS_VOICE_US_MALE    — American male narrator
+
+   If an env var is not set, falls back to a known public voice ID.
 ───────────────────────────────────────────────────────────── */
-function getVoiceId() {
-  return process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM'; // Rachel fallback
+const VOICE_MAP = {
+  au_female: () => process.env.ELEVENLABS_VOICE_AU_FEMALE || 'XB0fDUnXU5powFXDhCwa', // Charlotte (British-warm, works well for AU)
+  au_male:   () => process.env.ELEVENLABS_VOICE_AU_MALE   || 'TX3LPaxmHKxFdv7VOQHJ', // Liam
+  us_female: () => process.env.ELEVENLABS_VOICE_US_FEMALE || '21m00Tcm4TlvDq8ikWAM', // Rachel
+  us_male:   () => process.env.ELEVENLABS_VOICE_US_MALE   || 'TxGEqnHWrfWFTfGW9XjX', // Josh
+};
+
+const VOICE_LABELS = {
+  au_female: 'Australian Female',
+  au_male:   'Australian Male',
+  us_female: 'American Female',
+  us_male:   'American Male',
+};
+
+function getVoiceId(narratorVoice = 'au_female') {
+  const resolver = VOICE_MAP[narratorVoice] || VOICE_MAP['au_female'];
+  return resolver();
 }
 
 /* ─────────────────────────────────────────────────────────────
    Prepare story text for narration
-   - Adds natural pauses between paragraphs using SSML break tags
-   - Prepends the title as an introduction
-   - Strips any markdown or special characters that break TTS
+   Adds natural SSML pauses between paragraphs
 ───────────────────────────────────────────────────────────── */
 function prepareNarrationText(storyTitle, storyText, childName) {
-  // Clean the story text
   const cleaned = (storyText || '')
-    .replace(/[*_`#]/g, '')           // strip markdown
-    .replace(/─+/g, '')               // strip decorative lines
+    .replace(/[*_`#]/g, '')
+    .replace(/─+/g, '')
     .trim();
 
-  // Split into paragraphs and join with SSML break tags for natural pacing
   const paragraphs = cleaned.split(/\n\n+/).filter(p => p.trim());
   const body       = paragraphs.join('\n<break time="0.8s"/>\n');
 
-  // Full narration script
   return `${storyTitle}.\n<break time="1.2s"/>\nA story for ${childName}.\n<break time="1.5s"/>\n${body}\n<break time="1s"/>\nThe End.`;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Generate audio via ElevenLabs TTS API
-   Returns an MP3 buffer
+   Call ElevenLabs TTS API
 ───────────────────────────────────────────────────────────── */
-async function generateAudioBuffer(text) {
-  const voiceId = getVoiceId();
-  const apiKey  = process.env.ELEVENLABS_API_KEY;
-
+async function generateAudioBuffer(text, voiceId) {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) throw new Error('ELEVENLABS_API_KEY not set');
 
   const response = await fetch(
@@ -46,19 +59,18 @@ async function generateAudioBuffer(text) {
     {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'xi-api-key':    apiKey,
+        'Content-Type': 'application/json',
+        'xi-api-key':   apiKey,
       },
       body: JSON.stringify({
         text,
-        model_id: 'eleven_turbo_v2_5',   // fast + high quality, good for children's content
+        model_id: 'eleven_turbo_v2_5',
         voice_settings: {
-          stability:         0.55,         // moderate stability — natural, not robotic
-          similarity_boost:  0.80,         // stay close to voice character
-          style:             0.25,         // light expressiveness
+          stability:         0.55,
+          similarity_boost:  0.80,
+          style:             0.25,
           use_speaker_boost: true,
         },
-        // Enable SSML for <break> tags
         text_type: 'ssml',
       }),
     }
@@ -75,16 +87,16 @@ async function generateAudioBuffer(text) {
 
 /* ─────────────────────────────────────────────────────────────
    Main export
-   Generates narration MP3 and saves to Vercel Blob
-   Returns { url, filename, buffer }
 ───────────────────────────────────────────────────────────── */
-async function generateAudio(storyTitle, storyText, childName, storyBase) {
-  console.log(`[Audio] Preparing narration for: ${storyTitle}`);
+async function generateAudio(storyTitle, storyText, childName, storyBase, narratorVoice = 'au_female') {
+  const voiceId    = getVoiceId(narratorVoice);
+  const voiceLabel = VOICE_LABELS[narratorVoice] || narratorVoice;
+
+  console.log(`[Audio] Generating narration | Voice: ${voiceLabel} (${voiceId}) | Story: ${storyTitle}`);
 
   const narrationText = prepareNarrationText(storyTitle, storyText, childName);
-  console.log(`[Audio] Narration text length: ${narrationText.length} chars`);
+  const audioBuffer   = await generateAudioBuffer(narrationText, voiceId);
 
-  const audioBuffer = await generateAudioBuffer(narrationText);
   console.log(`[Audio] Generated ${Math.round(audioBuffer.length / 1024)}KB MP3`);
 
   const filename = `${storyBase}-narration.mp3`;
@@ -98,4 +110,4 @@ async function generateAudio(storyTitle, storyText, childName, storyBase) {
   return { url: blob.url, filename, buffer: audioBuffer };
 }
 
-module.exports = { generateAudio };
+module.exports = { generateAudio, VOICE_LABELS };

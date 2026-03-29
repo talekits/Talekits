@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
       .order('sent_at', { ascending: false })
       .limit(20);
 
-    return res.status(200).json({ subscriber, profiles, recentStories });
+    return res.status(200).json({ subscriber: { ...subscriber, narrator_voice: subscriber.narrator_voice || 'au_female' }, profiles, recentStories });
   }
 
   /* ── PATCH /api/dashboard?action=delivery-settings ── */
@@ -57,6 +57,23 @@ module.exports = async function handler(req, res) {
     const { error } = await supabase
       .from('subscribers')
       .update({ delivery_time, delivery_timezone: delivery_timezone || 'UTC', updated_at: new Date().toISOString() })
+      .eq('id', subscriber.id);
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ success: true });
+  }
+
+  /* ── PATCH /api/dashboard?action=narrator-voice ── */
+  if (req.method === 'PATCH' && action === 'narrator-voice') {
+    const VALID_VOICES = ['au_female', 'au_male', 'us_female', 'us_male'];
+    const { narrator_voice } = req.body;
+    if (!narrator_voice || !VALID_VOICES.includes(narrator_voice)) {
+      return res.status(400).json({ error: 'Invalid narrator_voice. Must be one of: ' + VALID_VOICES.join(', ') });
+    }
+
+    const { error } = await supabase
+      .from('subscribers')
+      .update({ narrator_voice, updated_at: new Date().toISOString() })
       .eq('id', subscriber.id);
 
     if (error) return res.status(500).json({ error: error.message });
