@@ -1,7 +1,8 @@
-const { put }              = require('@vercel/blob');
-const PDFDocument           = require('pdfkit');
-const { Resend }            = require('resend');
-const { generateIllustrations } = require('./generate-images');
+const { put }                   = require('@vercel/blob');
+const PDFDocument                = require('pdfkit');
+const { Resend }                 = require('resend');
+const { generateIllustrations }  = require('./generate-images');
+const { generateAudio }          = require('./generate-audio');
 
 /* ─────────────────────────────────────────────────────────────
    Brand colour palette — exact match to the webpage
@@ -42,11 +43,11 @@ function ensureFonts() { /* no-op — built-ins need no registration */ }
    Plan output rules
 ───────────────────────────────────────────────────────────── */
 const PLAN_OUTPUTS = {
-  kit:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false },
-  cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
-  scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
-  den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
-  pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
+  kit:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false, audio: false },
+  cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: false },
+  scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
+  den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
+  pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -860,15 +861,21 @@ function buildPictureBookPdf(story, childName, imageResults) {
 /* ─────────────────────────────────────────────────────────────
    Email — Kit free trial delivery
 ───────────────────────────────────────────────────────────── */
-function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial') {
+function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false) {
   const isPaid    = plan !== 'kit';
   const heading   = `I wrote ${childName} a story`;
   const intro     = isPaid
     ? `Hi! I'm Kit — the fox behind every Talekits story. I've just finished writing and illustrating today's story for <strong>${childName}</strong>, and I'm so excited to share it.`
     : `Hi! I'm Kit — the fox behind every Talekits story. I've just finished writing <strong>${childName}'s</strong> very first story, and I can't wait for them to read it.`;
-  const attachMsg = isPaid
-    ? `I've attached two things — the full story PDF for reading aloud, and the illustrated picture book that brings every scene to life. Open the picture book on a tablet or iPad for the best experience.`
-    : `I've attached the full story as a PDF. Find a cosy spot together, open it up, and enjoy.`;
+
+  let attachMsg;
+  if (isPaid && hasAudio) {
+    attachMsg = `I've attached three things to this email — the story PDF, the illustrated picture book, and an MP3 narration you can listen to together at bedtime. Open the picture book on a tablet for the full illustrated experience, or press play on the MP3 for listening on the go.`;
+  } else if (isPaid) {
+    attachMsg = `I've attached two things — the full story PDF for reading aloud, and the illustrated picture book that brings every scene to life. Open the picture book on a tablet or iPad for the best experience.`;
+  } else {
+    attachMsg = `I've attached the full story as a PDF. Find a cosy spot together, open it up, and enjoy.`;
+  }
   const footerCta = isPaid ? '' : `
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
               You're on a <strong>7-day free trial</strong> — a new story from me every single day. Each one is completely unique; I never write the same story twice.
@@ -937,6 +944,18 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
               ${attachMsg}
             </p>
 
+            ${hasAudio ? `
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
+              <tr>
+                <td style="background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:10px;padding:16px 20px;">
+                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#085041;">🎧 Narration included</p>
+                  <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#085041;line-height:1.6;">
+                    Your MP3 narration is attached. Play it through your phone, tablet, or smart speaker — perfect for the car, bedtime, or anywhere away from a screen.
+                  </p>
+                </td>
+              </tr>
+            </table>` : ''}
+
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
                 <td style="background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:10px;padding:16px 20px;">
@@ -970,13 +989,20 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
 </html>`;
 }
 
-function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial') {
+function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false) {
   const isPaid   = plan !== 'kit';
-  const attachMsg = isPaid
-    ? `Two files are attached — the full story PDF and your illustrated picture book. Open the picture book on a tablet for the full illustrated experience.`
-    : `The full story is attached as a PDF. Find a cosy spot and enjoy reading it together.`;
+
+  let attachMsg;
+  if (isPaid && hasAudio) {
+    attachMsg = `Three files are attached — the full story PDF, the illustrated picture book, and an MP3 narration. Open the picture book on a tablet for the full illustrated experience, or play the MP3 for bedtime listening.`;
+  } else if (isPaid) {
+    attachMsg = `Two files are attached — the full story PDF and your illustrated picture book. Open the picture book on a tablet for the full illustrated experience.`;
+  } else {
+    attachMsg = `The full story is attached as a PDF. Find a cosy spot and enjoy reading it together.`;
+  }
+
   const closing  = isPaid
-    ? `You're on the Talekitss ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
+    ? `You're on the Talekits ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
     : `You're on a 7-day free trial. Visit ${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'} to choose a plan and keep the stories coming.`;
 
   return `${childName}'s Talekits story is ready
@@ -987,7 +1013,7 @@ Today's story: ${storyTitle}
 
 Hi there,
 
-${isPaid ? `Kit the fox has just written ${childName} a brand-new personalised story.` : `We've just written ${childName} their very first Talekitss story.`}
+${isPaid ? `Kit the fox has just written ${childName} a brand-new personalised story.` : `We've just written ${childName} their very first Talekits story.`}
 
 ${attachMsg}
 
@@ -1000,7 +1026,7 @@ ${closing}
 Talekits — a new story, every day`;
 }
 
-async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, attachments }) {
+async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, hasAudio, attachments }) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set — skipping email');
     return;
@@ -1010,17 +1036,16 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, att
     return;
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
+  const resend    = new Resend(process.env.RESEND_API_KEY);
   const isPaid    = plan !== 'kit';
   const planLabel = { kit: 'free trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || plan;
 
   const { data, error } = await resend.emails.send({
-    from:    'Kit from Talekit <kit@talekits.com>',
+    from:    'Kit from Talekits <kit@talekits.com>',
     to:      [to],
-    subject: `${storyTitle} — ${childName}'s ${isPaid ? 'first' : 'first'} Talekits story`,
-    html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel),
-    text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel),
+    subject: `${storyTitle} — ${childName}'s Talekits story`,
+    html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel, hasAudio),
+    text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel, hasAudio),
     attachments,
   });
 
@@ -1202,7 +1227,22 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     console.log(`[GS-4] Saved story PDF`);
   }
 
-  // Generate illustrations for plans with images enabled
+  // Generate audio narration for Scout, Den, Pack
+  let audioBuffer   = null;
+  let audioFilename = null;
+  if (planConfig.audio && story.story) {
+    try {
+      console.log(`[GS-4b] Generating ElevenLabs narration...`);
+      const audio = await generateAudio(story.title, story.story, childName, base);
+      audioBuffer   = audio.buffer;
+      audioFilename = audio.filename;
+      outputs.push({ type: 'audio-mp3', filename: audio.filename, url: audio.url });
+      console.log(`[GS-4b] Audio saved: ${audio.filename} (${Math.round(audioBuffer.length / 1024)}KB)`);
+    } catch (err) {
+      console.error(`[GS-4b] Audio generation failed: ${err.message}`);
+      // Non-fatal — continue without audio
+    }
+  }
   let imageResults = [];
   if (planConfig.images && story.illustrations?.length) {
     try {
@@ -1251,7 +1291,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Send single combined email once all PDFs are ready
+  // Send single combined email once all outputs are ready
   if (email) {
     try {
       const attachments = [];
@@ -1270,14 +1310,22 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
         });
       }
 
+      if (audioBuffer && audioFilename) {
+        attachments.push({
+          filename: audioFilename,
+          content:  audioBuffer.toString('base64'),
+        });
+      }
+
       if (attachments.length) {
-        console.log(`[GS-7] Sending email to ${email} with ${attachments.length} attachment(s)...`);
+        console.log(`[GS-7] Sending email to ${email} with ${attachments.length} attachment(s)${audioBuffer ? ' (incl. audio)' : ''}...`);
         await sendStoryEmail({
           to:         email,
           childName,
           storyTitle: story.title,
           parentNote: story.parentNote,
           plan,
+          hasAudio:   !!audioBuffer,
           attachments,
         });
         console.log(`[GS-7] Email sent successfully`);
