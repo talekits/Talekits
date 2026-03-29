@@ -44,9 +44,9 @@ function ensureFonts() { /* no-op — built-ins need no registration */ }
 const PLAN_OUTPUTS = {
   kit:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false },
   cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
-  scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: false, picturebook: false },
-  den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: false, picturebook: false },
-  pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: false, picturebook: false },
+  scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
+  den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
+  pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true  },
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -134,7 +134,11 @@ SELECTION RULES — follow these exactly
 6. PROTAGONIST TYPE: Randomly pick exactly 1.
 7. THEMES: Pick 1–3. When picking more than one, strongly prefer thematically correlated combinations (e.g. Mythical Creatures + Enchanted Kingdoms). For Ages 2–3 pick only 1 theme maximum.
 8. EDUCATIONAL FOCUS: Pick 1–3 and weave them naturally — never as a lesson. For Ages 2–3 pick only 1.
-9. PROTAGONIST PERSONALISATION: Pick exactly 1 related to the protagonist. Then roll a 33% chance — if it triggers, also pick 1 related to other characters.
+9. PROTAGONIST PERSONALISATION: Follow these rules strictly:
+   - "Child's own name as the hero" should only be selected approximately 1 in every 4 stories (25% chance). The child does not need to be the protagonist every day — variety is the point.
+   - When the child's name IS the protagonist: pick exactly 1 personalisation tied to the protagonist. Then roll a 33% chance — if it triggers, also pick 1 tied to other characters (pet/friend/family details from the profile if provided).
+   - When the child's name is NOT the protagonist: the protagonist is the selected Protagonist Type (animal, robot, mythical creature, etc.). The child can still appear as a supporting character or observer if it feels natural, but is not the hero.
+   - Never default to the child's name just because it feels safe or personalised. An 8-year-old receiving a story about a brave fox, a robot inventor, or a dragon explorer is just as engaged as one where they are the hero — and the variety keeps every story feeling fresh.
 10. CULTURAL REPRESENTATION: Roll a 30% chance. If triggered, pick 1 and weave naturally.
 11. RECURRING ELEMENT: Roll a 33% chance. If triggered, pick 1 and note it in selections — this element must persist across the next 3 stories for this child.
 

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Dashboard — Talekit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,500;1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #FAFAF8;
+  --surface:   #F3F2EE;
+  --surface-2: #ECEAE4;
+  --border:    rgba(60,56,46,0.1);
+  --border-md: rgba(60,56,46,0.18);
+  --text:      #1C1B18;
+  --text-2:    #6B6860;
+  --text-3:    #9C9A94;
+  --accent:    #2B5CE6;
+
+  --amber-bg: #FAEEDA; --amber-text: #633806; --amber-border: #EF9F27;
+  --green-bg: #EAF3DE; --green-text: #27500A; --green-border: #97C459;
+  --blue-bg:  #E6F1FB; --blue-text:  #0C447C; --blue-border:  #85B7EB;
+  --purple-bg:#EEEDFE; --purple-text:#3C3489; --purple-border:#AFA9EC;
+  --teal-bg:  #E1F5EE; --teal-text:  #085041; --teal-border:  #5DCAA5;
+  --red-bg:   #FDECEC; --red-text:   #7A1F1F; --red-border:   #E07070;
+
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
+  --font: 'Instrument Sans', sans-serif;
+  --font-serif: 'Lora', serif;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181816; --surface: #21201D; --surface-2: #2A2926;
+    --border: rgba(255,253,245,0.08); --border-md: rgba(255,253,245,0.15);
+    --text: #F0EEE8; --text-2: #9C9A94; --text-3: #6B6860; --accent: #6B8FF5;
+    --amber-bg:#412402; --amber-text:#FAC775; --amber-border:#BA7517;
+    --green-bg:#173404; --green-text:#C0DD97; --green-border:#3B6D11;
+    --blue-bg: #042C53; --blue-text: #B5D4F4; --blue-border: #185FA5;
+    --purple-bg:#26215C; --purple-text:#CECBF6; --purple-border:#534AB7;
+    --teal-bg: #062E1E; --teal-text: #8DD4B8; --teal-border: #1A7A55;
+    --red-bg:  #4A0F0F; --red-text:  #F4AAAA; --red-border:  #A03030;
+  }
+}
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── Layout ── */
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  background: var(--surface);
+  border-right: 0.5px solid var(--border-md);
+  padding: 2rem 0 2rem;
+  display: flex; flex-direction: column; gap: 0;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 0 1.5rem 1.75rem;
+  border-bottom: 0.5px solid var(--border);
+}
+.sidebar-logo a {
+  font-family: var(--font-serif); font-style: italic; font-size: 1.35rem;
+  font-weight: 500; color: var(--text); text-decoration: none;
+}
+.sidebar-logo a em { color: var(--accent); font-style: normal; }
+.sidebar-logo p { font-size: 11px; color: var(--text-3); margin-top: 2px; letter-spacing: 0.04em; }
+
+.sidebar-nav { padding: 1.25rem 0.75rem; flex: 1; }
+.nav-section-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); padding: 0 0.75rem; margin-bottom: 6px; margin-top: 1rem;
+}
+.nav-section-label:first-child { margin-top: 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 400; color: var(--text-2);
+  cursor: pointer; transition: all 0.12s; border: none; background: none;
+  width: 100%; text-align: left; text-decoration: none;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item.active { background: var(--bg); border: 0.5px solid var(--border-md); color: var(--text); font-weight: 500; }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.6; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 7px;
+  border-radius: var(--radius-pill); background: var(--purple-bg);
+  color: var(--purple-text); border: 0.5px solid var(--purple-border);
+}
+
+.sidebar-footer {
+  padding: 1rem 1.5rem 0;
+  border-top: 0.5px solid var(--border);
+}
+.subscriber-info { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+.subscriber-info strong { color: var(--text-2); font-weight: 500; display: block; font-size: 13px; }
+.plan-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 6px; padding: 2px 10px 2px 8px;
+  border-radius: var(--radius-pill); font-size: 11px; font-weight: 600;
+  background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid var(--blue-border);
+}
+.btn-signout {
+  display: block; width: 100%; margin-top: 10px;
+  padding: 7px 12px; border-radius: var(--radius-md);
+  font-family: var(--font); font-size: 13px; font-weight: 400;
+  color: var(--text-3); background: none; border: 0.5px solid var(--border);
+  cursor: pointer; text-align: left; transition: all 0.12s;
+}
+.btn-signout:hover { color: var(--text); border-color: var(--border-md); background: var(--surface-2); }
+
+/* ── Main content ── */
+.main { padding: 0; overflow-y: auto; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 2.5rem;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg); position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-family: var(--font-serif); font-style: italic; font-size: 1.35rem; font-weight: 500; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: var(--radius-pill);
+  font-family: var(--font-serif); font-style: italic; font-size: 14px;
+  background: var(--text); color: var(--bg); border: none; cursor: pointer;
+  transition: opacity 0.12s;
+}
+.btn-primary:hover { opacity: 0.8; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: var(--radius-pill);
+  font-family: var(--font); font-size: 13px;
+  background: var(--surface); color: var(--text); border: 0.5px solid var(--border-md);
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-secondary:hover { background: var(--surface-2); }
+
+.content { padding: 2.5rem; max-width: 900px; }
+
+/* ── Panels / sections ── */
+.section { margin-bottom: 2.5rem; }
+.section-title {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1.1rem; font-weight: 500; color: var(--text);
+  margin-bottom: 1rem;
+}
+.card {
+  background: var(--surface);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.card-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+}
+.card-body { padding: 1.5rem; }
+
+/* ── Stats row ── */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+.stat-card {
+  background: var(--surface); border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+}
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+.stat-value { font-family: var(--font-serif); font-size: 2rem; font-weight: 500; color: var(--text); line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+/* ── Story archive grid ── */
+.story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.story-card {
+  background: var(--surface); border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg); overflow: hidden;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.story-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.story-card-thumb {
+  height: 120px; background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  border-bottom: 0.5px solid var(--border);
+}
+.story-card-thumb svg { width: 32px; height: 32px; color: var(--text-3); }
+.story-card-body { padding: 0.875rem 1rem; }
+.story-card-title {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  margin-bottom: 4px; line-height: 1.35;
+}
+.story-card-meta { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
+.story-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.story-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: none;
+  transition: opacity 0.12s; border: 0.5px solid;
+}
+.story-pill:hover { opacity: 0.8; }
+.pill-story { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); }
+.pill-book  { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
+
+/* ── Profile editor ── */
+.profile-card {
+  background: var(--surface); border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;
+}
+.profile-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--purple-bg); border: 0.5px solid var(--purple-border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.profile-avatar svg { width: 20px; height: 20px; color: var(--purple-text); }
+.profile-info { flex: 1; }
+.profile-name { font-weight: 600; font-size: 15px; color: var(--text); }
+.profile-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.profile-actions { display: flex; gap: 6px; }
+
+/* ── Form elements ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); }
+.form-input, .form-select {
+  font-family: var(--font); font-size: 14px;
+  background: var(--bg); border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-md); color: var(--text);
+  padding: 8px 12px; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,92,230,0.1);
+}
+.form-input::placeholder { color: var(--text-3); }
+
+/* ── Delivery time selector ── */
+.time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.time-btn {
+  padding: 8px 6px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500;
+  border: 0.5px solid var(--border-md); background: var(--bg); color: var(--text-2);
+  cursor: pointer; text-align: center; transition: all 0.12s;
+}
+.time-btn:hover { background: var(--surface-2); color: var(--text); }
+.time-btn.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+/* ── Info/alert banners ── */
+.banner {
+  border-radius: var(--radius-md); padding: 12px 16px;
+  font-size: 13px; line-height: 1.6; margin-bottom: 1.25rem;
+  display: flex; align-items: flex-start; gap: 10px; border: 0.5px solid;
+}
+.banner-amber { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+.banner-green  { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+.banner-blue   { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+.banner svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Login page ── */
+.login-wrap {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1.25rem;
+}
+.login-card {
+  background: var(--bg); border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg); padding: 2.5rem 2rem;
+  max-width: 420px; width: 100%;
+}
+.login-logo { font-family: var(--font-serif); font-style: italic; font-size: 1.5rem; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.login-logo em { color: var(--accent); font-style: normal; }
+.login-sub { font-size: 14px; color: var(--text-2); margin-bottom: 2rem; line-height: 1.5; }
+.login-footer { font-size: 12px; color: var(--text-3); margin-top: 1.25rem; text-align: center; }
+.login-footer a { color: var(--accent); text-decoration: none; }
+
+/* ── Password setup overlay ── */
+.setup-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 1.25rem;
+}
+.setup-modal {
+  background: var(--bg); border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg); padding: 2rem; max-width: 400px; width: 100%;
+}
+
+/* ── Spinner ── */
+.spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border-md); border-top-color: var(--text);
+  animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 3rem 1rem; }
+.empty-state-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+.empty-state h3 { font-family: var(--font-serif); font-style: italic; font-size: 1.2rem; color: var(--text); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .content { padding: 1.5rem; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .time-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Login screen (shown when not authenticated) ── -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <p class="login-logo">Tale<em>kit</em></p>
+      <p class="login-sub">Sign in to manage your subscription and view your story archive.</p>
+
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email address</label>
+          <input class="form-input" id="login-email" type="email" placeholder="you@email.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input class="form-input" id="login-password" type="password" placeholder="Your password" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') doLogin()" />
+        </div>
+        <p id="login-error" style="font-size:12px;color:#E05050;min-height:14px;"></p>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="doLogin()" id="login-btn">
+          Sign in
+        </button>
+      </div>
+
+      <p class="login-footer">
+        <a href="#" onclick="showForgotPassword(); return false;">Forgot your password?</a>
+        &nbsp;·&nbsp;
+        <a href="/">Back to Talekit</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Password setup overlay (shown after account creation) ── -->
+<div id="setup-overlay" class="setup-overlay" style="display:none;">
+  <div class="setup-modal">
+    <h2 style="font-family:var(--font-serif);font-style:italic;font-size:1.3rem;margin-bottom:8px;">Welcome to Talekit</h2>
+    <p style="font-size:14px;color:var(--text-2);margin-bottom:1.5rem;line-height:1.6;">Please set a password for your account so you can sign in to manage your subscription.</p>
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="form-group">
+        <label class="form-label">New password</label>
+        <input class="form-input" id="setup-password" type="password" placeholder="Min. 8 characters" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm password</label>
+        <input class="form-input" id="setup-password-2" type="password" placeholder="Repeat password" />
+      </div>
+      <p id="setup-error" style="font-size:12px;color:#E05050;min-height:14px;"></p>
+      <button class="btn-primary" style="width:100%;justify-content:center;" onclick="doSetupPassword()">Set password &amp; continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main dashboard (shown when authenticated) ── -->
+<div id="dashboard-screen" style="display:none;">
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <a href="/">Tale<em>kit</em></a>
+        <p>My Dashboard</p>
+      </div>
+      <nav class="sidebar-nav">
+        <p class="nav-section-label">Overview</p>
+        <button class="nav-item active" data-section="overview" onclick="showSection('overview', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>
+          Overview
+        </button>
+
+        <p class="nav-section-label">Stories</p>
+        <button class="nav-item" data-section="archive" onclick="showSection('archive', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+          Story archive
+          <span class="nav-badge" id="story-count-badge">—</span>
+        </button>
+
+        <p class="nav-section-label">My account</p>
+        <button class="nav-item" data-section="profiles" onclick="showSection('profiles', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5.5" r="3"/><path d="M2 14c0-3.31 2.69-6 6-6s6 2.69 6 6"/></svg>
+          Child profiles
+        </button>
+        <button class="nav-item" data-section="delivery" onclick="showSection('delivery', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v4l2.5 2"/></svg>
+          Delivery time
+        </button>
+        <button class="nav-item" data-section="subscription" onclick="showSection('subscription', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 7h13"/></svg>
+          Subscription
+        </button>
+        <button class="nav-item" data-section="account" onclick="showSection('account', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5a6.5 6.5 0 1 0 0 13A6.5 6.5 0 0 0 8 1.5z"/><path d="M8 6v4M8 11.5v.5"/></svg>
+          Account settings
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="subscriber-info">
+          <strong id="sidebar-email">—</strong>
+          <div class="plan-badge" id="sidebar-plan">—</div>
+        </div>
+        <button class="btn-signout" onclick="doSignOut()">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <h1 class="topbar-title" id="topbar-title">Overview</h1>
+        <div class="topbar-actions" id="topbar-actions"></div>
+      </div>
+
+      <div class="content" id="content-area">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   State
+─────────────────────────────────────────────── */
+let authToken    = localStorage.getItem('tk_token') || null;
+let subscriberData = null;
+let currentSection = 'overview';
+
+const PLAN_LABELS = { kit: 'Free Trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' };
+const PLAN_COLOURS = {
+  kit:   { bg: 'var(--green-bg)',  text: 'var(--green-text)',  border: 'var(--green-border)' },
+  cub:   { bg: 'var(--blue-bg)',   text: 'var(--blue-text)',   border: 'var(--blue-border)' },
+  scout: { bg: 'var(--purple-bg)', text: 'var(--purple-text)', border: 'var(--purple-border)' },
+  den:   { bg: 'var(--amber-bg)',  text: 'var(--amber-text)',  border: 'var(--amber-border)' },
+  pack:  { bg: 'var(--teal-bg)',   text: 'var(--teal-text)',   border: 'var(--teal-border)' },
+};
+
+/* ─────────────────────────────────────────────
+   Init
+─────────────────────────────────────────────── */
+async function init() {
+  // Check for password setup token in URL
+  const params = new URLSearchParams(window.location.search);
+  const isSetup = params.get('setup') === 'true';
+
+  if (isSetup) {
+    // Extract token from URL hash (Supabase sends it as #access_token=...)
+    const hash = window.location.hash;
+    const hashParams = new URLSearchParams(hash.replace('#', ''));
+    const token = hashParams.get('access_token');
+    if (token) {
+      authToken = token;
+      localStorage.setItem('tk_token', token);
+      document.getElementById('setup-overlay').style.display = 'flex';
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').style.display = 'block';
+      await loadDashboard();
+      return;
+    }
+  }
+
+  if (authToken) {
+    const ok = await loadDashboard();
+    if (!ok) showLogin();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('dashboard-screen').style.display = 'none';
+}
+
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard-screen').style.display = 'block';
+}
+
+/* ─────────────────────────────────────────────
+   Auth
+─────────────────────────────────────────────── */
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const btn      = document.getElementById('login-btn');
+
+  if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; return; }
+
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled  = true;
+  errEl.textContent = '';
+
+  try {
+    const res  = await fetch('/api/auth?action=login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+
+    authToken = data.access_token;
+    localStorage.setItem('tk_token', authToken);
+    showDashboard();
+    await loadDashboard();
+  } catch (err) {
+    errEl.textContent = err.message;
+    btn.innerHTML = 'Sign in';
+    btn.disabled  = false;
+  }
+}
+
+async function showForgotPassword() {
+  const email = document.getElementById('login-email').value.trim() || prompt('Enter your email address:');
+  if (!email) return;
+  await fetch('/api/auth?action=reset-password', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  alert(`If an account exists for ${email}, a password reset link has been sent.`);
+}
+
+async function doSetupPassword() {
+  const pw  = document.getElementById('setup-password').value;
+  const pw2 = document.getElementById('setup-password-2').value;
+  const err = document.getElementById('setup-error');
+
+  if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return; }
+  if (pw !== pw2)    { err.textContent = 'Passwords do not match.'; return; }
+
+  const res  = await fetch('/api/auth?action=set-password', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_token: authToken, password: pw }),
+  });
+  if (res.ok) {
+    document.getElementById('setup-overlay').style.display = 'none';
+    window.history.replaceState({}, '', '/dashboard');
+  } else {
+    err.textContent = 'Could not set password. Please try again.';
+  }
+}
+
+function doSignOut() {
+  localStorage.removeItem('tk_token');
+  authToken = null;
+  window.location.href = '/';
+}
+
+/* ─────────────────────────────────────────────
+   Load dashboard data
+─────────────────────────────────────────────── */
+async function loadDashboard() {
+  try {
+    const res  = await fetch('/api/auth?action=me', {
+      headers: { 'Authorization': `Bearer ${authToken}` },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    subscriberData = data.subscriber;
+
+    // Update sidebar
+    document.getElementById('sidebar-email').textContent = data.user.email;
+    const plan = subscriberData?.plan || 'kit';
+    const planEl = document.getElementById('sidebar-plan');
+    planEl.textContent = PLAN_LABELS[plan] || plan;
+    const pc = PLAN_COLOURS[plan] || PLAN_COLOURS.cub;
+    planEl.style.background   = pc.bg;
+    planEl.style.color        = pc.text;
+    planEl.style.borderColor  = pc.border;
+
+    // Story count badge
+    const stories = subscriberData?.story_deliveries?.length || '—';
+    document.getElementById('story-count-badge').textContent = stories;
+
+    renderSection(currentSection);
+    return true;
+  } catch { return false; }
+}
+
+/* ─────────────────────────────────────────────
+   Navigation
+─────────────────────────────────────────────── */
+const SECTION_TITLES = {
+  overview: 'Overview', archive: 'Story archive',
+  profiles: 'Child profiles', delivery: 'Delivery time',
+  subscription: 'Subscription', account: 'Account settings',
+};
+
+function showSection(name, el) {
+  currentSection = name;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = SECTION_TITLES[name] || name;
+  renderSection(name);
+}
+
+function renderSection(name) {
+  const area = document.getElementById('content-area');
+  const actions = document.getElementById('topbar-actions');
+  actions.innerHTML = '';
+
+  switch (name) {
+    case 'overview':    renderOverview(area, actions); break;
+    case 'archive':     renderArchive(area, actions);  break;
+    case 'profiles':    renderProfiles(area, actions); break;
+    case 'delivery':    renderDelivery(area, actions); break;
+    case 'subscription':renderSubscription(area);      break;
+    case 'account':     renderAccount(area);           break;
+    default:            area.innerHTML = '<p>Coming soon.</p>';
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Overview
+─────────────────────────────────────────────── */
+function renderOverview(area, actions) {
+  const sub      = subscriberData;
+  const profiles = sub?.child_profiles || [];
+  const plan     = sub?.plan || 'kit';
+
+  const trialDaysLeft = sub?.trial_ends_at
+    ? Math.max(0, Math.ceil((new Date(sub.trial_ends_at) - Date.now()) / 86400000))
+    : null;
+
+  actions.innerHTML = `<a href="/" class="btn-secondary">Edit preferences</a>`;
+
+  area.innerHTML = `
+    ${trialDaysLeft !== null ? `
+    <div class="banner banner-amber">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 2"/></svg>
+      <div><strong>Free trial — ${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} remaining.</strong> Your first story has been sent. Upgrade before your trial ends to keep the stories coming.</div>
+    </div>` : ''}
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <p class="stat-label">Plan</p>
+        <p class="stat-value" style="font-size:1.4rem;">${PLAN_LABELS[plan] || plan}</p>
+        <p class="stat-sub">${sub?.status === 'active' ? 'Active' : sub?.status || '—'}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Child profiles</p>
+        <p class="stat-value">${profiles.length}</p>
+        <p class="stat-sub">${profiles.map(p => p.child_name).join(', ') || 'None yet'}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Delivery time</p>
+        <p class="stat-value" style="font-size:1.4rem;">${sub?.delivery_time || '07:00'}</p>
+        <p class="stat-sub">${sub?.delivery_timezone?.replace('Australia/', '') || 'UTC'}</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Recent stories</p>
+      <div id="recent-stories-area"><div class="spinner"></div></div>
+    </div>
+  `;
+
+  loadRecentStories();
+}
+
+async function loadRecentStories() {
+  const area = document.getElementById('recent-stories-area');
+  if (!area) return;
+  try {
+    const res  = await fetch('/api/dashboard-api?action=story-archive&limit=6', {
+      headers: { 'Authorization': `Bearer ${authToken}` },
+    });
+    const data = await res.json();
+    if (!data.stories?.length) {
+      area.innerHTML = `<div class="empty-state"><p>No stories yet — your first one is on its way.</p></div>`;
+      return;
+    }
+    area.innerHTML = `<div class="story-grid">${data.stories.map(storyCardHtml).join('')}</div>`;
+  } catch { area.innerHTML = '<p style="color:var(--text-3);font-size:13px;">Could not load stories.</p>'; }
+}
+
+/* ─────────────────────────────────────────────
+   Story archive
+─────────────────────────────────────────────── */
+function renderArchive(area, actions) {
+  area.innerHTML = `<div id="archive-grid"><div class="spinner"></div></div>`;
+  loadArchivePage(1);
+}
+
+async function loadArchivePage(page) {
+  const area = document.getElementById('archive-grid');
+  if (!area) return;
+  try {
+    const res  = await fetch(`/api/dashboard-api?action=story-archive&page=${page}&limit=12`, {
+      headers: { 'Authorization': `Bearer ${authToken}` },
+    });
+    const data = await res.json();
+    if (!data.stories?.length) {
+      area.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📖</div><h3>No stories yet</h3><p>Your first story will appear here once it arrives in your inbox.</p></div>`;
+      return;
+    }
+    document.getElementById('story-count-badge').textContent = data.total;
+    area.innerHTML = `
+      <div class="story-grid">${data.stories.map(storyCardHtml).join('')}</div>
+      ${data.total > 12 ? `<div style="display:flex;justify-content:center;gap:8px;margin-top:1.5rem;">
+        ${page > 1 ? `<button class="btn-secondary" onclick="loadArchivePage(${page-1})">← Previous</button>` : ''}
+        <span style="align-self:center;font-size:13px;color:var(--text-3)">Page ${page}</span>
+        ${page * 12 < data.total ? `<button class="btn-secondary" onclick="loadArchivePage(${page+1})">Next →</button>` : ''}
+      </div>` : ''}
+    `;
+  } catch { area.innerHTML = '<p style="color:var(--text-3);font-size:13px;">Could not load archive.</p>'; }
+}
+
+function storyCardHtml(story) {
+  const date   = story.sent_at ? new Date(story.sent_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+  const child  = story.child_profiles?.child_name || '';
+  const title  = story.story_title || 'Untitled story';
+  return `
+    <div class="story-card">
+      <div class="story-card-thumb">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M6 4h14l6 6v18H6z"/><path d="M20 4v6h6"/><path d="M10 14h12M10 18h12M10 22h8"/></svg>
+      </div>
+      <div class="story-card-body">
+        <p class="story-card-title">${esc(title)}</p>
+        <p class="story-card-meta">${child ? esc(child) + ' · ' : ''}${esc(date)}</p>
+        <div class="story-card-actions">
+          ${story.story_pdf_url   ? `<a href="${story.story_pdf_url}"   target="_blank" class="story-pill pill-story">Story PDF</a>` : ''}
+          ${story.picturebook_url ? `<a href="${story.picturebook_url}" target="_blank" class="story-pill pill-book">Picture book</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────
+   Child profiles
+─────────────────────────────────────────────── */
+function renderProfiles(area, actions) {
+  const profiles = subscriberData?.child_profiles || [];
+  const plan     = subscriberData?.plan || 'kit';
+  const LIMITS   = { kit: 1, cub: 1, scout: 3, den: 5, pack: 30 };
+  const limit    = LIMITS[plan] || 1;
+
+  actions.innerHTML = profiles.length < limit
+    ? `<button class="btn-primary" onclick="showAddProfile()">+ Add profile</button>` : '';
+
+  area.innerHTML = `
+    <div class="banner banner-blue">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
+      <div>Your ${PLAN_LABELS[plan]} plan supports up to <strong>${limit} child profile${limit > 1 ? 's' : ''}</strong>. Changes take effect on the next story generation.</div>
+    </div>
+
+    <div id="profiles-list">
+      ${profiles.length === 0 ? `<div class="empty-state"><p>No profiles yet.</p></div>` : profiles.map(profileCardHtml).join('')}
+    </div>
+
+    <div id="add-profile-form" style="display:none;margin-top:1.5rem;">
+      <div class="card">
+        <div class="card-header"><span class="card-header-title">Add child profile</span></div>
+        <div class="card-body">
+          <div class="form-grid" style="margin-bottom:1rem;">
+            <div class="form-group"><label class="form-label">Child's name</label><input class="form-input" id="np-name" type="text" placeholder="e.g. Mia" /></div>
+            <div class="form-group"><label class="form-label">Gender</label>
+              <select class="form-select" id="np-gender">
+                <option value="">Prefer not to say</option>
+                <option value="boy">Boy</option>
+                <option value="girl">Girl</option>
+                <option value="neutral">Gender neutral</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary" onclick="saveNewProfile()">Save profile</button>
+            <button class="btn-secondary" onclick="document.getElementById('add-profile-form').style.display='none'">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function profileCardHtml(profile) {
+  const genderLabel = { boy: 'Boy', girl: 'Girl', neutral: 'Gender neutral' }[profile.gender] || '—';
+  return `
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="6" r="3.5"/><path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7"/></svg>
+      </div>
+      <div class="profile-info">
+        <p class="profile-name">${esc(profile.child_name)}</p>
+        <p class="profile-meta">Gender: ${genderLabel} · Added ${new Date(profile.created_at).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}</p>
+      </div>
+      <div class="profile-actions">
+        <a href="/?profile=${profile.id}" class="btn-secondary" style="font-size:12px;padding:5px 12px;">Edit preferences</a>
+      </div>
+    </div>`;
+}
+
+function showAddProfile() {
+  document.getElementById('add-profile-form').style.display = 'block';
+  document.getElementById('np-name').focus();
+}
+
+async function saveNewProfile() {
+  const name   = document.getElementById('np-name').value.trim();
+  const gender = document.getElementById('np-gender').value;
+  if (!name) { alert('Please enter the child\'s name.'); return; }
+
+  const res  = await fetch('/api/dashboard-api?action=add-profile', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+    body: JSON.stringify({ child_name: name, gender }),
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || 'Could not add profile.'); return; }
+
+  // Refresh
+  await loadDashboard();
+  renderSection('profiles');
+}
+
+/* ─────────────────────────────────────────────
+   Delivery time
+─────────────────────────────────────────────── */
+function renderDelivery(area, actions) {
+  const sub          = subscriberData;
+  const currentTime  = sub?.delivery_time || '07:00';
+  const currentTz    = sub?.delivery_timezone || 'Australia/Melbourne';
+
+  const TIMES = ['05:00','06:00','07:00','08:00','18:00','19:00','20:00','21:00'];
+  const TZ_OPTIONS = [
+    'Australia/Melbourne', 'Australia/Sydney', 'Australia/Brisbane',
+    'Australia/Perth', 'Australia/Adelaide', 'Pacific/Auckland',
+    'Asia/Singapore', 'Europe/London', 'America/New_York', 'America/Los_Angeles',
+  ];
+
+  area.innerHTML = `
+    <div class="banner banner-green">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4l2.5 2"/></svg>
+      <div>Stories are generated and sent at your chosen time each day. Currently set to <strong>${currentTime}</strong> (${currentTz.replace('Australia/', '')}).</div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Delivery time</p>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:1rem;">When would you like Kit's story to arrive?</p>
+      <div class="time-grid" id="time-grid">
+        ${TIMES.map(t => `<button class="time-btn${t === currentTime ? ' selected' : ''}" onclick="selectTime('${t}', this)">${t}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Timezone</p>
+      <div style="max-width:320px;">
+        <select class="form-select" id="tz-select" onchange="saveDeliverySettings()">
+          ${TZ_OPTIONS.map(tz => `<option value="${tz}"${tz === currentTz ? ' selected' : ''}>${tz.replace('Australia/', '')}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <p id="delivery-save-msg" style="font-size:13px;color:var(--green-text);min-height:18px;"></p>
+  `;
+}
+
+let selectedDeliveryTime = null;
+
+function selectTime(time, el) {
+  selectedDeliveryTime = time;
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  saveDeliverySettings();
+}
+
+async function saveDeliverySettings() {
+  const time = selectedDeliveryTime || subscriberData?.delivery_time || '07:00';
+  const tz   = document.getElementById('tz-select')?.value || 'Australia/Melbourne';
+  const msg  = document.getElementById('delivery-save-msg');
+
+  const res = await fetch('/api/dashboard-api?action=delivery-settings', {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+    body: JSON.stringify({ delivery_time: time, delivery_timezone: tz }),
+  });
+
+  if (res.ok) {
+    if (subscriberData) { subscriberData.delivery_time = time; subscriberData.delivery_timezone = tz; }
+    if (msg) { msg.textContent = '✓ Delivery time saved'; setTimeout(() => { if(msg) msg.textContent = ''; }, 2000); }
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Subscription
+─────────────────────────────────────────────── */
+function renderSubscription(area) {
+  const sub  = subscriberData;
+  const plan = sub?.plan || 'kit';
+  const pc   = PLAN_COLOURS[plan] || PLAN_COLOURS.cub;
+
+  area.innerHTML = `
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-header">
+        <span class="card-header-title">Current plan</span>
+        <span style="background:${pc.bg};color:${pc.text};border:0.5px solid ${pc.border};border-radius:999px;padding:2px 12px;font-size:12px;font-weight:600;">${PLAN_LABELS[plan]}</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div><p class="stat-label" style="margin-bottom:4px;">Status</p><p style="font-size:14px;color:var(--text);">${sub?.status || '—'}</p></div>
+          <div><p class="stat-label" style="margin-bottom:4px;">Member since</p><p style="font-size:14px;color:var(--text);">${sub?.subscribed_at ? new Date(sub.subscribed_at).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' }) : '—'}</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="banner banner-blue" style="margin-bottom:1.5rem;">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
+      <div>To upgrade, downgrade, or cancel your subscription, please manage it through Stripe's customer portal. <a href="#" onclick="openBillingPortal()" style="color:var(--blue-text);font-weight:600;">Open billing portal →</a></div>
+    </div>
+  `;
+}
+
+function openBillingPortal() {
+  alert('Billing portal coming soon. Please contact support@talekits.com to manage your subscription.');
+}
+
+/* ─────────────────────────────────────────────
+   Account settings
+─────────────────────────────────────────────── */
+function renderAccount(area) {
+  area.innerHTML = `
+    <div class="section">
+      <p class="section-title">Change password</p>
+      <div class="card" style="max-width:480px;">
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="form-group"><label class="form-label">New password</label><input class="form-input" id="new-pw" type="password" placeholder="Min. 8 characters" /></div>
+            <div class="form-group"><label class="form-label">Confirm password</label><input class="form-input" id="new-pw-2" type="password" placeholder="Repeat password" /></div>
+            <p id="pw-change-msg" style="font-size:12px;min-height:14px;"></p>
+            <button class="btn-primary" style="align-self:flex-start;" onclick="changePassword()">Update password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Data & privacy</p>
+      <div class="banner banner-amber" style="max-width:480px;">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
+        <div>To request a copy of your data or delete your account, please email <strong>privacy@talekits.com</strong>.</div>
+      </div>
+    </div>
+  `;
+}
+
+async function changePassword() {
+  const pw  = document.getElementById('new-pw').value;
+  const pw2 = document.getElementById('new-pw-2').value;
+  const msg = document.getElementById('pw-change-msg');
+
+  if (pw.length < 8) { msg.textContent = 'Password must be at least 8 characters.'; msg.style.color = '#E05050'; return; }
+  if (pw !== pw2)    { msg.textContent = 'Passwords do not match.'; msg.style.color = '#E05050'; return; }
+
+  const res = await fetch('/api/auth?action=set-password', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_token: authToken, password: pw }),
+  });
+  if (res.ok) { msg.textContent = '✓ Password updated.'; msg.style.color = 'var(--green-text)'; document.getElementById('new-pw').value = ''; document.getElementById('new-pw-2').value = ''; }
+  else        { msg.textContent = 'Could not update password. Please try again.'; msg.style.color = '#E05050'; }
+}
+
+/* ─────────────────────────────────────────────
+   Helpers
+─────────────────────────────────────────────── */
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ─────────────────────────────────────────────
+   Boot
+─────────────────────────────────────────────── */
+init();
+</script>
+</body>
+</html>

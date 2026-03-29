@@ -1,19 +1,21 @@
 {
   "rewrites": [
-    { "source": "/success", "destination": "/success.html" }
+    { "source": "/success",   "destination": "/success.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/schedule-stories?secret=REPLACE_WITH_CRON_SECRET",
+      "schedule": "0 * * * *"
+    }
   ],
   "functions": {
-    "api/webhook.js": {
-      "maxDuration": 300
-    },
-    "api/generate-story.js": {
-      "maxDuration": 300
-    },
-    "api/generate-images.js": {
-      "maxDuration": 300
-    },
-    "api/start-trial.js": {
-      "maxDuration": 60
-    }
+    "api/webhook.js":          { "maxDuration": 300 },
+    "api/generate-story.js":   { "maxDuration": 300 },
+    "api/generate-images.js":  { "maxDuration": 300 },
+    "api/start-trial.js":      { "maxDuration": 300 },
+    "api/schedule-stories.js": { "maxDuration": 300 },
+    "api/auth.js":             { "maxDuration": 30  },
+    "api/dashboard-api.js":    { "maxDuration": 30  }
   }
 }

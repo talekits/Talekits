@@ -1,5 +1,6 @@
 const Stripe = require('stripe');
 const { put } = require('@vercel/blob');
+const bcrypt  = require('bcryptjs');
 
 const PLANS = {
   kit:   { name: 'Kit',   trialDays: 7,  priceEnvKey: null },
@@ -14,12 +15,11 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { planId, childName, email, filename, content } = req.body;
+  const { planId, childName, email, gender, password, filename, content } = req.body;
 
   if (!planId || !PLANS[planId]) {
     return res.status(400).json({ error: 'Invalid plan selected' });
   }
-
   if (!content) {
     return res.status(400).json({ error: 'No profile content provided' });
   }
@@ -29,30 +29,28 @@ module.exports = async function handler(req, res) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
 
   try {
-    // Save profile as pending — only moved to profiles/ after checkout is confirmed
-    await put(`pending/${filename}`, content, {
-      access: 'public',
-      contentType: 'text/plain',
-      addRandomSuffix: false,
-    });
-    console.log(`Profile saved as pending: ${filename}`);
-
-    // Kit — free trial, converts to Cub after 7 days
-    if (planId === 'kit') {
-      const session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        customer_email: email || undefined,
-        line_items: [{ price: process.env.STRIPE_PRICE_CUB, quantity: 1 }],
-        subscription_data: {
-          trial_period_days: 7,
-          metadata: { childName, filename, plan: 'kit' },
-        },
-        metadata: { childName, filename, plan: 'kit', email: email || '' },
-        success_url: `${baseUrl}/success?plan=kit&child=${encodeURIComponent(childName || '')}&email=${encodeURIComponent(email || '')}`,
-        cancel_url:  `${baseUrl}/?cancelled=true`,
-      });
-      return res.status(200).json({ url: session.url });
+    // Hash password before storing in metadata (never store plain text)
+    let passwordHash = '';
+    if (password && planId !== 'kit') {
+      passwordHash = await bcrypt.hash(password, 10);
     }
+
+    // Save profile as pending
+    console.log(`[CC-1] Saving pending profile: pending/${filename} | Content length: ${content?.length || 0}`);
+    const blobResult = await put(`pending/${filename}`, content, {
+      access: 'public', contentType: 'text/plain', addRandomSuffix: false,
+    });
+    console.log(`[CC-2] Pending profile saved: ${blobResult.url}`);
+
+    // Shared metadata for all plans
+    const meta = {
+      childName:    childName || '',
+      gender:       gender    || '',
+      filename,
+      plan:         planId,
+      email:        email     || '',
+      passwordHash,           // stored in Stripe metadata, used to create account after checkout
+    };
 
     // Paid plans
     const priceId = process.env[plan.priceEnvKey];
@@ -60,17 +58,17 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: `Price ID not configured for plan: ${planId}` });
     }
 
+    console.log(`[CC-3] Creating Stripe session | Plan: ${planId} | Child: ${childName} | Email: ${email}`);
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode:           'subscription',
       customer_email: email || undefined,
-      line_items: [{ price: priceId, quantity: 1 }],
-      metadata: { childName, filename, plan: planId, email: email || '' },
-      subscription_data: {
-        metadata: { childName, filename, plan: planId, email: email || '' },
-      },
+      line_items:     [{ price: priceId, quantity: 1 }],
+      metadata:       meta,
+      subscription_data: { metadata: meta },
       success_url: `${baseUrl}/success?plan=${planId}&child=${encodeURIComponent(childName || '')}&email=${encodeURIComponent(email || '')}`,
       cancel_url:  `${baseUrl}/?cancelled=true`,
     });
+    console.log(`[CC-4] Stripe session created: ${session.id}`);
 
     return res.status(200).json({ url: session.url });
 

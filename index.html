@@ -125,10 +125,13 @@
   .name-card-body { flex: 1; min-width: 200px; }
   .name-card-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0 2rem;
   }
   .name-card-field { min-width: 0; }
+  @media (max-width: 700px) {
+    .name-card-fields { grid-template-columns: 1fr 1fr; gap: 1rem 2rem; }
+  }
   @media (max-width: 560px) {
     .name-card-fields { grid-template-columns: 1fr; gap: 1rem 0; }
   }
@@ -155,6 +158,38 @@
   }
   .name-input::placeholder { color: var(--text-3); font-style: italic; }
   .name-input:focus { border-bottom-color: var(--accent); }
+
+  /* Gender select — matches name-input underline style */
+  .gender-select {
+    width: 100%;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    font-style: italic;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-md);
+    border-radius: 0;
+    color: var(--text);
+    outline: none;
+    padding: 4px 0 6px;
+    transition: border-color 0.15s;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .gender-select:focus { border-bottom-color: var(--accent); }
+  .gender-select option { font-style: normal; font-family: var(--font); }
+  .gender-select-wrap { position: relative; }
+  .gender-select-wrap::after {
+    content: '';
+    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--text-3);
+    pointer-events: none;
+  }
 
   /* Preview matches the name input's serif italic style */
   .name-preview {
@@ -630,6 +665,17 @@
           />
         </div>
         <div class="name-card-field">
+          <p class="name-card-label">Gender</p>
+          <div class="gender-select-wrap">
+            <select class="gender-select" id="child-gender">
+              <option value="" disabled selected>Select…</option>
+              <option value="boy">Boy</option>
+              <option value="girl">Girl</option>
+              <option value="neutral">Gender neutral</option>
+            </select>
+          </div>
+        </div>
+        <div class="name-card-field">
           <p class="name-card-label">Email address</p>
           <input
             class="name-input"
@@ -838,6 +884,39 @@
     </div>
 
     <div class="modal-footer-row">
+      <!-- Password field — shown only for paid plans -->
+      <div id="password-row" style="display:none;width:100%;margin-bottom:1rem;">
+        <div style="background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:14px 16px;">
+          <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin:0 0 8px;">Create your account password</p>
+          <p style="font-size:12px;color:var(--text-3);margin:0 0 10px;line-height:1.5;">You&rsquo;ll use this to log in to your subscriber dashboard and manage your account.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1.5rem;">
+            <div>
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">Password</p>
+              <input
+                id="modal-password"
+                type="password"
+                placeholder="Min. 8 characters"
+                autocomplete="new-password"
+                style="width:100%;font-family:var(--font);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border-md);outline:none;padding:4px 0 6px;color:var(--text);transition:border-color 0.15s;caret-color:var(--accent);"
+                oninput="validatePasswordMatch()"
+              />
+            </div>
+            <div>
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">Confirm password</p>
+              <input
+                id="modal-password-confirm"
+                type="password"
+                placeholder="Repeat password"
+                autocomplete="new-password"
+                style="width:100%;font-family:var(--font);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border-md);outline:none;padding:4px 0 6px;color:var(--text);transition:border-color 0.15s;caret-color:var(--accent);"
+                oninput="validatePasswordMatch()"
+              />
+            </div>
+          </div>
+          <p id="password-hint" style="font-size:11px;margin:6px 0 0;min-height:14px;color:var(--text-3);"></p>
+        </div>
+      </div>
+
       <p class="modal-footer-note">All plans billed monthly. Cancel any time.</p>
       <div class="modal-footer-actions">
         <button class="btn-modal-dismiss" onclick="closePricingModal()">Maybe later</button>
@@ -1249,6 +1328,8 @@ function buildProfileText() {
   lines.push('TALEKIT STORY PROFILE');
   lines.push('─'.repeat(36));
   if (name) lines.push(`Child's name: ${name}`);
+  const gender = document.getElementById('child-gender')?.value;
+  if (gender) lines.push(`Child's gender: ${gender}`);
   lines.push(`Created: ${new Date().toLocaleDateString('en-AU', { day:'numeric', month:'long', year:'numeric' })}`);
   lines.push('');
 
@@ -1283,9 +1364,35 @@ function selectPlan(planId) {
   document.querySelectorAll('.pricing-card').forEach(card => {
     card.classList.toggle('selected', card.dataset.plan === planId);
   });
+
+  // Show password field for paid plans only
+  const pwRow = document.getElementById('password-row');
+  if (pwRow) pwRow.style.display = planId === 'kit' ? 'none' : 'block';
+
+  // Clear any previous password values when switching plans
+  const pw  = document.getElementById('modal-password');
+  const pw2 = document.getElementById('modal-password-confirm');
+  if (pw)  pw.value  = '';
+  if (pw2) pw2.value = '';
+  const hint = document.getElementById('password-hint');
+  if (hint) hint.textContent = '';
+
   const btn = document.getElementById('continue-btn');
   btn.disabled = false;
   btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+}
+
+function validatePasswordMatch() {
+  const pw   = document.getElementById('modal-password')?.value || '';
+  const pw2  = document.getElementById('modal-password-confirm')?.value || '';
+  const hint = document.getElementById('password-hint');
+  if (!hint) return;
+
+  if (!pw) { hint.textContent = ''; hint.style.color = 'var(--text-3)'; return; }
+  if (pw.length < 8) { hint.textContent = 'At least 8 characters required'; hint.style.color = 'var(--amber-text)'; return; }
+  if (pw2 && pw !== pw2) { hint.textContent = 'Passwords don\'t match'; hint.style.color = '#E05050'; return; }
+  if (pw2 && pw === pw2) { hint.textContent = '✓ Passwords match'; hint.style.color = 'var(--green-text)'; return; }
+  hint.textContent = '';
 }
 
 function openImagineModal() {
@@ -1317,6 +1424,7 @@ async function confirmImagine() {
 
   const name     = document.getElementById('child-name').value.trim();
   const email    = document.getElementById('email').value.trim();
+  const gender   = document.getElementById('child-gender')?.value || '';
   const text     = buildProfileText();
   const safeName = name ? name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'unnamed';
   const dateStr  = new Date().toISOString().slice(0, 10);
@@ -1326,30 +1434,44 @@ async function confirmImagine() {
   btn.disabled  = true;
   btn.innerHTML = 'Setting up…';
 
-  // ── Kit free trial — show success immediately, API runs in background ──
+  // ── Kit free trial — no password needed ──
   if (selectedPlan === 'kit') {
-    // Show success screen right away — don't await the API
     showTrialSuccess(name, email);
-
-    // Fire and forget — story generation and email happen server-side
     fetch('/api/start-trial', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ filename, content: text, childName: name, email }),
+      body:    JSON.stringify({ filename, content: text, childName: name, email, gender }),
     }).catch(err => console.warn('Trial start error:', err));
-
     return;
   }
 
-  // ── Paid plans — create Stripe checkout session and redirect ──
+  // ── Paid plans — validate password first ──
+  const password  = document.getElementById('modal-password')?.value || '';
+  const password2 = document.getElementById('modal-password-confirm')?.value || '';
+
+  if (password.length < 8) {
+    btn.disabled  = false;
+    btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+    const hint = document.getElementById('password-hint');
+    if (hint) { hint.textContent = 'Please enter a password (min. 8 characters)'; hint.style.color = '#E05050'; }
+    return;
+  }
+  if (password !== password2) {
+    btn.disabled  = false;
+    btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+    const hint = document.getElementById('password-hint');
+    if (hint) { hint.textContent = 'Passwords don\'t match'; hint.style.color = '#E05050'; }
+    return;
+  }
+
+  // ── Create Stripe checkout session ──
   try {
     const res  = await fetch('/api/create-checkout', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, filename, content: text }),
+      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text }),
     });
     const data = await res.json();
-
     if (data.url) {
       window.location.href = data.url;
     } else {
