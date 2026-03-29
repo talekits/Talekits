@@ -10,7 +10,7 @@ const IMAGE_PROVIDER = 'dalle3';
 /* ─────────────────────────────────────────────────────────────
    DALL-E 3 — generate a single image from a prompt
 ───────────────────────────────────────────────────────────── */
-async function generateWithDalle3(prompt) {
+async function generateWithDalle3(prompt, fallbackAttempt = 0) {
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method:  'POST',
     headers: {
@@ -21,19 +21,49 @@ async function generateWithDalle3(prompt) {
       model:           'dall-e-3',
       prompt,
       n:               1,
-      size:            '1792x1024',  // landscape — ideal for picture book spreads
-      quality:         'standard',   // switch to 'hd' for premium plans
+      size:            '1792x1024',
+      quality:         'standard',
       response_format: 'url',
     }),
   });
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `DALL-E 3 API error ${response.status}`);
+    const msg = err?.error?.message || `DALL-E 3 API error ${response.status}`;
+    const isContentBlock = response.status === 400 ||
+                           msg.toLowerCase().includes('safety') ||
+                           msg.toLowerCase().includes('content') ||
+                           msg.toLowerCase().includes('blocked');
+
+    if (isContentBlock && fallbackAttempt < 2) {
+      console.warn(`Content filter hit (attempt ${fallbackAttempt + 1}) — retrying with safer prompt`);
+
+      let saferPrompt;
+      if (fallbackAttempt === 0) {
+        // First retry: remove action/conflict words, keep character + setting
+        saferPrompt = prompt
+          .replace(/\b(scared?|frightened?|afraid|terrified?|danger(?:ous)?|threat(?:en(?:ing)?)?|attack(?:ing)?|chas(?:ing|ed)|hurt|wound(?:ed)?|cri(?:es?|ing|ed)|sob(?:bing)?|shout(?:ing|ed)?|scream(?:ing|ed)?|angry|rage|fight(?:ing)?|strug(?:gling|gled)?|trap(?:ped)?|dark|shadow|monster|villain|evil)\b/gi, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+        // Ensure it still ends with safe tags
+        if (!saferPrompt.includes('safe for children')) {
+          saferPrompt += ' A warm, cheerful moment. No text, no speech bubbles, no borders, no watermarks, safe for children.';
+        }
+      } else {
+        // Second retry: completely generic safe scene using only the art style from the original
+        const artStyleMatch = prompt.match(/[Pp]ainted in[^.]+\./);
+        const artStyle = artStyleMatch ? artStyleMatch[0] : 'Painted in soft watercolour with warm pastel tones.';
+        saferPrompt = `A children's book illustration of a cheerful, peaceful outdoor scene with warm sunlight, soft clouds, and colourful flowers. A friendly animal character stands in the foreground looking happy and curious. ${artStyle} No text, no speech bubbles, no borders, no watermarks, safe for children.`;
+      }
+
+      return generateWithDalle3(saferPrompt, fallbackAttempt + 1);
+    }
+
+    throw new Error(msg);
   }
 
   const data = await response.json();
-  return data.data[0].url; // temporary URL — valid for ~1 hour, must be saved
+  return data.data[0].url;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -114,9 +144,9 @@ async function generateIllustrations(illustrations, storyBase, artStyle) {
       results.push({ page: pageNum, prompt, url: savedUrl });
       console.log(`Image ${pageNum} saved: ${blobPath}`);
 
-      // Small delay between requests to avoid rate limiting
+      // Delay between requests — gives DALL-E 3 rate limits breathing room
       if (i < illustrations.length - 1) {
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 1000));
       }
 
     } catch (err) {

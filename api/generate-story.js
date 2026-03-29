@@ -119,9 +119,18 @@ SELECTION RULES — follow these exactly
    - Ages 6–7:  Short = ~400 words  |  Medium = ~475 words  |  Long = ~550 words
    - Ages 8–10: Short = ~550 words  |  Medium = ~675 words  |  Long = ~800 words
    If no story length is specified, randomly pick one.
-3. TONE & MOOD: Randomly pick exactly 1. If it conflicts with the Age Bracket (e.g. "Mysterious" for Ages 2–3), soften it to fit.
+3. TONE & MOOD: Pick exactly 1 by genuine random selection. You have a strong bias toward "Gentle & Cosy" — actively fight this. Treat every option as equally likely. Roll a mental dice across all available options and commit to the result even if it surprises you.
 4. STORY STRUCTURE: Randomly pick exactly 1. If it conflicts with the Age Bracket, default to the simplest appropriate structure.
-5. ART STYLE: Randomly pick exactly 1 (used for illustration prompts).
+5. ART STYLE: Pick exactly 1 by genuine random selection. You have a strong bias toward "Watercolour" — actively fight this. Follow these age and theme rails:
+   - Ages 2–3: Prefer bold, simple styles — Hand-drawn crayon, Flat design / bold vector, Paper cut-out collage, Gouache painterly. Avoid complex or dark styles.
+   - Ages 4–5: Full range of bright styles — Watercolour, Pixar/Disney 3D CGI-style, Flat design, Gouache painterly, Pencil & ink line art.
+   - Ages 6–7: Full range — any style appropriate to the theme.
+   - Ages 8–10: Full range including darker atmospheric styles (Dark fairy tale, Noir mystery, Retro 8-bit pixel art).
+   - Science / Space / Robot themes: Lean toward Neon pop art, Low-poly geometric, Flat design / bold vector, Retro 8-bit pixel art.
+   - Fantasy / Mythical / Enchanted themes: Lean toward Gouache painterly, Vintage golden age, Japanese woodblock print, Soft digital painting.
+   - Adventure / Pirates themes: Lean toward Bold graphic novel, Comic book with panels, Vintage golden age.
+   - Nature / Animal themes: Lean toward Watercolour, Pencil & ink line art, Oil pastel.
+   - Cultural themes: Strongly prefer the matching cultural art style (Indian miniature, Chinese ink wash, African kente-inspired, etc.).
 6. PROTAGONIST TYPE: Randomly pick exactly 1.
 7. THEMES: Pick 1–3. When picking more than one, strongly prefer thematically correlated combinations (e.g. Mythical Creatures + Enchanted Kingdoms). For Ages 2–3 pick only 1 theme maximum.
 8. EDUCATIONAL FOCUS: Pick 1–3 and weave them naturally — never as a lesson. For Ages 2–3 pick only 1.
@@ -149,6 +158,7 @@ ILLUSTRATION PROMPT RULES — sent directly to DALL-E 3
 - Describe the scene in full: who is present, where they are, what is happening, lighting, mood, and camera framing.
 - For Ages 2–3: always specify large, close-up, simple compositions with bold colours and minimal background detail.
 - End every prompt with the art style written as a sentence, e.g. "Painted in soft watercolour with warm pastel tones."
+- DALL-E 3 SAFETY: Never use words like scared, frightened, danger, attack, hurt, crying, screaming, dark, shadow, monster, villain, or evil in illustration prompts — even if that moment exists in the story text. Reframe tense or emotional scenes positively. e.g. instead of "a character looking frightened" write "a character with wide curious eyes looking surprised". Instead of "a dark stormy sky" write "a dramatic sky with silver clouds and rays of golden light breaking through". The illustration must always feel warm and safe.
 - Always end with: "No text, no speech bubbles, no borders, no watermarks, safe for children."
 
 Respond with a valid JSON object only. No markdown fences, no preamble, nothing else.
@@ -235,8 +245,28 @@ function buildPdf(story, childName, plan) {
 
     /* ── Helper: pill tag (selections page) ── */
     function pill(x, y, label, bg, textCol, borderCol) {
-      const textW = doc.font(fonts.sans).fontSize(9).widthOfString(label);
-      const pillW = textW + 20;
+      const MAX_PILL_W = W - (x - PAD) - 10; // never exceed remaining line width
+      const fontSize   = 9;
+      const padding    = 20; // 10px each side
+
+      // Measure full text width
+      let textW = doc.font(fonts.sans).fontSize(fontSize).widthOfString(label);
+
+      // If the pill would overflow the page, truncate with ellipsis
+      let displayLabel = label;
+      if (textW + padding > MAX_PILL_W) {
+        while (displayLabel.length > 1) {
+          displayLabel = displayLabel.slice(0, -1);
+          textW = doc.font(fonts.sans).fontSize(fontSize).widthOfString(displayLabel + '…');
+          if (textW + padding <= MAX_PILL_W) {
+            displayLabel = displayLabel + '…';
+            break;
+          }
+        }
+        textW = doc.font(fonts.sans).fontSize(fontSize).widthOfString(displayLabel);
+      }
+
+      const pillW = textW + padding;
       const pillH = 18;
       const r     = pillH / 2;
 
@@ -245,8 +275,8 @@ function buildPdf(story, childName, plan) {
          .fillColor(bg).fill()
          .roundedRect(x, y, pillW, pillH, r)
          .lineWidth(0.5).strokeColor(borderCol).stroke()
-         .font(fonts.sans).fontSize(9).fillColor(textCol)
-         .text(label, x + 10, y + 4, { width: textW, lineBreak: false })
+         .font(fonts.sans).fontSize(fontSize).fillColor(textCol)
+         .text(displayLabel, x + 10, y + 4, { width: textW, lineBreak: false })
          .restore();
 
       return pillW + 6; // advance x
@@ -395,11 +425,12 @@ function buildPdf(story, childName, plan) {
       values.forEach(v => {
         if (!v) return;
         const textW = doc.font(fonts.sans).fontSize(9).widthOfString(v);
-        const pillW = textW + 20;
+        const pillW = Math.min(textW + 20, W); // cap at usable width
 
-        if (px + pillW > PW - PAD) {
+        // Wrap to new line if pill won't fit
+        if (px + pillW > PW - PAD && px > PAD) {
           px  = PAD;
-          sy += 24;
+          sy += 26;
         }
 
         px += pill(px, sy, v, row.bg, row.text, row.border);
@@ -737,19 +768,17 @@ function buildPictureBookPdf(story, childName, imageResults) {
    Email — Kit free trial delivery
 ───────────────────────────────────────────────────────────── */
 function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial') {
-  const isPaid      = plan !== 'kit';
-  const heading     = isPaid
-    ? `${childName}'s story<br/>is <em style="color:#6B6860;">ready</em>`
-    : `${childName}'s first story<br/>is <em style="color:#6B6860;">ready</em>`;
-  const intro       = isPaid
-    ? `Kit the fox has just written <strong>${childName}</strong> a brand-new personalised story — and we think they're going to love it.`
-    : `We've just written <strong>${childName}</strong> their very first Talekit story — and we think they're going to love it.`;
-  const attachMsg   = isPaid
-    ? `Two files are attached to this email — the full story PDF and your illustrated picture book, designed to be read together on a tablet or printed at home. Open the picture book for the full illustrated experience.`
-    : `The full story is attached to this email as a PDF — designed to be read together at bedtime, on the weekend, or whenever the moment feels right.`;
-  const footerCta   = isPaid ? '' : `
+  const isPaid    = plan !== 'kit';
+  const heading   = `I wrote ${childName} a story`;
+  const intro     = isPaid
+    ? `Hi! I'm Kit — the fox behind every Talekit story. I've just finished writing and illustrating today's story for <strong>${childName}</strong>, and I'm so excited to share it.`
+    : `Hi! I'm Kit — the fox behind every Talekit story. I've just finished writing <strong>${childName}'s</strong> very first story, and I can't wait for them to read it.`;
+  const attachMsg = isPaid
+    ? `I've attached two things — the full story PDF for reading aloud, and the illustrated picture book that brings every scene to life. Open the picture book on a tablet or iPad for the best experience.`
+    : `I've attached the full story as a PDF. Find a cosy spot together, open it up, and enjoy.`;
+  const footerCta = isPaid ? '' : `
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              You're currently on your <strong>7-day free trial</strong>. Every day a brand-new story lands — each one personalised, never repeated, always made just for ${childName}.
+              You're on a <strong>7-day free trial</strong> — a new story from me every single day. Each one is completely unique; I never write the same story twice.
             </p>
             <p style="margin:0 0 32px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
               When you're ready to keep the stories coming, choosing a plan takes less than a minute.
@@ -764,8 +793,11 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
                 </td>
               </tr>
             </table>`;
-  const footerNote  = isPaid
-    ? `You're on the Talekit ${planLabel} plan. A new story arrives every day.`
+  const sign      = isPaid
+    ? `I'll have another story ready for ${childName} tomorrow.<br/><br/><em>— Kit 🦊</em>`
+    : `I hope ${childName} loves it.<br/><br/><em>— Kit 🦊</em>`;
+  const footerNote = isPaid
+    ? `Kit writes a new story for ${childName} every day on the Talekit ${planLabel} plan.`
     : `You received this because you signed up for a Talekit free trial.`;
 
   return `<!DOCTYPE html>
@@ -784,7 +816,7 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
         <tr>
           <td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
             <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">
-              Talekit — Children's Storybook
+              Kit — Talekit Storywriter
             </p>
             <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
               ${heading}
@@ -794,8 +826,6 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
 
         <tr>
           <td style="background:#FFFFFF;padding:36px 40px;">
-
-            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#6B6860;line-height:1.7;">Hi there,</p>
 
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
               ${intro}
@@ -817,13 +847,17 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
                 <td style="background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:10px;padding:16px 20px;">
-                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#633806;">Parent note</p>
+                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#633806;">A note for parents</p>
                   <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#633806;line-height:1.6;">${parentNote}</p>
                 </td>
               </tr>
             </table>
 
             ${footerCta}
+
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#1C1B18;line-height:1.8;">
+              ${sign}
+            </p>
 
           </td>
         </tr>
