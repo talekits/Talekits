@@ -1173,28 +1173,32 @@ async function saveDeliverySettings() {
 const VOICE_OPTIONS = [
   {
     id:      'au_female',
-    label:   'Australian Female',
+    label:   'Charlotte',
+    sub:     'Australian Female',
     desc:    'Warm and expressive — a great choice for bedtime stories',
     flag:    '🇦🇺',
     gender:  'female',
   },
   {
     id:      'au_male',
-    label:   'Australian Male',
+    label:   'Neil',
+    sub:     'Australian Male',
     desc:    'Friendly and natural — works beautifully for adventure stories',
     flag:    '🇦🇺',
     gender:  'male',
   },
   {
     id:      'us_female',
-    label:   'American Female',
+    label:   'Jessa',
+    sub:     'American Female',
     desc:    'Clear and engaging — ideal for educational and exciting stories',
     flag:    '🇺🇸',
     gender:  'female',
   },
   {
     id:      'us_male',
-    label:   'American Male',
+    label:   'Ryan',
+    sub:     'American Male',
     desc:    'Confident and warm — a steady, reassuring narrator',
     flag:    '🇺🇸',
     gender:  'male',
@@ -1265,7 +1269,7 @@ function voiceCardHtml(voice, selectedId) {
 
       <!-- Label + description -->
       <div style="flex:1;">
-        <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 3px;">${voice.label}</p>
+        <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 1px;">${voice.label} <span style="font-size:12px;font-weight:400;color:var(--text-3);">${voice.sub}</span></p>
         <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.5;">${voice.desc}</p>
       </div>
 

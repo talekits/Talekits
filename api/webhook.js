@@ -15,7 +15,7 @@ async function getRawBody(req) {
   });
 }
 
-async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl }) {
+async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl, narratorVoice }) {
   const supabase = getSupabase();
 
   const { data: existing } = await supabase
@@ -49,6 +49,7 @@ async function createSubscriberAccount({ email, plan, childName, gender, stripeC
         trial_ends_at: trialEndsAt,
         delivery_time: '07:00',
         delivery_timezone: 'Australia/Melbourne',
+        narrator_voice: narratorVoice || 'au_female',
       })
       .select('id').single();
     if (subErr) throw new Error(`Subscriber row creation failed: ${subErr.message}`);
@@ -123,12 +124,13 @@ module.exports = async function handler(req, res) {
   }
 
   const session  = event.data.object;
-  const meta     = session.metadata || {};
-  const filename = meta.filename;
-  const plan     = meta.plan;
-  const child    = meta.childName;
-  const gender   = meta.gender;
-  const email    = session.customer_email || meta.email || null;
+  const meta          = session.metadata || {};
+  const filename      = meta.filename;
+  const plan          = meta.plan;
+  const child         = meta.childName;
+  const gender        = meta.gender;
+  const email         = session.customer_email || meta.email || null;
+  const narratorVoice = meta.narratorVoice || 'au_female';
 
   if (!filename) {
     console.warn('No filename in session metadata');
@@ -178,6 +180,7 @@ module.exports = async function handler(req, res) {
         email, plan, childName: child, gender,
         stripeCustomerId: session.customer, stripeSubId: session.subscription,
         profileContent, profileJson, profileBlobUrl: confirmedBlob.url,
+        narratorVoice,
       });
       subscriberId   = result.subscriberId;
       childProfileId = result.childProfileId;

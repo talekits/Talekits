@@ -639,8 +639,21 @@
     .pricing-grid { grid-template-columns: 1fr; }
   }
 
-  /* ── Footer ── */
-  .footer {
+  /* ── Modal voice cards ── */
+  .modal-voice-card {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px; padding: 10px 8px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-md);
+    background: var(--bg);
+    cursor: pointer; transition: border-color 0.12s, background 0.12s;
+    text-align: center;
+  }
+  .modal-voice-card:hover { background: var(--surface-2); border-color: var(--border-md); }
+  .modal-voice-card.selected { border: 2px solid var(--text); background: var(--surface); }
+  .modal-voice-flag { font-size: 1.25rem; line-height: 1; }
+  .modal-voice-name { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 2px; }
+  .modal-voice-sub  { font-size: 10px; color: var(--text-3); font-weight: 400; }
     margin-top: 4rem;
     padding-top: 1.5rem;
     border-top: 0.5px solid var(--border);
@@ -954,6 +967,38 @@
             </div>
           </div>
           <p id="password-hint" style="font-size:11px;margin:6px 0 0;min-height:14px;color:var(--text-3);"></p>
+        </div>
+      </div>
+
+      <!-- Narrator voice — shown only for Scout, Den, Pack -->
+      <div id="narrator-voice-row" style="display:none;width:100%;margin-bottom:1rem;">
+        <div style="background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:14px 16px;">
+          <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin:0 0 4px;">Choose a narrator voice</p>
+          <p style="font-size:12px;color:var(--text-3);margin:0 0 12px;line-height:1.5;">Kit&rsquo;s stories will be narrated in this voice. You can change it anytime from your dashboard.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="modal-voice-grid">
+
+            <div class="modal-voice-card selected" data-voice="au_female" onclick="selectModalVoice('au_female', this)">
+              <span class="modal-voice-flag">🇦🇺</span>
+              <span class="modal-voice-name">Charlotte</span>
+              <span class="modal-voice-sub">Australian Female</span>
+            </div>
+            <div class="modal-voice-card" data-voice="au_male" onclick="selectModalVoice('au_male', this)">
+              <span class="modal-voice-flag">🇦🇺</span>
+              <span class="modal-voice-name">Neil</span>
+              <span class="modal-voice-sub">Australian Male</span>
+            </div>
+            <div class="modal-voice-card" data-voice="us_female" onclick="selectModalVoice('us_female', this)">
+              <span class="modal-voice-flag">🇺🇸</span>
+              <span class="modal-voice-name">Jessa</span>
+              <span class="modal-voice-sub">American Female</span>
+            </div>
+            <div class="modal-voice-card" data-voice="us_male" onclick="selectModalVoice('us_male', this)">
+              <span class="modal-voice-flag">🇺🇸</span>
+              <span class="modal-voice-name">Ryan</span>
+              <span class="modal-voice-sub">American Male</span>
+            </div>
+
+          </div>
         </div>
       </div>
 
@@ -1438,15 +1483,31 @@ let selectedPlan = null;
 // Capture the original pricing modal HTML so it can be restored after the success state
 const MODAL_ORIGINAL_HTML = document.querySelector('.modal').innerHTML;
 
+let selectedNarratorVoice = 'au_female'; // default
+
 function selectPlan(planId) {
   selectedPlan = planId;
   document.querySelectorAll('.pricing-card').forEach(card => {
     card.classList.toggle('selected', card.dataset.plan === planId);
   });
 
+  const AUDIO_PLANS = new Set(['scout', 'den', 'pack']);
+
   // Show password field for paid plans only
   const pwRow = document.getElementById('password-row');
   if (pwRow) pwRow.style.display = planId === 'kit' ? 'none' : 'block';
+
+  // Show narrator voice picker for audio plans only
+  const voiceRow = document.getElementById('narrator-voice-row');
+  if (voiceRow) voiceRow.style.display = AUDIO_PLANS.has(planId) ? 'block' : 'none';
+
+  // Reset voice selection to default when switching plans
+  if (AUDIO_PLANS.has(planId)) {
+    selectedNarratorVoice = 'au_female';
+    document.querySelectorAll('.modal-voice-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.voice === 'au_female');
+    });
+  }
 
   // Clear any previous password values when switching plans
   const pw  = document.getElementById('modal-password');
@@ -1459,6 +1520,12 @@ function selectPlan(planId) {
   const btn = document.getElementById('continue-btn');
   btn.disabled = false;
   btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+}
+
+function selectModalVoice(voiceId, el) {
+  selectedNarratorVoice = voiceId;
+  document.querySelectorAll('.modal-voice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
 function validatePasswordMatch() {
@@ -1549,7 +1616,7 @@ async function confirmImagine() {
     const res  = await fetch('/api/create-checkout', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson }),
+      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson, narratorVoice: selectedNarratorVoice }),
     });
     const data = await res.json();
     if (data.url) {

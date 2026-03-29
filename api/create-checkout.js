@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { planId, childName, email, gender, password, filename, content, profileJson } = req.body;
+  const { planId, childName, email, gender, password, filename, content, profileJson, narratorVoice } = req.body;
 
   if (!planId || !PLANS[planId]) {
     return res.status(400).json({ error: 'Invalid plan selected' });
@@ -57,7 +57,8 @@ module.exports = async function handler(req, res) {
       filename,
       plan:         planId,
       email:        email     || '',
-      passwordHash,           // stored in Stripe metadata, used to create account after checkout
+      passwordHash,
+      narratorVoice: narratorVoice || 'au_female',
     };
 
     // Paid plans
