@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET' && action === 'overview') {
     const { data: profiles } = await supabase
       .from('child_profiles')
-      .select('id, child_name, gender, profile_content, is_active, created_at')
+      .select('id, child_name, gender, profile_content, profile_json, is_active, created_at')
       .eq('subscriber_id', subscriber.id)
       .order('created_at');
 
@@ -78,12 +78,18 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: `Your ${subscriber.plan} plan supports up to ${limit} child profile${limit > 1 ? 's' : ''}` });
     }
 
-    const { child_name, gender, profile_content } = req.body;
+    const { child_name, gender, profile_content, profile_json } = req.body;
     if (!child_name) return res.status(400).json({ error: 'child_name required' });
 
     const { data: profile, error } = await supabase
       .from('child_profiles')
-      .insert({ subscriber_id: subscriber.id, child_name, gender: gender || null, profile_content: profile_content || '', is_active: true })
+      .insert({
+        subscriber_id: subscriber.id, child_name,
+        gender: gender || null,
+        profile_content: profile_content || '',
+        profile_json: profile_json || null,
+        is_active: true,
+      })
       .select('id, child_name, gender').single();
 
     if (error) return res.status(500).json({ error: error.message });
@@ -92,10 +98,9 @@ module.exports = async function handler(req, res) {
 
   /* ── PATCH /api/dashboard?action=update-profile ── */
   if (req.method === 'PATCH' && action === 'update-profile') {
-    const { profile_id, child_name, gender, profile_content, is_active } = req.body;
+    const { profile_id, child_name, gender, profile_content, profile_json, is_active } = req.body;
     if (!profile_id) return res.status(400).json({ error: 'profile_id required' });
 
-    // Verify ownership
     const { data: existing } = await supabase
       .from('child_profiles').select('id').eq('id', profile_id).eq('subscriber_id', subscriber.id).maybeSingle();
     if (!existing) return res.status(403).json({ error: 'Profile not found' });
@@ -104,6 +109,7 @@ module.exports = async function handler(req, res) {
     if (child_name     !== undefined) updates.child_name     = child_name;
     if (gender         !== undefined) updates.gender         = gender;
     if (profile_content !== undefined) updates.profile_content = profile_content;
+    if (profile_json   !== undefined) updates.profile_json   = profile_json;
     if (is_active      !== undefined) updates.is_active      = is_active;
     updates.updated_at = new Date().toISOString();
 

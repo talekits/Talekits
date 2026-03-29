@@ -979,15 +979,20 @@ async function saveProfileEdit(id) {
 
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;vertical-align:middle;display:inline-block;"></span> Saving…'; }
 
-  // Build updated profile_content from name, gender, and current tag selections
-  const sel             = profileSelections[id] || new Set();
-  const profile_content = buildProfileContent(name, gender, sel, {});
+  // Build profile_json as the source of truth
+  const sel          = profileSelections[id] || new Set();
+  const existingProfile = subscriberData?.child_profiles?.find(p => p.id === id);
+  const existingDetails = existingProfile?.profile_json?.details || {};
+  const profile_json    = buildProfileJsonFromSelections(name, gender, sel, existingDetails);
+
+  // Also build the text version for Claude (kept for backward compatibility)
+  const profile_content = buildProfileContent(name, gender, sel, existingDetails);
 
   try {
     const res  = await fetch('/api/dashboard-api?action=update-profile', {
       method:  'PATCH',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-      body:    JSON.stringify({ profile_id: id, child_name: name, gender, profile_content }),
+      body:    JSON.stringify({ profile_id: id, child_name: name, gender, profile_content, profile_json }),
     });
     const data = await res.json();
 
@@ -995,7 +1000,12 @@ async function saveProfileEdit(id) {
 
     // Update local data immediately
     const profile = subscriberData?.child_profiles?.find(p => p.id === id);
-    if (profile) { profile.child_name = name; profile.gender = gender; profile.profile_content = profile_content; }
+    if (profile) {
+      profile.child_name      = name;
+      profile.gender          = gender;
+      profile.profile_content = profile_content;
+      profile.profile_json    = profile_json;
+    }
 
     const nameDisplay = document.getElementById(`pname-display-${id}`);
     if (nameDisplay) nameDisplay.textContent = name;
@@ -1051,7 +1061,11 @@ async function saveNewProfile() {
   const res  = await fetch('/api/dashboard-api?action=add-profile', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-    body:    JSON.stringify({ child_name: name, gender }),
+    body:    JSON.stringify({
+      child_name:   name,
+      gender,
+      profile_json: { childName: name, gender, selections: {}, details: {}, updatedAt: new Date().toISOString() },
+    }),
   });
   const data = await res.json();
 
@@ -1066,6 +1080,7 @@ async function saveNewProfile() {
       id:           data.profile.id,
       child_name:   data.profile.child_name,
       gender:       data.profile.gender,
+      profile_json: { childName: name, gender, selections: {}, details: {}, updatedAt: new Date().toISOString() },
       is_active:    true,
       created_at:   new Date().toISOString(),
     });
@@ -1268,63 +1283,74 @@ const LIB_RADIO_GROUPS = new Set(["Age brackets", "Reading level"]);
 // Per-profile selected sets, keyed by profile ID
 const profileSelections = {};
 
-/* ── Parse profile_content text back into a Set of tag keys ── */
-function parseProfileContent(content, profileId) {
+/* ── Load selections from profile_json directly (no parsing needed) ── */
+function loadSelectionsFromJson(profileJson) {
   const sel = new Set();
-  if (!content) return sel;
-
-  // Build a lookup: tag text → key
-  const lookup = {};
-  Object.entries(LIBRARY).forEach(([catKey, cat]) => {
-    Object.entries(cat.groups).forEach(([groupName, tags]) => {
-      tags.forEach(tag => { lookup[tag.toLowerCase().trim()] = `${catKey}|${groupName}|${tag}`; });
-    });
+  if (!profileJson?.selections) return sel;
+  Object.entries(profileJson.selections).forEach(([key, values]) => {
+    // key = "catKey|groupName", values = array of tag texts
+    const pipeIdx   = key.indexOf('|');
+    const catKey    = key.slice(0, pipeIdx);
+    const groupName = key.slice(pipeIdx + 1);
+    const arr       = Array.isArray(values) ? values : [values];
+    arr.forEach(tag => sel.add(`${catKey}|${groupName}|${tag}`));
   });
-
-  // Parse each line of the profile for values after the colon
-  content.split('\n').forEach(line => {
-    const colonIdx = line.indexOf(':');
-    if (colonIdx === -1) return;
-    const valPart = line.slice(colonIdx + 1).trim();
-    // Values may be comma-separated
-    valPart.split(',').forEach(v => {
-      const cleaned = v.trim().replace(/→.*$/, '').trim(); // strip detail notes
-      const key = lookup[cleaned.toLowerCase()];
-      if (key) sel.add(key);
-    });
-  });
-
   return sel;
 }
 
-/* ── Build profile_content text from name, gender, selections, details ── */
+/* ── Build profile_json from name, gender, selections set ── */
+function buildProfileJsonFromSelections(name, gender, sel, existingDetails) {
+  const selections = {};
+  [...sel].forEach(k => {
+    const parts     = k.split('|');
+    const catKey    = parts[0];
+    const groupName = parts[1];
+    const tag       = parts.slice(2).join('|');
+    const key       = `${catKey}|${groupName}`;
+    if (!selections[key]) selections[key] = [];
+    selections[key].push(tag);
+  });
+
+  return {
+    childName:  name,
+    gender:     gender || '',
+    selections,
+    details:    existingDetails || {},
+    updatedAt:  new Date().toISOString(),
+  };
+}
+
+/* ── Legacy: build profile_content text from JSON (for Claude prompt) ── */
 function buildProfileContent(name, gender, sel, details) {
+  // Build JSON first, then convert to text via the same logic as generate-story.js
+  const profileJson = buildProfileJsonFromSelections(name, gender, sel, details);
+  const CAT_LABELS  = { age: 'AGE & FORMAT', themes: 'THEMES', art: 'ART STYLES', edu: 'EDUCATIONAL FOCUS', char: 'CHARACTERS' };
+
   const grouped = {};
   [...sel].forEach(k => {
-    const [cat, group, ...rest] = k.split('|');
-    const text = rest.join('|');
-    if (!grouped[cat]) grouped[cat] = {};
-    if (!grouped[cat][group]) grouped[cat][group] = [];
-    grouped[cat][group].push(text);
+    const parts     = k.split('|');
+    const catKey    = parts[0];
+    const groupName = parts[1];
+    const tag       = parts.slice(2).join('|');
+    if (!grouped[catKey]) grouped[catKey] = {};
+    if (!grouped[catKey][groupName]) grouped[catKey][groupName] = [];
+    grouped[catKey][groupName].push(tag);
   });
 
   const lines = ['TALEKIT STORY PROFILE', '─'.repeat(36)];
-  if (name) lines.push(`Child's name: ${name}`);
+  if (name)   lines.push(`Child's name: ${name}`);
   if (gender) lines.push(`Child's gender: ${gender}`);
   lines.push(`Created: ${new Date().toLocaleDateString('en-AU', { day:'numeric', month:'long', year:'numeric' })}`);
   lines.push('');
 
-  Object.entries(LIBRARY).forEach(([catKey, cat]) => {
+  Object.entries(CAT_LABELS).forEach(([catKey, label]) => {
     if (!grouped[catKey]) return;
-    lines.push(cat.label.toUpperCase());
-    Object.entries(grouped[catKey]).forEach(([groupName, vals]) => {
-      lines.push(`  ${groupName}: ${vals.join(', ')}`);
-      // Append detail values if any
-      vals.forEach(val => {
-        const detailKey = Object.keys(DETAIL_BOX_CONFIGS).find(k => k === val);
-        if (detailKey && details?.[detailKey]) {
-          lines.push(`    → ${DETAIL_BOX_CONFIGS[detailKey].label}: ${details[detailKey]}`);
-        }
+    lines.push(label);
+    Object.entries(grouped[catKey]).forEach(([groupName, values]) => {
+      lines.push(`  ${groupName}: ${values.join(', ')}`);
+      values.forEach(val => {
+        const detail = details?.[val];
+        if (detail) lines.push(`    → ${val}: ${detail}`);
       });
     });
     lines.push('');
@@ -1340,12 +1366,14 @@ const DETAIL_BOX_CONFIGS = {
 };
 
 /* ── Render the preference library for a profile edit panel ── */
-function renderProfileLibrary(profileId, profileContent) {
+function renderProfileLibrary(profileId, profile) {
   const container = document.getElementById(`pedit-library-${profileId}`);
   if (!container) return;
 
-  // Parse existing selections
-  profileSelections[profileId] = parseProfileContent(profileContent, profileId);
+  // Load selections directly from profile_json — no text parsing
+  const profileJson = profile?.profile_json || null;
+  profileSelections[profileId] = loadSelectionsFromJson(profileJson);
+  console.log(`[Profile ${profileId}] Loaded ${profileSelections[profileId].size} selections from profile_json`);
 
   // Render categories
   let html = '';
@@ -1426,9 +1454,8 @@ function toggleProfileEdit(id) {
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
   if (!isOpen) {
-    // Render the library with current profile content
     const profile = subscriberData?.child_profiles?.find(p => p.id === id);
-    renderProfileLibrary(id, profile?.profile_content || '');
+    renderProfileLibrary(id, profile);
     document.getElementById(`pedit-name-${id}`)?.focus();
   }
 }

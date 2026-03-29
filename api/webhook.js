@@ -15,7 +15,7 @@ async function getRawBody(req) {
   });
 }
 
-async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileBlobUrl }) {
+async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl }) {
   const supabase = getSupabase();
 
   const { data: existing } = await supabase
@@ -69,9 +69,13 @@ async function createSubscriberAccount({ email, plan, childName, gender, stripeC
   const { data: profile, error: profileErr } = await supabase
     .from('child_profiles')
     .insert({
-      subscriber_id: subscriberId, child_name: childName,
-      gender: gender || null, profile_content: profileContent,
-      profile_blob_url: profileBlobUrl, is_active: true,
+      subscriber_id:    subscriberId,
+      child_name:       childName,
+      gender:           gender || null,
+      profile_content:  profileContent,
+      profile_json:     profileJson || null,
+      profile_blob_url: profileBlobUrl,
+      is_active:        true,
     })
     .select('id').single();
   if (profileErr) throw new Error(`Child profile creation failed: ${profileErr.message}`);
@@ -149,15 +153,33 @@ module.exports = async function handler(req, res) {
     await del(pendingBlob.url);
     console.log(`[3] Profile confirmed: ${filename} | Plan: ${plan} | Child: ${child}`);
 
+    // Fetch the pending JSON blob if it exists
+    let profileJson = null;
+    try {
+      const jsonFilename = filename.replace('.txt', '.json');
+      const { blobs: jsonBlobs } = await list({ prefix: `pending/${jsonFilename}` });
+      if (jsonBlobs.length) {
+        profileJson = await fetch(jsonBlobs[0].url).then(r => r.json());
+        await del(jsonBlobs[0].url);
+        // Save confirmed JSON alongside
+        await put(`profiles/${jsonFilename}`, JSON.stringify(profileJson), {
+          access: 'public', contentType: 'application/json', addRandomSuffix: false,
+        });
+        console.log(`[3] Profile JSON confirmed: ${jsonFilename}`);
+      }
+    } catch (err) {
+      console.warn(`[3] Could not load profile JSON (non-fatal): ${err.message}`);
+    }
+
     console.log(`[3b] Creating Supabase account for: ${email}`);
     let subscriberId = null, childProfileId = null;
     try {
       const result = await createSubscriberAccount({
         email, plan, childName: child, gender,
         stripeCustomerId: session.customer, stripeSubId: session.subscription,
-        profileContent, profileBlobUrl: confirmedBlob.url,
+        profileContent, profileJson, profileBlobUrl: confirmedBlob.url,
       });
-      subscriberId  = result.subscriberId;
+      subscriberId   = result.subscriberId;
       childProfileId = result.childProfileId;
       console.log(`[3b] Account created | Subscriber: ${subscriberId}`);
     } catch (accErr) {

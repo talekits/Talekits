@@ -1400,6 +1400,38 @@ function buildProfileText() {
   return lines.join('\n').trimEnd();
 }
 
+/* ── Build structured JSON profile (source of truth for dashboard) ── */
+function buildProfileJson() {
+  const name   = document.getElementById('child-name').value.trim();
+  const gender = document.getElementById('child-gender')?.value || '';
+
+  // Group selections by catKey|groupName → array of tag texts
+  const selections = {};
+  [...selected].forEach(k => {
+    const cat   = catFromKey(k);
+    const group = groupFromKey(k);
+    const text  = textFromKey(k);
+    const key   = `${cat}|${group}`;
+    if (!selections[key]) selections[key] = [];
+    selections[key].push(text);
+  });
+
+  // Collect detail box values
+  const details = {};
+  Object.entries(DETAIL_BOX_TAGS).forEach(({ 0: tagText, 1: cfg }) => {
+    const val = detailValues[cfg.id]?.trim();
+    if (val) details[tagText] = val;
+  });
+
+  return {
+    childName:  name,
+    gender,
+    selections,
+    details,
+    updatedAt:  new Date().toISOString(),
+  };
+}
+
 let selectedPlan = null;
 
 // Capture the original pricing modal HTML so it can be restored after the success state
@@ -1472,6 +1504,7 @@ async function confirmImagine() {
   const email    = document.getElementById('email').value.trim();
   const gender   = document.getElementById('child-gender')?.value || '';
   const text     = buildProfileText();
+  const profileJson = buildProfileJson();
   const safeName = name ? name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'unnamed';
   const dateStr  = new Date().toISOString().slice(0, 10);
   const filename = `talekits-profile-${safeName}-${dateStr}.txt`;
@@ -1486,7 +1519,7 @@ async function confirmImagine() {
     fetch('/api/start-trial', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ filename, content: text, childName: name, email, gender }),
+      body:    JSON.stringify({ filename, content: text, profileJson, childName: name, email, gender }),
     }).catch(err => console.warn('Trial start error:', err));
     return;
   }
@@ -1515,7 +1548,7 @@ async function confirmImagine() {
     const res  = await fetch('/api/create-checkout', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text }),
+      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson }),
     });
     const data = await res.json();
     if (data.url) {

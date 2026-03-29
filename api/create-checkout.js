@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { planId, childName, email, gender, password, filename, content } = req.body;
+  const { planId, childName, email, gender, password, filename, content, profileJson } = req.body;
 
   if (!planId || !PLANS[planId]) {
     return res.status(400).json({ error: 'Invalid plan selected' });
@@ -29,18 +29,26 @@ module.exports = async function handler(req, res) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
 
   try {
-    // Hash password before storing in metadata (never store plain text)
     let passwordHash = '';
     if (password && planId !== 'kit') {
       passwordHash = await bcrypt.hash(password, 10);
     }
 
-    // Save profile as pending
-    console.log(`[CC-1] Saving pending profile: pending/${filename} | Content length: ${content?.length || 0}`);
+    // Save profile text as pending
+    console.log(`[CC-1] Saving pending profile: pending/${filename}`);
     const blobResult = await put(`pending/${filename}`, content, {
       access: 'public', contentType: 'text/plain', addRandomSuffix: false,
     });
     console.log(`[CC-2] Pending profile saved: ${blobResult.url}`);
+
+    // Save profileJson alongside — same filename with .json extension
+    if (profileJson) {
+      const jsonFilename = filename.replace('.txt', '.json');
+      await put(`pending/${jsonFilename}`, JSON.stringify(profileJson), {
+        access: 'public', contentType: 'application/json', addRandomSuffix: false,
+      });
+      console.log(`[CC-2b] Pending profile JSON saved: pending/${jsonFilename}`);
+    }
 
     // Shared metadata for all plans
     const meta = {

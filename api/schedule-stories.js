@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
       .from('subscribers')
       .select(`
         id, email, plan, status, delivery_time, delivery_timezone,
-        child_profiles (id, child_name, gender, profile_content, profile_blob_url, is_active)
+        child_profiles (id, child_name, gender, profile_content, profile_json, profile_blob_url, is_active)
       `)
       .in('status', ['active', 'trial'])
       .eq('delivery_time', currentHour);
@@ -56,15 +56,17 @@ module.exports = async function handler(req, res) {
         try {
           console.log(`[CRON] Generating story | Subscriber: ${subscriber.id} | Child: ${profile.child_name} | Plan: ${subscriber.plan}`);
 
-          // Get profile content — prefer cached DB version, fall back to Blob
+          // Get profile content — prefer JSON (accurate), fall back to text, then Blob
           let profileContent = profile.profile_content;
+          let profileJson    = profile.profile_json || null;
+
           if (!profileContent && profile.profile_blob_url) {
             const r = await fetch(profile.profile_blob_url);
             if (r.ok) profileContent = await r.text();
           }
 
-          if (!profileContent) {
-            console.error(`[CRON] No profile content for: ${profile.child_name}`);
+          if (!profileContent && !profileJson) {
+            console.error(`[CRON] No profile data for: ${profile.child_name}`);
             results.failed++;
             continue;
           }
@@ -107,7 +109,8 @@ module.exports = async function handler(req, res) {
             profile.child_name,
             filename,
             subscriber.plan,
-            subscriber.email
+            subscriber.email,
+            profileJson
           );
 
           // Update delivery log with results

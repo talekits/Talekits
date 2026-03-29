@@ -1090,9 +1090,53 @@ async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer,
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Build Claude text prompt from structured profile_json
+   Canonical prompt builder — no fragile text parsing needed.
+───────────────────────────────────────────────────────────── */
+function buildTextFromJson(profileJson) {
+  if (!profileJson) return null;
+  const { childName, gender, selections = {}, details = {} } = profileJson;
+  const CAT_LABELS = { age: 'AGE & FORMAT', themes: 'THEMES', art: 'ART STYLES', edu: 'EDUCATIONAL FOCUS', char: 'CHARACTERS' };
+
+  // Reconstruct grouped structure from flat key map
+  const grouped = {};
+  Object.entries(selections).forEach(([key, values]) => {
+    const pipeIdx = key.indexOf('|');
+    const catKey   = key.slice(0, pipeIdx);
+    const groupName = key.slice(pipeIdx + 1);
+    if (!grouped[catKey]) grouped[catKey] = {};
+    grouped[catKey][groupName] = Array.isArray(values) ? values : [values];
+  });
+
+  const lines = ['TALEKIT STORY PROFILE', '─'.repeat(36)];
+  if (childName) lines.push(`Child's name: ${childName}`);
+  if (gender)    lines.push(`Child's gender: ${gender}`);
+  lines.push(`Created: ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+  lines.push('');
+
+  Object.entries(CAT_LABELS).forEach(([catKey, label]) => {
+    if (!grouped[catKey]) return;
+    lines.push(label);
+    Object.entries(grouped[catKey]).forEach(([groupName, values]) => {
+      lines.push(`  ${groupName}: ${values.join(', ')}`);
+      values.forEach(val => {
+        if (details[val]) lines.push(`    → ${val}: ${details[val]}`);
+      });
+    });
+    lines.push('');
+  });
+
+  return lines.join('\n').trimEnd();
+}
+
+/* ─────────────────────────────────────────────────────────────
    Main export
 ───────────────────────────────────────────────────────────── */
-async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null) {
+async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null) {
+  // Prefer structured JSON for the Claude prompt — eliminates comma-parsing issues
+  const promptText = (profileJson && buildTextFromJson(profileJson)) || profileContent;
+  if (!promptText) throw new Error('No profile content for story generation');
+
   // Call Claude
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1107,7 +1151,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       system:     SYSTEM_PROMPT,
       messages: [{
         role:    'user',
-        content: `Here is the child's story profile. Please generate a story now.\n\n${profileContent}`,
+        content: `Here is the child's story profile. Please generate a story now.\n\n${promptText}`,
       }],
     }),
   });
