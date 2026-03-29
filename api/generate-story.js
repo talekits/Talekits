@@ -113,7 +113,7 @@ AGES 8–10 (CONFIDENT READER)
 SELECTION RULES — follow these exactly
 ═══════════════════════════════════════
 1. AGE SAFETY: Apply the Age Bracket Rails above before writing a single word. If a selected preference conflicts with the age bracket (e.g. complex structure for a 2–3 year old), override the preference to match the age bracket.
-2. STORY LENGTH: The profile will contain "Short", "Medium", or "Long" (relative to the age bracket). Map it to the exact word count target below — never exceed the ceiling for the Age Bracket.
+2. STORY LENGTH: The profile may contain one or more of "Short", "Medium", or "Long" (relative to the age bracket). If multiple lengths are listed, randomly pick exactly 1 for this story — this ensures variety across daily stories. Map the chosen length to the exact word count target below — never exceed the ceiling for the Age Bracket.
    - Ages 2–3:  Short = ~100 words  |  Medium = ~150 words  |  Long = ~200 words
    - Ages 4–5:  Short = ~200 words  |  Medium = ~275 words  |  Long = ~350 words
    - Ages 6–7:  Short = ~400 words  |  Medium = ~475 words  |  Long = ~550 words
