@@ -71,7 +71,7 @@ AGES 2–3 (TODDLER)
 - Themes: Must be entirely concrete and familiar — animals, bedtime, food, playing, family. Nothing abstract, magical, or conceptual.
 - Educational focus: Only through showing, never telling. e.g. colours through objects, counting through actions.
 - Tone: Gentle, warm, playful. Nothing scary, surprising, or tense.
-- Illustrations: 8 prompts. Each must show one simple scene with large, clear, close-up subjects. Bright, bold, simple compositions with very few objects.
+- Illustrations: One per paragraph. Simple compositions for younger brackets — close-up, bold, minimal background. Richer and more detailed for older brackets.
 
 AGES 4–5 (PRESCHOOL)
 - Word count: 200–350 words.
@@ -83,7 +83,7 @@ AGES 4–5 (PRESCHOOL)
 - Themes: Concrete and relatable. Magic and fantasy are fine but kept simple and visual (a magic door, a talking animal). Nothing emotionally complex.
 - Educational focus: Weave in naturally through actions and dialogue. e.g. counting objects, naming colours, a character sharing.
 - Tone: Warm, fun, reassuring. Mild tension is fine but always resolved quickly and happily.
-- Illustrations: 8–9 prompts. Clear, bright scenes with expressive characters and simple backgrounds.
+- Illustrations: One per paragraph. Clear, bright scenes with expressive characters and simple backgrounds.
 
 AGES 6–7 (EARLY READER)
 - Word count: 400–550 words.
@@ -95,7 +95,7 @@ AGES 6–7 (EARLY READER)
 - Themes: Adventure, friendship, discovery, mild challenges. Fantasy and magic can be more elaborate. Emotional themes like nervousness or making mistakes are appropriate.
 - Educational focus: Can be more integrated — a character who thinks through a problem, uses logic, or learns from an experience.
 - Tone: Exciting, warm, funny. Mild tension and challenge are engaging and expected. Always resolved.
-- Illustrations: 9–10 prompts. Richer scenes with more detail, action, and atmosphere.
+- Illustrations: One per paragraph. Richer scenes with more detail, action, and atmosphere.
 
 AGES 8–10 (CONFIDENT READER)
 - Word count: 550–800 words.
@@ -107,7 +107,7 @@ AGES 8–10 (CONFIDENT READER)
 - Themes: Full range including complex emotions, moral dilemmas, ambiguity, loss, courage. Themes can be layered and nuanced.
 - Educational focus: Fully integrated — can explore ideas, cause and effect, ethical questions, and conceptual thinking through the narrative.
 - Tone: Full range including mystery, suspense, humour, melancholy. Tension can be sustained. Endings can be bittersweet though generally warm.
-- Illustrations: 10 prompts. Cinematic, detailed scenes with mood, lighting, and atmosphere.
+- Illustrations: One per paragraph. Cinematic, detailed scenes with mood, lighting, and atmosphere.
 
 ═══════════════════════════════════════
 SELECTION RULES — follow these exactly
@@ -141,7 +141,8 @@ STORY WRITING RULES
 ═══════════════════════════════════════
 ILLUSTRATION PROMPT RULES — sent directly to DALL-E 3
 ═══════════════════════════════════════
-- Write the number of prompts specified in the Age Bracket Rails above.
+- Write EXACTLY one illustration prompt per paragraph of the story — no more, no fewer. If the story has 6 paragraphs, write 6 prompts. If it has 10, write 10. This is critical — every page must have an illustration.
+- Each prompt must describe the SPECIFIC scene happening in its matching paragraph. Read the paragraph first, then write an illustration that shows exactly what is happening in that paragraph. A reader looking at the illustration should be able to follow the story.
 - Each prompt must be a full descriptive paragraph in natural language — no keyword lists, no Midjourney-style parameters.
 - Start every prompt with "A children's book illustration of..." to anchor the aesthetic.
 - Describe the protagonist consistently in EVERY prompt using the same physical details (species, colour, size, expression) so the character looks the same across all images.
@@ -507,20 +508,35 @@ function buildPictureBookPdf(story, childName, imageResults) {
         ty += 20;
       }
 
-      // Paragraph text
-      const bodySize = 13;
+      // ── Dynamic font size based on paragraph length ──
+      // Short paragraphs get larger text so the page feels full, not empty
+      const wordCount  = (para || '').split(/\s+/).filter(Boolean).length;
+      const bodySize   = wordCount <= 15  ? 22
+                       : wordCount <= 25  ? 18
+                       : wordCount <= 40  ? 15
+                       : wordCount <= 60  ? 13
+                       : 12;
+      const lineGapVal = bodySize >= 18 ? 8 : bodySize >= 15 ? 6 : 5;
+
+      // Vertically centre text for very short paragraphs
+      const textAreaH  = PH - FOOTER - PAD * 2 - (isFirst ? 80 : 36);
+      const textHeight = doc.font(fonts.body).fontSize(bodySize).heightOfString(para || '', { width: textW, lineGap: lineGapVal });
+      if (!isFirst && textHeight < textAreaH * 0.5) {
+        ty += Math.floor((textAreaH - textHeight) / 2);
+      }
+
       if (isFirst && para) {
-        // Drop cap
+        // Drop cap — scale with body size
         const letter  = para.charAt(0);
         const rest    = para.slice(1);
-        const capSize = 42;
+        const capSize = Math.max(bodySize * 2.2, 38);
         doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
            .text(letter, textX, ty - 4, { lineBreak: false });
         const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 5;
-        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(5)
-           .text(rest, textX + capW, ty + 6, { width: textW - capW });
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
+           .text(rest, textX + capW, ty + Math.floor(capSize * 0.3), { width: textW - capW });
       } else if (para) {
-        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(6)
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
            .text(para, textX, ty, { width: textW });
       }
 
