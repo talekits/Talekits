@@ -10,7 +10,7 @@ const IMAGE_PROVIDER = 'dalle3';
 /* ─────────────────────────────────────────────────────────────
    DALL-E 3 — generate a single image from a prompt
 ───────────────────────────────────────────────────────────── */
-async function generateWithDalle3(prompt, fallbackAttempt = 0) {
+async function generateWithDalle3(prompt, isFallback = false) {
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method:  'POST',
     headers: {
@@ -30,33 +30,23 @@ async function generateWithDalle3(prompt, fallbackAttempt = 0) {
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     const msg = err?.error?.message || `DALL-E 3 API error ${response.status}`;
-    const isContentBlock = response.status === 400 ||
-                           msg.toLowerCase().includes('safety') ||
-                           msg.toLowerCase().includes('content') ||
-                           msg.toLowerCase().includes('blocked');
+    const isContentBlock = response.status === 400 &&
+      (msg.toLowerCase().includes('safety') ||
+       msg.toLowerCase().includes('content') ||
+       msg.toLowerCase().includes('blocked'));
 
-    if (isContentBlock && fallbackAttempt < 2) {
-      console.warn(`Content filter hit (attempt ${fallbackAttempt + 1}) — retrying with safer prompt`);
+    // On content filter hit, immediately use a guaranteed-safe generic prompt.
+    // Do NOT retry the original prompt — it will fail again and waste 30+ seconds.
+    if (isContentBlock && !isFallback) {
+      console.warn(`Content filter hit — using safe fallback prompt immediately`);
 
-      let saferPrompt;
-      if (fallbackAttempt === 0) {
-        // First retry: remove action/conflict words, keep character + setting
-        saferPrompt = prompt
-          .replace(/\b(scared?|frightened?|afraid|terrified?|danger(?:ous)?|threat(?:en(?:ing)?)?|attack(?:ing)?|chas(?:ing|ed)|hurt|wound(?:ed)?|cri(?:es?|ing|ed)|sob(?:bing)?|shout(?:ing|ed)?|scream(?:ing|ed)?|angry|rage|fight(?:ing)?|strug(?:gling|gled)?|trap(?:ped)?|dark|shadow|monster|villain|evil)\b/gi, '')
-          .replace(/\s{2,}/g, ' ')
-          .trim();
-        // Ensure it still ends with safe tags
-        if (!saferPrompt.includes('safe for children')) {
-          saferPrompt += ' A warm, cheerful moment. No text, no speech bubbles, no borders, no watermarks, safe for children.';
-        }
-      } else {
-        // Second retry: completely generic safe scene using only the art style from the original
-        const artStyleMatch = prompt.match(/[Pp]ainted in[^.]+\./);
-        const artStyle = artStyleMatch ? artStyleMatch[0] : 'Painted in soft watercolour with warm pastel tones.';
-        saferPrompt = `A children's book illustration of a cheerful, peaceful outdoor scene with warm sunlight, soft clouds, and colourful flowers. A friendly animal character stands in the foreground looking happy and curious. ${artStyle} No text, no speech bubbles, no borders, no watermarks, safe for children.`;
-      }
+      // Extract art style from original prompt if present, otherwise use watercolour
+      const artMatch = prompt.match(/[Pp]ainted in[^.]+\./);
+      const artStyle = artMatch ? artMatch[0] : 'Painted in soft watercolour with warm pastel tones.';
 
-      return generateWithDalle3(saferPrompt, fallbackAttempt + 1);
+      const safeFallback = `A children's book illustration of a cheerful animal character standing in a sunny meadow filled with colourful wildflowers. The character has a big friendly smile and is looking ahead with bright curious eyes. Soft golden sunlight fills the scene. Wide landscape composition with a clear blue sky and a few fluffy white clouds. ${artStyle} No text, no speech bubbles, no borders, no watermarks, safe for children.`;
+
+      return generateWithDalle3(safeFallback, true);
     }
 
     throw new Error(msg);

@@ -158,8 +158,28 @@ ILLUSTRATION PROMPT RULES — sent directly to DALL-E 3
 - Describe the scene in full: who is present, where they are, what is happening, lighting, mood, and camera framing.
 - For Ages 2–3: always specify large, close-up, simple compositions with bold colours and minimal background detail.
 - End every prompt with the art style written as a sentence, e.g. "Painted in soft watercolour with warm pastel tones."
-- DALL-E 3 SAFETY: Never use words like scared, frightened, danger, attack, hurt, crying, screaming, dark, shadow, monster, villain, or evil in illustration prompts — even if that moment exists in the story text. Reframe tense or emotional scenes positively. e.g. instead of "a character looking frightened" write "a character with wide curious eyes looking surprised". Instead of "a dark stormy sky" write "a dramatic sky with silver clouds and rays of golden light breaking through". The illustration must always feel warm and safe.
-- Always end with: "No text, no speech bubbles, no borders, no watermarks, safe for children."
+
+DALL-E 3 CONTENT SAFETY — THIS IS CRITICAL. Every prompt is sent directly to DALL-E 3 which has strict content filters. A blocked prompt causes a timeout that can crash the entire story generation. You must follow these rules without exception:
+
+NEVER use any of these words or concepts in illustration prompts, even indirectly:
+- Emotions: scared, frightened, afraid, terrified, anxious, nervous, worried, upset, sad, crying, sobbing, tears
+- Actions: running away, hiding, falling, stumbling, attacking, chasing, fighting, struggling, trapped
+- Atmosphere: dark, shadow, gloomy, stormy, threatening, dangerous, ominous, eerie, spooky
+- Characters: monster, villain, enemy, giant (threatening), beast (threatening)
+- Physical states: hurt, wounded, bleeding, sick, ill
+
+ALWAYS reframe tense or emotional moments as positive and playful:
+- "looking surprised" not "looking scared"
+- "eyes wide with wonder" not "eyes wide with fear"
+- "dramatic silver clouds with golden light" not "dark storm clouds"  
+- "running quickly with excitement" not "running away"
+- "looking for something" not "hiding"
+- "a big fluffy cloud" not "a threatening wave"
+- "a playful shadow on the ground" not "a dark shadow"
+
+Every illustration must feel warm, bright, safe, and joyful — even if that specific paragraph contains tension in the story text. The illustration shows the POSITIVE version of the scene.
+
+Always end with: "No text, no speech bubbles, no borders, no watermarks, safe for children."
 
 Respond with a valid JSON object only. No markdown fences, no preamble, nothing else.
 
