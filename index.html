@@ -662,7 +662,7 @@
 
 <!-- Site-wide header -->
 <header class="site-header">
-  <a class="site-header-logo" href="/">Tale<em>kit</em></a>
+  <a class="site-header-logo" href="/">Tale<em>kits</em></a>
   <nav class="site-header-nav">
     <a class="site-header-link" href="/">Home</a>
     <a class="site-header-btn" href="/dashboard" id="header-dashboard-btn">
@@ -681,7 +681,7 @@
       <span class="header-eyebrow-brand">Talekits</span> &mdash; <span class="header-eyebrow-brand">Children&rsquo;s Storybook Builder</span>
     </p>
     <h1>Imagination <em>Library</em></h1>
-    <p>All options are selected by default &mdash; Claude will randomly draw from them when generating each story. Unselect anything you&rsquo;d like to exclude from your child&rsquo;s profile.</p>
+    <p>All options are selected by default &mdash; Kit the fox will randomly draw from them when writing each story. Unselect anything you&rsquo;d like to exclude from your child&rsquo;s profile.</p>
   </header>
 
   <div class="name-card">
@@ -1059,7 +1059,7 @@ const RADIO_GROUPS = new Set(["Age brackets", "Reading level"]);
 const DETAIL_BOX_TAGS = {
   "Child's real pet as a supporting character": {
     id:          'detail-pet',
-    label:       "Tell us about the pet",
+    label:       "Tell us about your pet",
     placeholder: "e.g. Biscuit, a golden retriever who loves chasing sticks and is very loyal…",
     hint:        "The more details you share, the better Kit can bring them to life in the story.",
     rows:        3,
@@ -1278,7 +1278,7 @@ function getSelectedAgeBracketKey() {
 
 function getStoryLengthHint() {
   const ageKey = getSelectedAgeBracketKey();
-  if (!ageKey) return 'Select an age bracket above to see exact word counts.';
+  if (!ageKey) return '';
   const wc = AGE_WORD_COUNTS[ageKey];
   return `For the selected age bracket: Short = ${wc.short} &nbsp;·&nbsp; Medium = ${wc.medium} &nbsp;·&nbsp; Long = ${wc.long}`;
 }
