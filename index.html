@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Talekit — Children's Storybook Builder</title>
+<title>Talekits — Children's Storybook Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,500;1,400&display=swap" rel="stylesheet" />
@@ -199,20 +199,23 @@
   .name-input::placeholder { color: var(--text-3); font-style: italic; }
   .name-input:focus { border-bottom-color: var(--accent); }
 
-  /* Gender pills */
-  .gender-pills { display: flex; gap: 7px; padding-top: 5px; flex-wrap: wrap; }
+  /* Gender pills — match tag pill behaviour exactly */
+  .gender-pills { display: flex; gap: 6px; padding-top: 5px; flex-wrap: wrap; }
   .gender-pill {
-    padding: 5px 14px; border-radius: var(--radius-pill);
-    font-family: var(--font); font-size: 13px; font-weight: 500;
-    border: 0.5px solid; cursor: pointer; transition: all 0.12s;
-    background: transparent; user-select: none;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 11px; font-size: 13px; font-weight: 400;
+    border-radius: var(--radius-pill); border: 1px solid;
+    cursor: pointer; user-select: none;
+    transition: border-color 0.12s, font-weight 0.1s;
+    line-height: 1.5;
   }
-  .gender-pill-boy   { color: var(--blue-text);  border-color: var(--blue-border); }
-  .gender-pill-girl  { color: var(--pink-text);  border-color: var(--pink-border); }
-  .gender-pill-other { color: var(--green-text); border-color: var(--green-border); }
-  .gender-pill-boy.selected   { background: var(--blue-bg);  }
-  .gender-pill-girl.selected  { background: var(--pink-bg);  }
-  .gender-pill-other.selected { background: var(--green-bg); }
+  .gender-pill-boy   { background: var(--blue-bg);  color: var(--blue-text);  border-color: var(--blue-border); }
+  .gender-pill-girl  { background: var(--pink-bg);  color: var(--pink-text);  border-color: var(--pink-border); }
+  .gender-pill-other { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .gender-pill.selected { font-weight: 600; }
+  .gender-pill-boy.selected   { border: 2px solid var(--blue-text); }
+  .gender-pill-girl.selected  { border: 2px solid var(--pink-text); }
+  .gender-pill-other.selected { border: 2px solid var(--green-text); }
 
   /* Preview matches the name input's serif italic style */
   .name-preview {
@@ -675,7 +678,7 @@
 
   <header class="header">
     <p class="header-eyebrow">
-      <span class="header-eyebrow-brand">Talekit</span> &mdash; <span class="header-eyebrow-brand">Children&rsquo;s Storybook Builder</span>
+      <span class="header-eyebrow-brand">Talekits</span> &mdash; <span class="header-eyebrow-brand">Children&rsquo;s Storybook Builder</span>
     </p>
     <h1>Imagination <em>Library</em></h1>
     <p>All options are selected by default &mdash; Claude will randomly draw from them when generating each story. Unselect anything you&rsquo;d like to exclude from your child&rsquo;s profile.</p>
@@ -784,7 +787,7 @@
   </div>
 
   <footer class="footer">
-    <p>Talekit &mdash; v1.1 &mdash; March 2026</p>
+    <p>Talekits &mdash; v1.1 &mdash; March 2026</p>
     <p>Confidential &mdash; Internal use only</p>
   </footer>
 
@@ -794,7 +797,7 @@
 <div class="modal-backdrop" id="pricing-backdrop" onclick="handleBackdropClick(event)">
   <div class="modal">
     <div class="modal-header">
-      <p class="modal-eyebrow">Talekit &mdash; Choose your plan</p>
+      <p class="modal-eyebrow">Talekits &mdash; Choose your plan</p>
       <h2 class="modal-title">A new story, <em>every day</em></h2>
       <p class="modal-subtitle">Select a plan below. Your child&rsquo;s profile will be saved when you continue.</p>
     </div>

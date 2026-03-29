@@ -52,7 +52,7 @@ const PLAN_OUTPUTS = {
 /* ─────────────────────────────────────────────────────────────
    Claude system prompt
 ───────────────────────────────────────────────────────────── */
-const SYSTEM_PROMPT = `You are a children's storybook author for Talekit, an AI-powered daily personalised storybook service. A fox named Kit is the brand mascot and can appear as a guide or background character when appropriate.
+const SYSTEM_PROMPT = `You are a children's storybook author for Talekits, an AI-powered daily personalised storybook service. A fox named Kit is the brand mascot and can appear as a guide or background character when appropriate.
 
 You will receive a TALEKIT STORY PROFILE containing a child's name and their available preferences. Your job is to randomly select from those options following the rules below, then write a beautifully crafted, original story.
 
@@ -214,7 +214,7 @@ function buildStoryTxt(story, childName) {
   return [
     story.title.toUpperCase(),
     '─'.repeat(50),
-    `A Talekit story for ${childName}`,
+    `A Talekits story for ${childName}`,
     `Generated: ${date}`,
     '',
     story.story,
@@ -233,7 +233,7 @@ function buildIllustrationsTxt(story, childName) {
   const lines = [
     `ILLUSTRATION PROMPTS — ${story.title.toUpperCase()}`,
     '─'.repeat(50),
-    `A Talekit story for ${childName}`,
+    `A Talekits story for ${childName}`,
     `Art style: ${story.selections?.artStyle || 'Not specified'}`,
     '',
     'COVER',
@@ -249,7 +249,7 @@ function buildIllustrationsTxt(story, childName) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   PDF builder — design-matched to the Talekit webpage
+   PDF builder — design-matched to the Talekits webpage
 ───────────────────────────────────────────────────────────── */
 function buildPdf(story, childName, plan) {
   return new Promise((resolve, reject) => {
@@ -323,7 +323,7 @@ function buildPdf(story, childName, plan) {
 
     // Eyebrow
     doc.font(fonts.italic).fontSize(10).fillColor(C.text3)
-       .text('Talekit  —  Children\'s Storybook', PAD, 28, { width: W, align: 'center' });
+       .text('Talekits  —  Children\'s Storybook', PAD, 28, { width: W, align: 'center' });
 
     // Title — Lora Italic, large, dark
     doc.font(fonts.italic).fontSize(28).fillColor(C.text)
@@ -406,7 +406,7 @@ function buildPdf(story, childName, plan) {
     doc.rect(0, 0, PW, 90).fill(C.surface);
 
     doc.font(fonts.italic).fontSize(10).fillColor(C.text3)
-       .text('Talekit  —  Story selections', PAD, 24, { width: W, align: 'center' });
+       .text('Talekits  —  Story selections', PAD, 24, { width: W, align: 'center' });
 
     doc.font(fonts.italic).fontSize(22).fillColor(C.text)
        .text('What Kit picked', PAD, 40, { width: W, align: 'center' });
@@ -485,7 +485,7 @@ function buildPdf(story, childName, plan) {
       // Footer text
       doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
          .text(
-           `Talekit  ·  ${story.title}  ·  Page ${i + 1} of ${range.count}`,
+           `Talekits  ·  ${story.title}  ·  Page ${i + 1} of ${range.count}`,
            PAD, PH - 23,
            { width: W, align: 'center' }
          );
@@ -628,7 +628,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
         if (isFirst) {
           // Eyebrow
           doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
-             .text('Talekit', textX, ty, { width: textW });
+             .text('Talekits', textX, ty, { width: textW });
           ty += 14;
 
           // Title
@@ -717,7 +717,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
 
         // Title text — white on dark overlay
         doc.font(fonts.sans).fontSize(10).fillColor('#FAFAF8AA')
-           .text('Talekit  —  Children\'s Storybook', PAD, 22, { width: PW - PAD * 2, align: 'center', opacity: 0.7 });
+           .text('Talekits  —  Children\'s Storybook', PAD, 22, { width: PW - PAD * 2, align: 'center', opacity: 0.7 });
 
         doc.font(fonts.italic).fontSize(42).fillColor('#FFFFFF').lineGap(6)
            .text(story.title, PAD, 42, { width: PW - PAD * 2, align: 'center' });
@@ -730,7 +730,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
         doc.rect(0, 0, PW, PH).fill(C.surface);
         doc.roundedRect(20, 20, PW - 40, PH - 40, 14).lineWidth(1).strokeColor(C.border).stroke();
         doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
-           .text('Talekit  —  Children\'s Storybook', PAD, PH / 2 - 70, { width: PW - PAD * 2, align: 'center' });
+           .text('Talekits  —  Children\'s Storybook', PAD, PH / 2 - 70, { width: PW - PAD * 2, align: 'center' });
         doc.font(fonts.italic).fontSize(38).fillColor(C.text).lineGap(6)
            .text(story.title, PAD, PH / 2 - 50, { width: PW - PAD * 2, align: 'center' });
         doc.font(fonts.sans).fontSize(12).fillColor(C.text2)
@@ -843,7 +843,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
              .lineWidth(0.5).strokeColor(C.border).stroke();
           doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
              .text(
-               `Talekit  ·  ${story.title}  ·  Page ${i} of ${range.count - 1}`,
+               `Talekits  ·  ${story.title}  ·  Page ${i} of ${range.count - 1}`,
                PAD, PH - FOOTER + 12,
                { width: PW - PAD * 2, align: 'center' }
              );
@@ -864,8 +864,8 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
   const isPaid    = plan !== 'kit';
   const heading   = `I wrote ${childName} a story`;
   const intro     = isPaid
-    ? `Hi! I'm Kit — the fox behind every Talekit story. I've just finished writing and illustrating today's story for <strong>${childName}</strong>, and I'm so excited to share it.`
-    : `Hi! I'm Kit — the fox behind every Talekit story. I've just finished writing <strong>${childName}'s</strong> very first story, and I can't wait for them to read it.`;
+    ? `Hi! I'm Kit — the fox behind every Talekits story. I've just finished writing and illustrating today's story for <strong>${childName}</strong>, and I'm so excited to share it.`
+    : `Hi! I'm Kit — the fox behind every Talekits story. I've just finished writing <strong>${childName}'s</strong> very first story, and I can't wait for them to read it.`;
   const attachMsg = isPaid
     ? `I've attached two things — the full story PDF for reading aloud, and the illustrated picture book that brings every scene to life. Open the picture book on a tablet or iPad for the best experience.`
     : `I've attached the full story as a PDF. Find a cosy spot together, open it up, and enjoy.`;
@@ -890,8 +890,8 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
     ? `I'll have another story ready for ${childName} tomorrow.<br/><br/><em>— Kit 🦊</em>`
     : `I hope ${childName} loves it.<br/><br/><em>— Kit 🦊</em>`;
   const footerNote = isPaid
-    ? `Kit writes a new story for ${childName} every day on the Talekit ${planLabel} plan.`
-    : `You received this because you signed up for a Talekit free trial.`;
+    ? `Kit writes a new story for ${childName} every day on the Talekits ${planLabel} plan.`
+    : `You received this because you signed up for a Talekitss free trial.`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -909,7 +909,7 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
         <tr>
           <td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
             <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">
-              Kit — Talekit Storywriter
+              Kit — Talekits Storywriter
             </p>
             <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
               ${heading}
@@ -958,7 +958,7 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
         <tr>
           <td style="background:#F3F2EE;border-radius:0 0 14px 14px;padding:24px 40px;border-top:1px solid #E0DED8;text-align:center;">
             <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">${footerNote}</p>
-            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekit — a new story, every day</p>
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekits — a new story, every day</p>
           </td>
         </tr>
 
@@ -976,10 +976,10 @@ function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLab
     ? `Two files are attached — the full story PDF and your illustrated picture book. Open the picture book on a tablet for the full illustrated experience.`
     : `The full story is attached as a PDF. Find a cosy spot and enjoy reading it together.`;
   const closing  = isPaid
-    ? `You're on the Talekit ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
+    ? `You're on the Talekitss ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
     : `You're on a 7-day free trial. Visit ${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'} to choose a plan and keep the stories coming.`;
 
-  return `${childName}'s Talekit story is ready
+  return `${childName}'s Talekits story is ready
 
 ─────────────────────────────────────
 Today's story: ${storyTitle}
@@ -987,7 +987,7 @@ Today's story: ${storyTitle}
 
 Hi there,
 
-${isPaid ? `Kit the fox has just written ${childName} a brand-new personalised story.` : `We've just written ${childName} their very first Talekit story.`}
+${isPaid ? `Kit the fox has just written ${childName} a brand-new personalised story.` : `We've just written ${childName} their very first Talekitss story.`}
 
 ${attachMsg}
 
@@ -997,7 +997,7 @@ ${parentNote}
 ${closing}
 
 ─────────────────────────────────────
-Talekit — a new story, every day`;
+Talekits — a new story, every day`;
 }
 
 async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, attachments }) {
@@ -1018,7 +1018,7 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, att
   const { data, error } = await resend.emails.send({
     from:    'Kit from Talekit <kit@talekits.com>',
     to:      [to],
-    subject: `${storyTitle} — ${childName}'s ${isPaid ? 'first' : 'first'} Talekit story`,
+    subject: `${storyTitle} — ${childName}'s ${isPaid ? 'first' : 'first'} Talekits story`,
     html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel),
     text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel),
     attachments,
@@ -1046,7 +1046,7 @@ async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer,
   <tr><td align="center" style="padding:40px 16px;">
     <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">
       <tr><td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
-        <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">Talekit — Picture Book</p>
+        <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">Talekits — Picture Book</p>
         <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
           ${childName}'s illustrated<br/>picture book is <em style="color:#6B6860;">ready</em>
         </h1>
@@ -1066,8 +1066,8 @@ async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer,
         </table>
       </td></tr>
       <tr><td style="background:#F3F2EE;border-radius:0 0 14px 14px;padding:24px 40px;border-top:1px solid #E0DED8;text-align:center;">
-        <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">You're on the Talekit ${planLabel} plan. A new story arrives every day.</p>
-        <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekit — a new story, every day</p>
+        <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">You're on the Talekitss ${planLabel} plan. A new story arrives every day.</p>
+        <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekits — a new story, every day</p>
       </td></tr>
     </table>
   </td></tr>
@@ -1079,7 +1079,7 @@ async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer,
     to:      [to],
     subject: `${storyTitle} — ${childName}'s illustrated picture book is ready`,
     html,
-    text:    `${childName}'s illustrated picture book is ready\n\nKit has finished illustrating "${storyTitle}". The picture book PDF is attached — open it on a tablet in landscape mode for the best experience.\n\nTalekit — a new story, every day`,
+    text:    `${childName}'s illustrated picture book is ready\n\nKit has finished illustrating "${storyTitle}". The picture book PDF is attached — open it on a tablet in landscape mode for the best experience.\n\nTalekits — a new story, every day`,
     attachments: [{
       filename: pbFilename,
       content:  pbBuffer.toString('base64'),

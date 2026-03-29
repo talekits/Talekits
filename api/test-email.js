@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
   const { data, error } = await resend.emails.send({
     from:    'Kit from Talekit <kit@talekits.com>',
     to:      [req.query.to || 'test@example.com'],
-    subject: 'Talekit email test',
+    subject: 'Talekits email test',
     html:    '<p>If you received this, email sending is working correctly.</p>',
     text:    'If you received this, email sending is working correctly.',
   });
