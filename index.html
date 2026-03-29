@@ -67,6 +67,46 @@
     line-height: 1.6;
   }
 
+  /* ── Site header (persistent across pages) ── */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250,250,248,0.92);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border-md);
+    padding: 0 2rem;
+    height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .site-header-logo {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 1.25rem; font-weight: 500; color: var(--text);
+    text-decoration: none; letter-spacing: -0.01em;
+  }
+  .site-header-logo em { color: var(--accent); font-style: normal; }
+  .site-header-nav { display: flex; align-items: center; gap: 8px; }
+  .site-header-link {
+    font-size: 13px; color: var(--text-2); text-decoration: none;
+    padding: 5px 12px; border-radius: var(--radius-pill);
+    transition: all 0.12s; font-weight: 400;
+  }
+  .site-header-link:hover { background: var(--surface); color: var(--text); }
+  .site-header-btn {
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    padding: 6px 16px; border-radius: var(--radius-pill);
+    border: 0.5px solid var(--border-md);
+    background: var(--surface); color: var(--text);
+    cursor: pointer; transition: all 0.12s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .site-header-btn:hover { background: var(--surface-2); border-color: var(--border-md); }
+  .site-header-btn-primary {
+    background: var(--text); color: var(--bg); border-color: var(--text);
+  }
+  .site-header-btn-primary:hover { opacity: 0.82; background: var(--text); }
+  @media (prefers-color-scheme: dark) {
+    .site-header { background: rgba(24,24,22,0.92); }
+  }
+
   /* ── Layout ── */
   .page { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
 
@@ -159,37 +199,20 @@
   .name-input::placeholder { color: var(--text-3); font-style: italic; }
   .name-input:focus { border-bottom-color: var(--accent); }
 
-  /* Gender select — matches name-input underline style */
-  .gender-select {
-    width: 100%;
-    font-family: var(--font-serif);
-    font-size: 1.15rem;
-    font-weight: 500;
-    font-style: italic;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border-md);
-    border-radius: 0;
-    color: var(--text);
-    outline: none;
-    padding: 4px 0 6px;
-    transition: border-color 0.15s;
-    cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
+  /* Gender pills */
+  .gender-pills { display: flex; gap: 7px; padding-top: 5px; flex-wrap: wrap; }
+  .gender-pill {
+    padding: 5px 14px; border-radius: var(--radius-pill);
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    border: 0.5px solid; cursor: pointer; transition: all 0.12s;
+    background: transparent; user-select: none;
   }
-  .gender-select:focus { border-bottom-color: var(--accent); }
-  .gender-select option { font-style: normal; font-family: var(--font); }
-  .gender-select-wrap { position: relative; }
-  .gender-select-wrap::after {
-    content: '';
-    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--text-3);
-    pointer-events: none;
-  }
+  .gender-pill-boy   { color: var(--blue-text);  border-color: var(--blue-border); }
+  .gender-pill-girl  { color: var(--pink-text);  border-color: var(--pink-border); }
+  .gender-pill-other { color: var(--green-text); border-color: var(--green-border); }
+  .gender-pill-boy.selected   { background: var(--blue-bg);  }
+  .gender-pill-girl.selected  { background: var(--pink-bg);  }
+  .gender-pill-other.selected { background: var(--green-bg); }
 
   /* Preview matches the name input's serif italic style */
   .name-preview {
@@ -633,6 +656,21 @@
 </style>
 </head>
 <body>
+
+<!-- Site-wide header -->
+<header class="site-header">
+  <a class="site-header-logo" href="/">Tale<em>kit</em></a>
+  <nav class="site-header-nav">
+    <a class="site-header-link" href="/">Home</a>
+    <a class="site-header-btn" href="/dashboard" id="header-dashboard-btn">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="7" cy="4.5" r="2.5"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5"/>
+      </svg>
+      My account
+    </a>
+  </nav>
+</header>
+
 <div class="page">
 
   <header class="header">
@@ -666,14 +704,12 @@
         </div>
         <div class="name-card-field">
           <p class="name-card-label">Gender</p>
-          <div class="gender-select-wrap">
-            <select class="gender-select" id="child-gender">
-              <option value="" disabled selected>Select…</option>
-              <option value="boy">Boy</option>
-              <option value="girl">Girl</option>
-              <option value="neutral">Gender neutral</option>
-            </select>
+          <div class="gender-pills">
+            <span class="gender-pill gender-pill-boy"   onclick="selectGender('boy',   this)">Boy</span>
+            <span class="gender-pill gender-pill-girl"  onclick="selectGender('girl',  this)">Girl</span>
+            <span class="gender-pill gender-pill-other" onclick="selectGender('other', this)">Other</span>
           </div>
+          <input type="hidden" id="child-gender" value="" />
         </div>
         <div class="name-card-field">
           <p class="name-card-label">Email address</p>
@@ -1064,6 +1100,13 @@ function onNameInput() {
     preview.textContent = '\u00A0';
     preview.classList.add('empty');
   }
+}
+
+/* ── Gender pills ── */
+function selectGender(value, el) {
+  document.querySelectorAll('.gender-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('child-gender').value = value;
 }
 
 /* ── Tags ── */

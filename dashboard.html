@@ -294,7 +294,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   border-radius: var(--radius-lg); padding: 2rem; max-width: 400px; width: 100%;
 }
 
-/* ── Spinner ── */
 .spinner {
   width: 20px; height: 20px; border-radius: 50%;
   border: 2px solid var(--border-md); border-top-color: var(--text);
@@ -307,6 +306,21 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .empty-state-icon { font-size: 2.5rem; margin-bottom: 1rem; }
 .empty-state h3 { font-family: var(--font-serif); font-style: italic; font-size: 1.2rem; color: var(--text); margin-bottom: 8px; }
 .empty-state p { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+
+/* ── Site header (login page only) ── */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,250,248,0.92);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border-md);
+  padding: 0 2rem; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.site-header-logo { font-family: var(--font-serif); font-style: italic; font-size: 1.25rem; font-weight: 500; color: var(--text); text-decoration: none; }
+.site-header-logo em { color: var(--accent); font-style: normal; }
+.site-header-link { font-size: 13px; color: var(--text-2); text-decoration: none; padding: 5px 12px; border-radius: 999px; transition: all 0.12s; }
+.site-header-link:hover { background: var(--surface); color: var(--text); }
+@media (prefers-color-scheme: dark) { .site-header { background: rgba(24,24,22,0.92); } }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
@@ -323,6 +337,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 
 <!-- ── Login screen (shown when not authenticated) ── -->
 <div id="login-screen">
+  <header class="site-header">
+    <a class="site-header-logo" href="/">Tale<em>kit</em></a>
+    <a class="site-header-link" href="/">← Back to Talekit</a>
+  </header>
   <div class="login-wrap">
     <div class="login-card">
       <p class="login-logo">Tale<em>kit</em></p>

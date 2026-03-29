@@ -50,9 +50,10 @@ body {
   color: var(--text);
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 2rem 1.25rem;
+  justify-content: flex-start;
+  padding: 0;
 }
 
 .card {
@@ -61,8 +62,9 @@ body {
   border-radius: var(--radius-lg);
   padding: 2.5rem 2rem;
   max-width: 500px;
-  width: 100%;
+  width: calc(100% - 2.5rem);
   text-align: center;
+  margin: 3rem auto;
 }
 
 .icon-wrap {
@@ -163,9 +165,34 @@ h1 em { color: var(--text-2); }
   margin-top: 1.5rem;
   font-size: 12px; color: var(--text-3); line-height: 1.6;
 }
+
+/* ── Site header ── */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,250,248,0.92);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border-md);
+  padding: 0 2rem; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.site-header-logo { font-family: var(--font-serif); font-style: italic; font-size: 1.25rem; font-weight: 500; color: var(--text); text-decoration: none; }
+.site-header-logo em { color: var(--accent); font-style: normal; }
+.site-header-btn { font-family: var(--font); font-size: 13px; font-weight: 500; padding: 6px 16px; border-radius: 999px; border: 0.5px solid var(--border-md); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.site-header-btn:hover { background: var(--surface-2); }
+@media (prefers-color-scheme: dark) { .site-header { background: rgba(24,24,22,0.92); } }
 </style>
 </head>
 <body>
+
+<header class="site-header">
+  <a class="site-header-logo" href="/">Tale<em>kit</em></a>
+  <nav>
+    <a class="site-header-btn" href="/dashboard">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="4.5" r="2.5"/><path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5"/></svg>
+      My account
+    </a>
+  </nav>
+</header>
 
 <div class="card" id="card">
   <!-- Populated by JS -->
