@@ -323,6 +323,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .site-header-link:hover { background: var(--surface); color: var(--text); }
 @media (prefers-color-scheme: dark) { .site-header { background: rgba(24,24,22,0.92); } }
 
+/* ── Profile preference library tags ── */
+.pedit-library { font-family: var(--font); }
+.ptag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; font-size: 12px; font-weight: 400;
+  border-radius: var(--radius-pill); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-2);
+  cursor: pointer; user-select: none; transition: border-color 0.1s, font-weight 0.1s;
+  line-height: 1.5;
+}
+.ptag:hover { border-color: var(--border-md); background: var(--surface-2); color: var(--text); }
+.ptag-theme  { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
+.ptag-art    { background: var(--teal-bg);   color: var(--teal-text);   border-color: var(--teal-border); }
+.ptag-edu    { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-border); }
+.ptag-age    { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+.ptag-char   { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+.ptag-selected { font-weight: 600; }
+.ptag-theme.ptag-selected  { border: 2px solid var(--purple-text); }
+.ptag-art.ptag-selected    { border: 2px solid var(--teal-text); }
+.ptag-edu.ptag-selected    { border: 2px solid var(--amber-text); }
+.ptag-age.ptag-selected    { border: 2px solid var(--blue-text); }
+.ptag-char.ptag-selected   { border: 2px solid var(--green-text); }
+
 /* ── Gender pills ── */
 .gender-pill { display:inline-flex;align-items:center;padding:4px 11px;font-size:13px;font-weight:400;border-radius:var(--radius-pill);border:1px solid;cursor:pointer;user-select:none;transition:border-color 0.12s,font-weight 0.1s;line-height:1.5; }
 .gender-pill-boy   { background:var(--blue-bg); color:var(--blue-text); border-color:var(--blue-border); }
@@ -873,28 +896,40 @@ function profileCardHtml(profile, limit) {
       </div>
 
       <!-- Inline edit panel (hidden by default) -->
-      <div id="profile-edit-${profile.id}" style="display:none;border-top:0.5px solid var(--border);padding:1.25rem 1.5rem;background:var(--bg);">
-        <div class="form-grid" style="margin-bottom:1rem;">
-          <div class="form-group">
-            <label class="form-label">Child's name</label>
-            <input class="form-input" id="pedit-name-${profile.id}" type="text" value="${esc(profile.child_name)}"
-              oninput="markProfileDirty('${profile.id}')" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Gender</label>
-            <div style="display:flex;gap:6px;padding-top:4px;">
-              <span class="gender-pill gender-pill-boy${profile.gender === 'boy' ? ' selected' : ''}"
-                onclick="selectEditGender('${profile.id}', 'boy', this)">Boy</span>
-              <span class="gender-pill gender-pill-girl${profile.gender === 'girl' ? ' selected' : ''}"
-                onclick="selectEditGender('${profile.id}', 'girl', this)">Girl</span>
-              <span class="gender-pill gender-pill-other${(profile.gender === 'other' || profile.gender === 'neutral') ? ' selected' : ''}"
-                onclick="selectEditGender('${profile.id}', 'other', this)">Other</span>
+      <div id="profile-edit-${profile.id}" style="display:none;border-top:0.5px solid var(--border);background:var(--bg);">
+
+        <!-- Name + gender row -->
+        <div style="padding:1.25rem 1.5rem;border-bottom:0.5px solid var(--border);">
+          <div class="form-grid" style="margin-bottom:0;">
+            <div class="form-group">
+              <label class="form-label">Child's name</label>
+              <input class="form-input" id="pedit-name-${profile.id}" type="text" value="${esc(profile.child_name)}"
+                oninput="markProfileDirty('${profile.id}')" />
             </div>
-            <input type="hidden" id="pedit-gender-${profile.id}" value="${profile.gender || ''}" />
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <div style="display:flex;gap:6px;padding-top:4px;">
+                <span class="gender-pill gender-pill-boy${profile.gender === 'boy' ? ' selected' : ''}"
+                  onclick="selectEditGender('${profile.id}', 'boy', this)">Boy</span>
+                <span class="gender-pill gender-pill-girl${profile.gender === 'girl' ? ' selected' : ''}"
+                  onclick="selectEditGender('${profile.id}', 'girl', this)">Girl</span>
+                <span class="gender-pill gender-pill-other${(profile.gender === 'other' || profile.gender === 'neutral') ? ' selected' : ''}"
+                  onclick="selectEditGender('${profile.id}', 'other', this)">Other</span>
+              </div>
+              <input type="hidden" id="pedit-gender-${profile.id}" value="${profile.gender || ''}" />
+            </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button class="btn-primary" id="pedit-save-${profile.id}" onclick="saveProfileEdit('${profile.id}')" disabled>
+
+        <!-- Preference library -->
+        <div style="padding:1.25rem 1.5rem;">
+          <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;">Story preferences</p>
+          <div id="pedit-library-${profile.id}" class="pedit-library"></div>
+        </div>
+
+        <!-- Save bar -->
+        <div style="padding:1rem 1.5rem;border-top:0.5px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;">
+          <button class="btn-primary" id="pedit-save-${profile.id}" onclick="saveProfileEdit('${profile.id}')">
             Save changes
           </button>
           <button class="btn-secondary" onclick="toggleProfileEdit('${profile.id}')">Cancel</button>
@@ -942,31 +977,32 @@ async function saveProfileEdit(id) {
 
   if (!name) { if (status) { status.textContent = 'Name cannot be empty.'; status.style.color = '#E05050'; } return; }
 
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;"></span> Saving…'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;vertical-align:middle;display:inline-block;"></span> Saving…'; }
+
+  // Build updated profile_content from name, gender, and current tag selections
+  const sel             = profileSelections[id] || new Set();
+  const profile_content = buildProfileContent(name, gender, sel, {});
 
   try {
     const res  = await fetch('/api/dashboard-api?action=update-profile', {
       method:  'PATCH',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-      body:    JSON.stringify({ profile_id: id, child_name: name, gender }),
+      body:    JSON.stringify({ profile_id: id, child_name: name, gender, profile_content }),
     });
     const data = await res.json();
 
     if (!res.ok) throw new Error(data.error || 'Could not save changes.');
 
-    // Update local subscriberData immediately so the UI stays in sync
+    // Update local data immediately
     const profile = subscriberData?.child_profiles?.find(p => p.id === id);
-    if (profile) { profile.child_name = name; profile.gender = gender; }
+    if (profile) { profile.child_name = name; profile.gender = gender; profile.profile_content = profile_content; }
 
-    // Update the display name in the header row
     const nameDisplay = document.getElementById(`pname-display-${id}`);
     if (nameDisplay) nameDisplay.textContent = name;
 
     if (status) { status.textContent = '✓ Saved'; status.style.color = 'var(--green-text)'; }
-    if (btn)    { btn.innerHTML = 'Save changes'; btn.disabled = true; }
-
-    // Hide status after 2 seconds
-    setTimeout(() => { if (status) status.textContent = ''; }, 2000);
+    if (btn)    { btn.innerHTML = 'Save changes'; btn.disabled = false; }
+    setTimeout(() => { if (status) status.textContent = ''; }, 2500);
 
   } catch (err) {
     if (status) { status.textContent = err.message; status.style.color = '#E05050'; }
@@ -1180,6 +1216,221 @@ async function changePassword() {
   });
   if (res.ok) { msg.textContent = '✓ Password updated.'; msg.style.color = 'var(--green-text)'; document.getElementById('new-pw').value = ''; document.getElementById('new-pw-2').value = ''; }
   else        { msg.textContent = 'Could not update password. Please try again.'; msg.style.color = '#E05050'; }
+}
+
+/* ─────────────────────────────────────────────
+   Preference library data (mirrors index.html)
+─────────────────────────────────────────────── */
+const LIBRARY = {
+  age: { label: "Age & format", cls: "age", groups: {
+    "Age brackets": ["Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words","Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words","Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words","Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words"],
+    "Reading level": ["Pre-reader (read-aloud only, adult required)","Emergent reader (guided with adult)","Independent early reader","Fluent independent reader"],
+    "Story length": ["Short — lower end of age range","Medium — middle of age range","Long — upper end of age range"],
+    "Tone & mood": ["Funny & silly","Gentle & cosy","Exciting & adventurous","Spooky (mild)","Heartwarming","Educational & informative","Mysterious"],
+    "Story structure": ["Classic (clear beginning, middle, end)","Circular (story ends where it began)","Episodic (a series of small linked events)","Mystery (a problem to identify and solve)","Quest (a journey toward a goal)","Dual narrator (two perspectives on the same event)"]
+  }},
+  themes: { label: "Themes", cls: "theme", groups: {
+    "Nature & animals": ["Wild animals","Farm animals","Pets & companions","Ocean creatures","Insects & bugs","Dinosaurs","Mythical creatures (dragons, unicorns, phoenixes)","Plants & gardening","Weather & seasons","Rainforests","Deserts","Arctic & polar adventures"],
+    "Fantasy & magic": ["Fairy tales","Wizards & witches","Enchanted kingdoms","Time travel","Hidden underground worlds","Underwater realms","Inside a magical tree","Dream realms","Talking objects & toys","Portals to other worlds"],
+    "Science & space": ["Outer space & planets","Robots & androids","Inventors & scientists","Underwater exploration","Volcanoes & geology","Microscopic worlds","Future technology","Lab experiments gone wrong","AI & friendly computers"],
+    "Adventure & discovery": ["Pirates & treasure maps","Jungle expeditions","Mountain climbing","Archaeology & ancient civilisations","Mystery solving","Map-making journeys","Lost & found adventures","Secret doors & hidden passages","Around-the-world travel"],
+    "Everyday life & emotions": ["First day of school","Moving to a new home","New baby sibling","Making and keeping friends","Feeling scared or nervous","Losing something precious","Celebrating birthdays & milestones","Dealing with mistakes","Bedtime & dreams"],
+    "Cultures & people": ["Around-the-world adventures","Folktales from specific countries","Festivals & traditions (Diwali, Lunar New Year, Eid, Hanukkah, Christmas)","Historical figures (child-appropriate)","Community helpers (doctors, firefighters, teachers)","Family heritage & ancestors","Multicultural friendships"],
+    "Sports & play": ["Team sports (football, basketball, cricket)","Martial arts","Dance & ballet","The Olympics","Learning to ride a bike","Sportsmanship & losing gracefully","Board games come alive","Playground adventures"],
+    "Food & cooking": ["Baking adventures","Food from around the world","Farm-to-table journeys","Picky eating stories","Magical kitchens","An ingredient that goes on an adventure","Cooking competitions"]
+  }},
+  art: { label: "Art styles", cls: "art", groups: {
+    "Classic & traditional": ["Watercolour (soft, Beatrix Potter-esque)","Pencil & ink line art","Oil pastel","Hand-drawn crayon","Gouache painterly","Vintage golden age (1950s–70s storybook)"],
+    "Modern illustration": ["Flat design / bold vector","Paper cut-out collage","Folk art & pattern-heavy","Risograph print","Bold graphic novel"],
+    "Digital & contemporary": ["Pixar/Disney 3D CGI-style","Anime & manga","Comic book with panels","Neon pop art","Low-poly geometric","Soft digital painting"],
+    "Themed & atmospheric": ["Dark fairy tale (moody, Tim Burton-esque — older kids only)","Cosy cottage-core","Retro 8-bit pixel art","Noir mystery (sepia tones)","Dreamlike pastel clouds"],
+    "Cultural art styles": ["Japanese woodblock print","Indian miniature painting","African kente-inspired patterns","Indigenous dot art","Mexican folk / Huichol","Chinese ink wash","Aboriginal Australian","Batik textile-inspired"]
+  }},
+  edu: { label: "Educational focus", cls: "edu", groups: {
+    "STEM & critical thinking": ["Basic coding concepts (loops, if/then logic through story)","Engineering & building challenges","Maths through story (counting, shapes, fractions in context)","Scientific method & hypothesis testing","Environmental science & climate literacy","Physics concepts (gravity, light, sound)","Biology & the human body"],
+    "Literacy & language": ["Vocabulary building (one new word per story, defined in context)","Rhyme & phonics reinforcement","Story structure awareness (beginning, middle, end)","Figurative language (similes, metaphors introduced gently)","Bilingual story mode","Storytelling & narration skills","Punctuation through dialogue"],
+    "Social-emotional learning": ["Identifying and naming emotions","Empathy & perspective-taking","Conflict resolution & repair","Growth mindset & resilience after failure","Self-regulation & calming strategies","Friendship skills","Boundaries & consent (age-appropriate)","Asking for help"],
+    "Life skills & practical knowledge": ["Financial literacy (saving, sharing, earning)","Healthy habits (sleep, food, hygiene)","Road & personal safety","Following instructions & sequences","Time & planning concepts","Digital safety basics","Cooking & nutrition basics"],
+    "Ethics & values": ["Honesty & integrity","Fairness & justice","Kindness to strangers","Caring for animals","Environmental responsibility","Standing up to bullying","Sharing & generosity","Courage & doing what is right"],
+    "History & civics": ["Age-appropriate history (how things were built, how communities work)","Famous explorers & inventors","How communities and rules help people","Cultural heritage & family history","Simple geography & world awareness","How food & goods travel the world"],
+    "Mindfulness & wellbeing": ["Gratitude practices","Body awareness","Slowing down & paying attention","The value of rest and quiet","Positive self-talk","Handling big feelings"]
+  }},
+  char: { label: "Characters", cls: "char", groups: {
+    "Protagonist type": ["Human child","Animal hero","Robot or AI companion","Mythical creature","Everyday object come to life","Historical figure (child version)","Alien or space explorer","Nature spirit or elemental"],
+    "Protagonist personalisation": ["Child's own name as the hero","Child's real pet as a supporting character","Family members woven into the story","Child's friend incorporated as sidekick"],
+    "Cultural representation": ["Protagonist reflects child's own ethnicity","Diverse ensemble cast of characters","Specific cultural setting and traditions","Disability representation","Neurodiversity representation","Non-traditional family structures","Gender-neutral protagonist"],
+    "Recurring elements": ["Same protagonist in every story","Running sidekick or best friend","A magical object that reappears across stories","A recurring mild antagonist","A consistent home base (village, treehouse, spaceship, etc.)","A mentor or wise elder figure","Post-story teaser hinting at tomorrow's adventure"]
+  }}
+};
+
+const LIB_RADIO_GROUPS = new Set(["Age brackets", "Reading level"]);
+
+// Per-profile selected sets, keyed by profile ID
+const profileSelections = {};
+
+/* ── Parse profile_content text back into a Set of tag keys ── */
+function parseProfileContent(content, profileId) {
+  const sel = new Set();
+  if (!content) return sel;
+
+  // Build a lookup: tag text → key
+  const lookup = {};
+  Object.entries(LIBRARY).forEach(([catKey, cat]) => {
+    Object.entries(cat.groups).forEach(([groupName, tags]) => {
+      tags.forEach(tag => { lookup[tag.toLowerCase().trim()] = `${catKey}|${groupName}|${tag}`; });
+    });
+  });
+
+  // Parse each line of the profile for values after the colon
+  content.split('\n').forEach(line => {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return;
+    const valPart = line.slice(colonIdx + 1).trim();
+    // Values may be comma-separated
+    valPart.split(',').forEach(v => {
+      const cleaned = v.trim().replace(/→.*$/, '').trim(); // strip detail notes
+      const key = lookup[cleaned.toLowerCase()];
+      if (key) sel.add(key);
+    });
+  });
+
+  return sel;
+}
+
+/* ── Build profile_content text from name, gender, selections, details ── */
+function buildProfileContent(name, gender, sel, details) {
+  const grouped = {};
+  [...sel].forEach(k => {
+    const [cat, group, ...rest] = k.split('|');
+    const text = rest.join('|');
+    if (!grouped[cat]) grouped[cat] = {};
+    if (!grouped[cat][group]) grouped[cat][group] = [];
+    grouped[cat][group].push(text);
+  });
+
+  const lines = ['TALEKIT STORY PROFILE', '─'.repeat(36)];
+  if (name) lines.push(`Child's name: ${name}`);
+  if (gender) lines.push(`Child's gender: ${gender}`);
+  lines.push(`Created: ${new Date().toLocaleDateString('en-AU', { day:'numeric', month:'long', year:'numeric' })}`);
+  lines.push('');
+
+  Object.entries(LIBRARY).forEach(([catKey, cat]) => {
+    if (!grouped[catKey]) return;
+    lines.push(cat.label.toUpperCase());
+    Object.entries(grouped[catKey]).forEach(([groupName, vals]) => {
+      lines.push(`  ${groupName}: ${vals.join(', ')}`);
+      // Append detail values if any
+      vals.forEach(val => {
+        const detailKey = Object.keys(DETAIL_BOX_CONFIGS).find(k => k === val);
+        if (detailKey && details?.[detailKey]) {
+          lines.push(`    → ${DETAIL_BOX_CONFIGS[detailKey].label}: ${details[detailKey]}`);
+        }
+      });
+    });
+    lines.push('');
+  });
+
+  return lines.join('\n').trimEnd();
+}
+
+const DETAIL_BOX_CONFIGS = {
+  "Child's real pet as a supporting character": { label: "Tell us about your pet" },
+  "Child's friend incorporated as sidekick":    { label: "Friend's name" },
+  "Family members woven into the story":        { label: "Family members" },
+};
+
+/* ── Render the preference library for a profile edit panel ── */
+function renderProfileLibrary(profileId, profileContent) {
+  const container = document.getElementById(`pedit-library-${profileId}`);
+  if (!container) return;
+
+  // Parse existing selections
+  profileSelections[profileId] = parseProfileContent(profileContent, profileId);
+
+  // Render categories
+  let html = '';
+  Object.entries(LIBRARY).forEach(([catKey, cat]) => {
+    html += `<div style="margin-bottom:1.75rem;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.04em;color:var(--text);">${esc(cat.label)}</span>
+        <span style="flex:1;height:0.5px;background:var(--border);"></span>
+      </div>`;
+
+    Object.entries(cat.groups).forEach(([groupName, tags]) => {
+      const isRadio = LIB_RADIO_GROUPS.has(groupName);
+      html += `<div style="margin-bottom:1rem;">
+        <p style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:7px;">
+          ${esc(groupName)}${isRadio ? ' <span style="font-weight:400;opacity:0.6;text-transform:none;letter-spacing:0">· choose one</span>' : ''}
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+
+      tags.forEach(tag => {
+        const key    = `${catKey}|${groupName}|${tag}`;
+        const isSel  = profileSelections[profileId]?.has(key);
+        const safeId = profileId.replace(/-/g, '_');
+        html += `<span
+          class="ptag ptag-${cat.cls}${isSel ? ' ptag-selected' : ''}"
+          data-key="${esc(key)}"
+          data-pid="${profileId}"
+          onclick="toggleProfileTag('${profileId}', '${key.replace(/'/g, "\\'")}', this)">
+          ${isSel ? '<svg style="width:11px;height:11px;flex-shrink:0;" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5,10 11,3"/></svg>' : ''}
+          ${esc(tag)}
+        </span>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+/* ── Toggle a tag in a profile edit panel ── */
+function toggleProfileTag(profileId, key, el) {
+  if (!profileSelections[profileId]) profileSelections[profileId] = new Set();
+  const sel       = profileSelections[profileId];
+  const groupName = key.split('|')[1];
+  const isRadio   = LIB_RADIO_GROUPS.has(groupName);
+
+  if (sel.has(key)) {
+    sel.delete(key);
+    el.classList.remove('ptag-selected');
+    el.innerHTML = el.innerHTML.replace(/<svg[^>]*>.*?<\/svg>/s, '');
+  } else {
+    if (isRadio) {
+      // Deselect others in same group
+      [...sel].filter(k => k.split('|')[1] === groupName).forEach(k => {
+        sel.delete(k);
+        const otherEl = document.querySelector(`[data-pid="${profileId}"][data-key="${CSS.escape(k)}"]`);
+        if (otherEl) {
+          otherEl.classList.remove('ptag-selected');
+          otherEl.innerHTML = otherEl.innerHTML.replace(/<svg[^>]*>.*?<\/svg>/s, '');
+        }
+      });
+    }
+    sel.add(key);
+    el.classList.add('ptag-selected');
+    if (!el.querySelector('svg')) {
+      el.insertAdjacentHTML('afterbegin', '<svg style="width:11px;height:11px;flex-shrink:0;" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5,10 11,3"/></svg>');
+    }
+  }
+}
+
+/* ── Override toggleProfileEdit to also render library ── */
+const _origToggleProfileEdit = toggleProfileEdit;
+function toggleProfileEdit(id) {
+  const panel = document.getElementById(`profile-edit-${id}`);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    // Render the library with current profile content
+    const profile = subscriberData?.child_profiles?.find(p => p.id === id);
+    renderProfileLibrary(id, profile?.profile_content || '');
+    document.getElementById(`pedit-name-${id}`)?.focus();
+  }
 }
 
 /* ─────────────────────────────────────────────
