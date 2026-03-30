@@ -635,6 +635,59 @@
     .pricing-grid { grid-template-columns: 1fr 1fr; }
     .modal { padding: 1.5rem 1.25rem 1.25rem; }
   }
+
+  /* ── Character customisation upsell ── */
+  .char-custom-box {
+    background: var(--purple-bg);
+    border: 1px solid var(--purple-border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .char-custom-box:hover { border-color: var(--purple-text); }
+  .char-custom-box.selected {
+    border: 2px solid var(--purple-text);
+    box-shadow: 0 0 0 3px rgba(60,52,137,0.1);
+  }
+  .char-custom-header {
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .char-custom-checkbox {
+    width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+    border: 1.5px solid var(--purple-border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .char-custom-box.selected .char-custom-checkbox {
+    background: var(--purple-text); border-color: var(--purple-text);
+  }
+  .char-custom-checkbox svg { display: none; width: 11px; height: 11px; }
+  .char-custom-box.selected .char-custom-checkbox svg { display: block; }
+  .char-custom-body { flex: 1; }
+  .char-custom-title {
+    font-size: 13px; font-weight: 600; color: var(--purple-text);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .char-custom-price {
+    font-size: 11px; font-weight: 600;
+    background: var(--purple-text); color: var(--purple-bg);
+    border-radius: var(--radius-pill); padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .char-custom-desc {
+    font-size: 12px; color: var(--purple-text); opacity: 0.8;
+    margin-top: 3px; line-height: 1.5;
+  }
+  .char-custom-notice {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--purple-border);
+    font-size: 12px; color: var(--purple-text); opacity: 0.75;
+    line-height: 1.55; display: none;
+  }
+  .char-custom-box.selected .char-custom-notice { display: block; }
   @media (max-width: 400px) {
     .pricing-grid { grid-template-columns: 1fr; }
   }
@@ -852,14 +905,14 @@
         </div>
         <p class="pricing-tier-name">Cub</p>
         <div class="pricing-price">
-          <span class="pricing-amount">$7.99</span>
+          <span class="pricing-amount">$9.99</span>
           <span class="pricing-period">/ month</span>
         </div>
         <div class="pricing-divider"></div>
         <p class="pricing-includes">Includes</p>
         <ul class="pricing-features">
           <li>1 story per day</li>
-          <li>Text + picture book (PDF)</li>
+          <li>Text story + audiobook (MP3)</li>
           <li>1 child profile</li>
         </ul>
       </div>
@@ -882,8 +935,8 @@
         <p class="pricing-includes">Includes</p>
         <ul class="pricing-features">
           <li>1 story per day</li>
-          <li>Text + picture book + narration MP3</li>
-          <li>Up to 3 child profiles</li>
+          <li>Text + picture book (PDF) + audiobook (MP3)</li>
+          <li>1 child profile</li>
         </ul>
       </div>
 
@@ -897,7 +950,7 @@
         </div>
         <p class="pricing-tier-name">Den</p>
         <div class="pricing-price">
-          <span class="pricing-amount">$24.99</span>
+          <span class="pricing-amount">$29.99</span>
           <span class="pricing-period">/ month</span>
         </div>
         <div class="pricing-divider"></div>
@@ -905,7 +958,31 @@
         <ul class="pricing-features">
           <li>Up to 3 stories per day</li>
           <li>All formats</li>
-          <li>5 child profiles</li>
+          <li>Up to 3 child profiles</li>
+          <li>Print-on-demand credits</li>
+          <li>Story archive</li>
+        </ul>
+      </div>
+
+      <!-- Grove -->
+      <div class="pricing-card" data-plan="grove" onclick="selectPlan('grove')">
+        <div class="pricing-select-indicator">
+          <svg viewBox="0 0 10 10" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="pricing-check-dark" points="1.5,5.5 4,8 8.5,2"/>
+            <polyline class="pricing-check-light" points="1.5,5.5 4,8 8.5,2"/>
+          </svg>
+        </div>
+        <p class="pricing-tier-name">Grove</p>
+        <div class="pricing-price">
+          <span class="pricing-amount">$44.99</span>
+          <span class="pricing-period">/ month</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <p class="pricing-includes">Includes</p>
+        <ul class="pricing-features">
+          <li>Up to 5 stories per day</li>
+          <li>All formats</li>
+          <li>Up to 5 child profiles</li>
           <li>Print-on-demand credits</li>
           <li>Story archive</li>
         </ul>
@@ -920,8 +997,10 @@
           </svg>
         </div>
         <p class="pricing-tier-name">Pack</p>
+        <p style="font-size:11px;color:var(--text-3);margin-top:-4px;">Perfect for the classroom</p>
         <div class="pricing-price">
-          <span class="pricing-amount">$49.99</span>
+          <span style="font-size:11px;color:var(--text-3);margin-right:2px;align-self:center;">from</span>
+          <span class="pricing-amount">$149.99</span>
           <span class="pricing-period">/ month</span>
         </div>
         <div class="pricing-divider"></div>
@@ -929,14 +1008,77 @@
         <ul class="pricing-features">
           <li>Educator dashboard</li>
           <li>30 student profiles</li>
-          <li>Curriculum themes</li>
+          <li>Tailored to curriculum themes</li>
           <li>Progress tracking</li>
+          <li>Bulk pricing available</li>
         </ul>
       </div>
 
     </div>
 
     <div class="modal-footer-row">
+      <!-- Character customisation upsell — shown for Scout, Den, Grove, Pack -->
+      <div id="char-custom-row" style="display:none;width:100%;margin-bottom:1rem;">
+        <div class="char-custom-box" id="char-custom-toggle" onclick="toggleCharCustom()">
+          <div class="char-custom-header">
+            <div class="char-custom-checkbox">
+              <svg viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1.5,6 4,8.5 9.5,2.5"/>
+              </svg>
+            </div>
+            <div class="char-custom-body">
+              <p class="char-custom-title">
+                Character Customisation
+                <span class="char-custom-price">+ $14.99 one-off per child</span>
+              </p>
+              <p class="char-custom-desc">Make the protagonist look like your child — Kit will illustrate the hero to match their appearance across every story.</p>
+              <div class="char-custom-notice">
+                <strong style="display:block;margin-bottom:3px;font-size:12px;">What happens after you subscribe</strong>
+                After signing up you&rsquo;ll be able to upload a few photos of your child in your dashboard. Character Customisation won&rsquo;t appear in the very first story, but will be woven into every story from then on.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pack enquiry box — shown only when Pack plan is selected -->
+      <div id="pack-enquiry-row" style="display:none;width:100%;margin-bottom:1rem;">
+        <div style="background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:14px 16px;">
+          <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin:0 0 4px;">School &amp; classroom enquiry</p>
+          <p style="font-size:12px;color:var(--text-3);margin:0 0 12px;line-height:1.5;">Pack plans are tailored for schools and educators. Tell us about your setup and we&rsquo;ll be in touch with pricing &mdash; bulk discounts are available for larger groups.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">Your name</p>
+              <input id="pack-contact-name" type="text" placeholder="e.g. Sarah Mitchell"
+                style="width:100%;font-family:var(--font);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border-md);outline:none;padding:4px 0 6px;color:var(--text);caret-color:var(--accent);" />
+            </div>
+            <div>
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">School or organisation name</p>
+              <input id="pack-school-name" type="text" placeholder="e.g. Riverside Primary School"
+                style="width:100%;font-family:var(--font);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border-md);outline:none;padding:4px 0 6px;color:var(--text);caret-color:var(--accent);" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1.5rem;">
+              <div>
+                <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">Number of students</p>
+                <input id="pack-student-count" type="number" min="1" placeholder="e.g. 30"
+                  style="width:100%;font-family:var(--font);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border-md);outline:none;padding:4px 0 6px;color:var(--text);caret-color:var(--accent);" />
+              </div>
+              <div>
+                <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">Year level(s)</p>
+                <input id="pack-year-levels" type="text" placeholder="e.g. Year 1&ndash;3"
+                  style="width:100%;font-family:var(--font);font-size:14px;background:transparent;border:none;border-bottom:1px solid var(--border-md);outline:none;padding:4px 0 6px;color:var(--text);caret-color:var(--accent);" />
+              </div>
+            </div>
+            <div>
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-3);margin:0 0 5px;">Anything else? (optional)</p>
+              <textarea id="pack-notes" placeholder="e.g. We&rsquo;re a homeschool co-op of 12 families, interested in a semester-long trial&hellip;"
+                style="width:100%;min-height:64px;resize:vertical;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);border:0.5px solid var(--border-md);border-radius:var(--radius-sm);padding:8px 10px;line-height:1.5;outline:none;caret-color:var(--accent);"></textarea>
+            </div>
+          </div>
+          <p id="pack-enquiry-hint" style="font-size:12px;color:#E05050;margin-top:6px;min-height:14px;"></p>
+        </div>
+      </div>
+
       <!-- Password field — shown only for paid plans -->
       <div id="password-row" style="display:none;width:100%;margin-bottom:1rem;">
         <div style="background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:14px 16px;">
@@ -1479,6 +1621,13 @@ function buildProfileJson() {
 }
 
 let selectedPlan = null;
+let charCustomSelected = false;
+
+function toggleCharCustom() {
+  charCustomSelected = !charCustomSelected;
+  const toggle = document.getElementById('char-custom-toggle');
+  if (toggle) toggle.classList.toggle('selected', charCustomSelected);
+}
 
 // Capture the original pricing modal HTML so it can be restored after the success state
 const MODAL_ORIGINAL_HTML = document.querySelector('.modal').innerHTML;
@@ -1491,22 +1640,38 @@ function selectPlan(planId) {
     card.classList.toggle('selected', card.dataset.plan === planId);
   });
 
-  const AUDIO_PLANS = new Set(['scout', 'den', 'pack']);
+  const AUDIO_PLANS = new Set(['cub', 'scout', 'den', 'grove', 'pack']);
 
-  // Show password field for paid plans only
+  // Show password field for paid plans — not kit, not pack (pack uses enquiry flow)
   const pwRow = document.getElementById('password-row');
-  if (pwRow) pwRow.style.display = planId === 'kit' ? 'none' : 'block';
+  if (pwRow) pwRow.style.display = (planId === 'kit' || planId === 'pack') ? 'none' : 'block';
 
-  // Show narrator voice picker for audio plans only
+  // Show narrator voice picker for audio plans — not pack (no direct checkout)
   const voiceRow = document.getElementById('narrator-voice-row');
-  if (voiceRow) voiceRow.style.display = AUDIO_PLANS.has(planId) ? 'block' : 'none';
+  if (voiceRow) voiceRow.style.display = (AUDIO_PLANS.has(planId) && planId !== 'pack') ? 'block' : 'none';
 
   // Reset voice selection to default when switching plans
-  if (AUDIO_PLANS.has(planId)) {
+  if (AUDIO_PLANS.has(planId) && planId !== 'pack') {
     selectedNarratorVoice = 'au_female';
     document.querySelectorAll('.modal-voice-card').forEach(c => {
       c.classList.toggle('selected', c.dataset.voice === 'au_female');
     });
+  }
+
+  // Show Pack enquiry box when pack is selected, hide for all others
+  const packEnquiry = document.getElementById('pack-enquiry-row');
+  if (packEnquiry) packEnquiry.style.display = planId === 'pack' ? 'block' : 'none';
+
+  // Show character customisation upsell for Scout and above (not kit or cub)
+  const UPSELL_PLANS = new Set(['scout', 'den', 'grove', 'pack']);
+  const charCustomRow = document.getElementById('char-custom-row');
+  if (charCustomRow) charCustomRow.style.display = UPSELL_PLANS.has(planId) ? 'block' : 'none';
+
+  // Reset char custom selection when switching plans
+  if (!UPSELL_PLANS.has(planId)) {
+    const toggle = document.getElementById('char-custom-toggle');
+    if (toggle) toggle.classList.remove('selected');
+    charCustomSelected = false;
   }
 
   // Clear any previous password values when switching plans
@@ -1519,7 +1684,11 @@ function selectPlan(planId) {
 
   const btn = document.getElementById('continue-btn');
   btn.disabled = false;
-  btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+  if (planId === 'pack') {
+    btn.innerHTML = `Send enquiry <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+  } else {
+    btn.innerHTML = `Continue <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+  }
 }
 
 function selectModalVoice(voiceId, el) {
@@ -1581,6 +1750,62 @@ async function confirmImagine() {
   btn.disabled  = true;
   btn.innerHTML = 'Setting up…';
 
+  // ── Pack plan — send enquiry instead of Stripe checkout ──
+  if (selectedPlan === 'pack') {
+    const contactName  = document.getElementById('pack-contact-name')?.value.trim() || '';
+    const schoolName   = document.getElementById('pack-school-name')?.value.trim() || '';
+    const studentCount = document.getElementById('pack-student-count')?.value.trim() || '';
+    const yearLevels   = document.getElementById('pack-year-levels')?.value.trim() || '';
+    const notes        = document.getElementById('pack-notes')?.value.trim() || '';
+    const hintEl       = document.getElementById('pack-enquiry-hint');
+
+    if (!contactName || !schoolName || !studentCount) {
+      btn.disabled  = false;
+      btn.innerHTML = `Send enquiry <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5"/></svg>`;
+      if (hintEl) hintEl.textContent = 'Please fill in your name, school name, and number of students.';
+      return;
+    }
+    if (hintEl) hintEl.textContent = '';
+    btn.innerHTML = 'Sending…';
+
+    try {
+      await fetch('/api/pack-enquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactName, schoolName, studentCount, yearLevels, notes, email }),
+      });
+    } catch (e) {
+      console.warn('Pack enquiry fetch failed (non-critical):', e);
+    }
+
+    document.querySelector('.modal').innerHTML = `
+      <div style="text-align:center;padding:2rem 1.5rem;">
+        <div style="width:52px;height:52px;border-radius:50%;background:var(--teal-bg);border:0.5px solid var(--teal-border);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--teal-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3,12 8.5,17.5 19,6"/>
+          </svg>
+        </div>
+        <p style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin:0 0 10px;font-family:var(--font);">Enquiry received</p>
+        <h2 style="font-family:var(--font-serif);font-style:italic;font-size:1.6rem;font-weight:500;color:var(--text);margin:0 0 12px;line-height:1.25;">
+          We’ll be in touch soon
+        </h2>
+        <p style="font-family:var(--font);font-size:15px;color:var(--text-2);line-height:1.7;margin:0 0 10px;max-width:380px;margin-left:auto;margin-right:auto;">
+          Thanks, ${contactName}. We’ve received your enquiry for <strong style="color:var(--text);font-weight:500;">${schoolName}</strong> and will be in touch at <strong style="color:var(--text);font-weight:500;">${email || 'your email'}</strong> to discuss pricing and options.
+        </p>
+        <div style="background:var(--amber-bg);border:0.5px solid var(--amber-border);border-radius:var(--radius-md);padding:14px 18px;text-align:left;margin:0 auto 28px;max-width:380px;">
+          <p style="font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--amber-text);margin:0 0 4px;">What happens next</p>
+          <p style="font-family:var(--font);font-size:13px;color:var(--amber-text);line-height:1.6;margin:0;">
+            A member of the Talekits team will reach out within 1–2 business days to discuss your school’s needs, bulk pricing, and a free trial for your class.
+          </p>
+        </div>
+        <button onclick="closePricingModal()" style="background:var(--text);color:var(--bg);border:none;border-radius:var(--radius-pill);padding:10px 28px;font-family:var(--font-serif);font-style:italic;font-size:15px;cursor:pointer;">
+          Done
+        </button>
+      </div>
+    `;
+    return;
+  }
+
   // ── Kit free trial — no password needed ──
   if (selectedPlan === 'kit') {
     showTrialSuccess(name, email);
@@ -1616,7 +1841,7 @@ async function confirmImagine() {
     const res  = await fetch('/api/create-checkout', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson, narratorVoice: selectedNarratorVoice }),
+      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson, narratorVoice: selectedNarratorVoice, charCustom: charCustomSelected }),
     });
     const data = await res.json();
     if (data.url) {

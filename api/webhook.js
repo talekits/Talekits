@@ -15,7 +15,7 @@ async function getRawBody(req) {
   });
 }
 
-async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl, narratorVoice }) {
+async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl, narratorVoice, charCustom }) {
   const supabase = getSupabase();
 
   const { data: existing } = await supabase
@@ -77,6 +77,7 @@ async function createSubscriberAccount({ email, plan, childName, gender, stripeC
       profile_json:     profileJson || null,
       profile_blob_url: profileBlobUrl,
       is_active:        true,
+      char_custom:      charCustom || false,
     })
     .select('id').single();
   if (profileErr) throw new Error(`Child profile creation failed: ${profileErr.message}`);
@@ -131,6 +132,7 @@ module.exports = async function handler(req, res) {
   const gender        = meta.gender;
   const email         = session.customer_email || meta.email || null;
   const narratorVoice = meta.narratorVoice || 'au_female';
+  const charCustom    = meta.charCustom === 'true';
 
   if (!filename) {
     console.warn('No filename in session metadata');
@@ -180,7 +182,7 @@ module.exports = async function handler(req, res) {
         email, plan, childName: child, gender,
         stripeCustomerId: session.customer, stripeSubId: session.subscription,
         profileContent, profileJson, profileBlobUrl: confirmedBlob.url,
-        narratorVoice,
+        narratorVoice, charCustom,
       });
       subscriberId   = result.subscriberId;
       childProfileId = result.childProfileId;
@@ -202,7 +204,7 @@ module.exports = async function handler(req, res) {
       } catch { /* non-fatal */ }
     }
 
-    const outputs = await generateStory(profileContent, child, filename, plan, email, profileJson, narratorVoice);
+    const outputs = await generateStory(profileContent, child, filename, plan, email, profileJson, narratorVoice, charCustom);
     console.log(`[4] Story generation complete. Outputs: ${outputs.length}`);
     outputs.forEach(o => console.log(`[4] Output: ${o.type} → ${o.url || o.count}`));
 

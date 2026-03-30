@@ -7,6 +7,7 @@ const PLANS = {
   cub:   { name: 'Cub',   trialDays: 0,  priceEnvKey: 'STRIPE_PRICE_CUB' },
   scout: { name: 'Scout', trialDays: 0,  priceEnvKey: 'STRIPE_PRICE_SCOUT' },
   den:   { name: 'Den',   trialDays: 0,  priceEnvKey: 'STRIPE_PRICE_DEN' },
+  grove: { name: 'Grove', trialDays: 0,  priceEnvKey: 'STRIPE_PRICE_GROVE' },
   pack:  { name: 'Pack',  trialDays: 0,  priceEnvKey: 'STRIPE_PRICE_PACK' },
 };
 
@@ -15,7 +16,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { planId, childName, email, gender, password, filename, content, profileJson, narratorVoice } = req.body;
+  const { planId, childName, email, gender, password, filename, content, profileJson, narratorVoice, charCustom } = req.body;
 
   if (!planId || !PLANS[planId]) {
     return res.status(400).json({ error: 'Invalid plan selected' });
@@ -59,6 +60,7 @@ module.exports = async function handler(req, res) {
       email:        email     || '',
       passwordHash,
       narratorVoice: narratorVoice || 'au_female',
+      charCustom:    charCustom ? 'true' : 'false',
     };
 
     // Paid plans
@@ -68,10 +70,29 @@ module.exports = async function handler(req, res) {
     }
 
     console.log(`[CC-3] Creating Stripe session | Plan: ${planId} | Child: ${childName} | Email: ${email}`);
+
+    // Build line items — always the subscription, plus optional one-time char customisation
+    const lineItems = [{ price: priceId, quantity: 1 }];
+    if (charCustom) {
+      // One-time $14.99 charge for character customisation
+      // Requires a pre-created one-time price in Stripe, or use inline price_data
+      lineItems.push({
+        price_data: {
+          currency:     'aud',
+          product_data: {
+            name:        'Character Customisation',
+            description: 'Make the protagonist look like your child. Upload photos in your dashboard after signup.',
+          },
+          unit_amount: 1499, // $14.99 AUD in cents
+        },
+        quantity: 1,
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode:           'subscription',
       customer_email: email || undefined,
-      line_items:     [{ price: priceId, quantity: 1 }],
+      line_items:     lineItems,
       metadata:       meta,
       subscription_data: { metadata: meta },
       success_url: `${baseUrl}/success?plan=${planId}&child=${encodeURIComponent(childName || '')}&email=${encodeURIComponent(email || '')}`,

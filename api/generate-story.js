@@ -42,9 +42,10 @@ function ensureFonts() { /* no-op — built-ins need no registration */ }
 ───────────────────────────────────────────────────────────── */
 const PLAN_OUTPUTS = {
   kit:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false, audio: false },
-  cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: false },
+  cub:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false, audio: true  },
   scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
   den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
+  grove: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
   pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
 };
 
@@ -203,7 +204,9 @@ Respond with a valid JSON object only. No markdown fences, no preamble, nothing 
     "culturalRepresentation": "selected value or null",
     "recurringElement": "selected value or null"
   }
-}`;
+}
+
+If CHAR_CUSTOM: true is present in the profile: for the FIRST story, describe the protagonist's appearance fully as normal. For ALL subsequent stories, keep the protagonist's physical description intentionally open (e.g. "a young child with a bright smile" rather than specifying hair colour, eye colour, or skin tone) — this leaves space for LoRA-based character customisation to be applied at image generation time.`;
 
 /* ─────────────────────────────────────────────────────────────
    Text file builders
@@ -1016,9 +1019,14 @@ function buildTextFromJson(profileJson) {
 /* ─────────────────────────────────────────────────────────────
    Main export
 ───────────────────────────────────────────────────────────── */
-async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null, narratorVoice = 'au_female') {
+async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null, narratorVoice = 'au_female', charCustom = false) {
   const promptText = (profileJson && buildTextFromJson(profileJson)) || profileContent;
   if (!promptText) throw new Error('No profile content for story generation');
+
+  // Append char customisation flag so Claude keeps protagonist appearance generic from story 2+
+  const charCustomNote = charCustom
+    ? '\n\nCHAR_CUSTOM: true \u2014 This child has purchased Character Customisation. From story 2 onwards, keep the protagonist\'s physical description open and generic (e.g. "a child with warm features") so LoRA fine-tuning can be applied. For this first story only, use a fully described default protagonist as normal.'
+    : '';
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1033,7 +1041,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       system:     SYSTEM_PROMPT,
       messages: [{
         role:    'user',
-        content: `Here is the child's story profile. Please generate a story now.\n\n${promptText}`,
+        content: `Here is the child's story profile. Please generate a story now.\n\n${promptText}${charCustomNote}`,
       }],
     }),
   });
