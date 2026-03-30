@@ -26,8 +26,6 @@ const C = {
 
 /* ─────────────────────────────────────────────────────────────
    Fonts — pdfkit built-ins only (always available in serverless)
-   Times-Roman / Times-Italic / Times-Bold  →  serif body (closest to Lora)
-   Helvetica / Helvetica-Bold               →  sans UI (closest to Instrument Sans)
 ───────────────────────────────────────────────────────────── */
 const fonts = {
   body:     'Times-Roman',
@@ -176,7 +174,7 @@ NEVER use any of these words or concepts in illustration prompts, even indirectl
 ALWAYS reframe tense or emotional moments as positive and playful:
 - "looking surprised" not "looking scared"
 - "eyes wide with wonder" not "eyes wide with fear"
-- "dramatic silver clouds with golden light" not "dark storm clouds"  
+- "dramatic silver clouds with golden light" not "dark storm clouds"
 - "running quickly with excitement" not "running away"
 - "looking for something" not "hiding"
 - "a big fluffy cloud" not "a threatening wave"
@@ -265,26 +263,22 @@ function buildPdf(story, childName, plan) {
 
     const PW   = doc.page.width;
     const PH   = doc.page.height;
-    const PAD  = 56;          // outer margin
+    const PAD  = 56;
     const W    = PW - PAD * 2;
     const date = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    /* ── Helper: horizontal rule ── */
     function rule(y, colour = C.border) {
       doc.save().moveTo(PAD, y).lineTo(PW - PAD, y)
          .lineWidth(0.5).strokeColor(colour).stroke().restore();
     }
 
-    /* ── Helper: pill tag (selections page) ── */
     function pill(x, y, label, bg, textCol, borderCol) {
-      const MAX_PILL_W = W - (x - PAD) - 10; // never exceed remaining line width
+      const MAX_PILL_W = W - (x - PAD) - 10;
       const fontSize   = 9;
-      const padding    = 20; // 10px each side
+      const padding    = 20;
 
-      // Measure full text width
       let textW = doc.font(fonts.sans).fontSize(fontSize).widthOfString(label);
 
-      // If the pill would overflow the page, truncate with ellipsis
       let displayLabel = label;
       if (textW + padding > MAX_PILL_W) {
         while (displayLabel.length > 1) {
@@ -311,35 +305,25 @@ function buildPdf(story, childName, plan) {
          .text(displayLabel, x + 10, y + 4, { width: textW, lineBreak: false })
          .restore();
 
-      return pillW + 6; // advance x
+      return pillW + 6;
     }
 
-    /* ── Page 1: Story ── */
-
-    // Warm off-white background
     doc.rect(0, 0, PW, PH).fill(C.bg);
-
-    // Top band — surface colour
     doc.rect(0, 0, PW, 110).fill(C.surface);
 
-    // Eyebrow
     doc.font(fonts.italic).fontSize(10).fillColor(C.text3)
        .text('Talekits  —  Children\'s Storybook', PAD, 28, { width: W, align: 'center' });
 
-    // Title — Lora Italic, large, dark
     doc.font(fonts.italic).fontSize(28).fillColor(C.text)
        .text(story.title, PAD, 46, { width: W, align: 'center', lineGap: 2 });
 
-    // Rule under header
     rule(118, C.border);
 
-    // Sub-header: child name + date
     doc.font(fonts.sans).fontSize(10).fillColor(C.text2)
        .text(`A story for ${childName}`, PAD, 130, { width: W / 2 });
     doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
        .text(date, PAD, 130, { width: W, align: 'right' });
 
-    // Story body
     let y = 158;
     const paragraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
 
@@ -351,7 +335,6 @@ function buildPdf(story, childName, plan) {
       }
 
       if (i === 0) {
-        // Drop cap — first letter in Lora Bold, large
         const letter = para.charAt(0);
         const rest   = para.slice(1);
 
@@ -371,7 +354,6 @@ function buildPdf(story, childName, plan) {
       }
     });
 
-    // Parent note — amber card
     if (story.parentNote) {
       if (y > PH - 120) {
         doc.addPage();
@@ -386,24 +368,18 @@ function buildPdf(story, childName, plan) {
       const noteLines = doc.font(fonts.body).fontSize(11).heightOfString(story.parentNote, { width: W - 48 });
       const noteH     = noteLines + 32;
 
-      doc.roundedRect(PAD, y, W, noteH, 10)
-         .fill(C.amberBg);
-      doc.roundedRect(PAD, y, W, noteH, 10)
-         .lineWidth(0.5).strokeColor(C.amberBorder).stroke();
+      doc.roundedRect(PAD, y, W, noteH, 10).fill(C.amberBg);
+      doc.roundedRect(PAD, y, W, noteH, 10).lineWidth(0.5).strokeColor(C.amberBorder).stroke();
 
       doc.font(fonts.sansBold).fontSize(9).fillColor(C.amberText)
-         .text('PARENT NOTE', PAD + 16, y + 10,
-           { characterSpacing: 1, width: W - 32 });
+         .text('PARENT NOTE', PAD + 16, y + 10, { characterSpacing: 1, width: W - 32 });
 
       doc.font(fonts.body).fontSize(11).fillColor(C.amberText).lineGap(4)
          .text(story.parentNote, PAD + 16, y + 24, { width: W - 32 });
     }
 
-    /* ── Page 2: Selections ── */
     doc.addPage();
     doc.rect(0, 0, PW, PH).fill(C.bg);
-
-    // Header band
     doc.rect(0, 0, PW, 90).fill(C.surface);
 
     doc.font(fonts.italic).fontSize(10).fillColor(C.text3)
@@ -423,7 +399,6 @@ function buildPdf(story, childName, plan) {
     const sel  = story.selections || {};
     let sy     = doc.y + 24;
 
-    /* Selection rows */
     const selectionRows = [
       { label: 'Story length',               value: sel.storyLength,               bg: C.blueBg,   text: C.blueText,   border: C.blueBorder },
       { label: 'Tone & mood',                value: sel.tone,                       bg: C.blueBg,   text: C.blueText,   border: C.blueBorder },
@@ -445,21 +420,18 @@ function buildPdf(story, childName, plan) {
         sy = PAD;
       }
 
-      // Row label
       doc.font(fonts.sansBold).fontSize(9).fillColor(C.text3)
          .text(row.label.toUpperCase(), PAD, sy, { characterSpacing: 0.8 });
       sy += 14;
 
-      // Value(s) as pills
       const values = Array.isArray(row.value) ? row.value : [row.value];
       let px = PAD;
 
       values.forEach(v => {
         if (!v) return;
         const textW = doc.font(fonts.sans).fontSize(9).widthOfString(v);
-        const pillW = Math.min(textW + 20, W); // cap at usable width
+        const pillW = Math.min(textW + 20, W);
 
-        // Wrap to new line if pill won't fit
         if (px + pillW > PW - PAD && px > PAD) {
           px  = PAD;
           sy += 26;
@@ -471,19 +443,12 @@ function buildPdf(story, childName, plan) {
       sy += 30;
     });
 
-    /* ── Footers on all pages ── */
     const range = doc.bufferedPageRange();
     for (let i = 0; i < range.count; i++) {
       doc.switchToPage(range.start + i);
-
-      // Footer background
       doc.rect(0, PH - 36, PW, 36).fill(C.surface);
-
-      // Footer rule
       doc.moveTo(0, PH - 36).lineTo(PW, PH - 36)
          .lineWidth(0.5).strokeColor(C.border).stroke();
-
-      // Footer text
       doc.font(fonts.sans).fontSize(9).fillColor(C.text3)
          .text(
            `Talekits  ·  ${story.title}  ·  Page ${i + 1} of ${range.count}`,
@@ -498,8 +463,6 @@ function buildPdf(story, childName, plan) {
 
 /* ─────────────────────────────────────────────────────────────
    Picture book PDF — landscape, iPad-friendly
-   Left half: story text paragraph | Right half: illustration
-   A4 Landscape = 841.89 × 595.28 pts
 ───────────────────────────────────────────────────────────── */
 function buildPictureBookPdf(story, childName, imageResults) {
   return new Promise((resolve, reject) => {
@@ -512,69 +475,53 @@ function buildPictureBookPdf(story, childName, imageResults) {
 
     ensureFonts();
 
-    const PW     = doc.page.width;   // 841.89
-    const PH     = doc.page.height;  // 595.28
+    const PW     = doc.page.width;
+    const PH     = doc.page.height;
     const HALF   = PW / 2;
     const PAD    = 44;
     const FOOTER = 32;
     const date   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Build a map of page number → image URL
-    // Page 0 = cover illustration, pages 1+ = story spreads
     const imageMap = {};
     (imageResults || []).forEach(img => {
       if (img.url && img.page !== undefined) imageMap[img.page] = img.url;
     });
 
-    // Split story into paragraphs — one paragraph per spread
     const paragraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
 
-    // Determine layout mode based on word count per paragraph
-    // Short paragraphs (toddler/short stories) get full-bleed image with text overlay
-    // Longer paragraphs get the split layout with a wider text column
     function getLayoutMode(para) {
       const wc = (para || '').split(/\s+/).filter(Boolean).length;
       return wc <= 20 ? 'fullbleed' : 'split';
     }
 
-    /* ── Helper: draw one spread ── */
     async function drawSpread(paraIndex, para, isFirst, pageIndex) {
       const mode     = isFirst ? 'split' : getLayoutMode(para);
       const imgUrl   = imageMap[paraIndex + 1];
       const wordCount = (para || '').split(/\s+/).filter(Boolean).length;
 
-      // Fetch image buffer upfront for both layout modes
       let imgBuf = null;
       if (imgUrl) {
         try {
           const imgRes = await fetch(imgUrl);
           if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
-        } catch { /* fall through to placeholder */ }
+        } catch { }
       }
 
       if (mode === 'fullbleed') {
-        // ── FULL-BLEED LAYOUT ──
-        // Image fills the entire page. Text sits on a semi-transparent bar at the bottom.
-
-        // Full page background
         doc.rect(0, 0, PW, PH).fill(C.surface);
 
         if (imgBuf) {
-          // Image fills entire page
           doc.image(imgBuf, 0, 0, { width: PW, height: PH, cover: [PW, PH], align: 'center', valign: 'center' });
         }
 
-        // Text bar at bottom — semi-transparent warm white
-        const barH   = 130;
-        const barY   = PH - barH - FOOTER;
+        const barH = 130;
+        const barY = PH - barH - FOOTER;
 
-        // Gradient-style bar using layered rects with decreasing opacity
         doc.save()
            .rect(0, barY - 30, PW, 30).fillOpacity(0.3).fillColor('#FAFAF8').fill()
            .rect(0, barY, PW, barH).fillOpacity(0.92).fillColor('#FAFAF8').fill()
            .restore();
 
-        // Text inside bar
         const bodySize   = wordCount <= 10 ? 24 : wordCount <= 15 ? 20 : 17;
         const lineGapVal = bodySize >= 20 ? 8 : 6;
         const textPad    = 40;
@@ -582,24 +529,18 @@ function buildPictureBookPdf(story, childName, imageResults) {
         doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
            .text(para || '', textPad, barY + 14, { width: PW - textPad * 2, align: 'center' });
 
-        // Page number small, bottom right above footer
         doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
            .text(`${pageIndex}`, PW - PAD - 20, barY + 6, { width: 20, align: 'right' });
 
       } else {
-        // ── SPLIT LAYOUT ──
-        // Text on left (40% width), image on right (60%) edge-to-edge top/bottom
-
-        const TEXT_COL_W = Math.floor(PW * 0.40); // 40% for text
+        const TEXT_COL_W = Math.floor(PW * 0.40);
         const IMG_X      = TEXT_COL_W;
-        const IMG_W      = PW - TEXT_COL_W;        // 60% for image, no padding
+        const IMG_W      = PW - TEXT_COL_W;
         const IMG_Y      = 0;
         const IMG_H      = PH - FOOTER;
 
-        // Page background
         doc.rect(0, 0, PW, PH).fill(C.bg);
 
-        // ── Image: right 60%, bleeds top/bottom/right ──
         if (imgBuf) {
           doc.image(imgBuf, IMG_X, IMG_Y, {
             width:  IMG_W,
@@ -614,35 +555,29 @@ function buildPictureBookPdf(story, childName, imageResults) {
              .text(`Illustration ${paraIndex + 1}`, IMG_X, IMG_Y + IMG_H / 2 - 8, { width: IMG_W, align: 'center' });
         }
 
-        // Subtle inner shadow on left edge of image to separate from text panel
         for (let sx = 0; sx < 20; sx++) {
           const opacity = Math.round(((20 - sx) / 20) * 30);
           const hex = opacity.toString(16).padStart(2, '0');
           doc.rect(IMG_X + sx, 0, 1, IMG_H).fill(`#1C1B18${hex}`);
         }
 
-        // ── Text: left 40% with generous internal padding ──
         const textX   = PAD;
         const textW   = TEXT_COL_W - PAD - 16;
         let   ty      = PAD + 16;
 
         if (isFirst) {
-          // Eyebrow
           doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
              .text('Talekits', textX, ty, { width: textW });
           ty += 14;
 
-          // Title
           doc.font(fonts.italic).fontSize(18).fillColor(C.text).lineGap(3)
              .text(story.title, textX, ty, { width: textW });
           ty = doc.y + 8;
 
-          // Rule
           doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 16, ty)
              .lineWidth(0.5).strokeColor(C.border).stroke();
           ty += 12;
 
-          // Child + date
           doc.font(fonts.sans).fontSize(8).fillColor(C.text2)
              .text(`A story for ${childName}`, textX, ty, { width: textW });
           ty += 10;
@@ -650,20 +585,14 @@ function buildPictureBookPdf(story, childName, imageResults) {
              .text(date, textX, ty, { width: textW });
           ty += 18;
         } else {
-          // Page number
           doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
              .text(`${pageIndex}`, textX, ty, { width: textW });
           ty += 18;
         }
 
-        // Dynamic font size
-        const bodySize   = wordCount <= 20 ? 18
-                         : wordCount <= 35 ? 15
-                         : wordCount <= 55 ? 13
-                         : 11;
+        const bodySize   = wordCount <= 20 ? 18 : wordCount <= 35 ? 15 : wordCount <= 55 ? 13 : 11;
         const lineGapVal = bodySize >= 16 ? 8 : bodySize >= 13 ? 6 : 5;
 
-        // Vertical centering for short paragraphs
         const textAreaH = IMG_H - ty - PAD;
         const textH     = doc.font(fonts.body).fontSize(bodySize).heightOfString(para || '', { width: textW, lineGap: lineGapVal });
         if (!isFirst && textH < textAreaH * 0.6) {
@@ -686,9 +615,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
       }
     }
 
-    /* ── Helper: cover page ── */
     async function drawCover() {
-      // Cover illustration is stored at page 0 in imageMap
       const coverBuf = imageMap[0]
         ? await (async () => {
             try {
@@ -699,7 +626,6 @@ function buildPictureBookPdf(story, childName, imageResults) {
         : null;
 
       if (coverBuf) {
-        // Full bleed illustration
         doc.image(coverBuf, 0, 0, {
           width:  PW,
           height: PH,
@@ -708,7 +634,6 @@ function buildPictureBookPdf(story, childName, imageResults) {
           valign: 'center',
         });
 
-        // Dark gradient overlays — top and bottom — for text legibility
         for (let i = 0; i < 100; i++) {
           const topA = Math.round(((100 - i) / 100) * 160).toString(16).padStart(2, '0');
           const botA = Math.round((i / 100) * 130).toString(16).padStart(2, '0');
@@ -716,7 +641,6 @@ function buildPictureBookPdf(story, childName, imageResults) {
           doc.rect(0, PH - 100 + i, PW, 1).fill(`#1C1B18${botA}`);
         }
 
-        // Title text — white on dark overlay
         doc.font(fonts.sans).fontSize(10).fillColor('#FAFAF8AA')
            .text('Talekits  —  Children\'s Storybook', PAD, 22, { width: PW - PAD * 2, align: 'center', opacity: 0.7 });
 
@@ -727,7 +651,6 @@ function buildPictureBookPdf(story, childName, imageResults) {
            .text(`A story for ${childName}`, PAD, PH - 52, { width: PW - PAD * 2, align: 'center' });
 
       } else {
-        // Fallback cover when no illustration available
         doc.rect(0, 0, PW, PH).fill(C.surface);
         doc.roundedRect(20, 20, PW - 40, PH - 40, 14).lineWidth(1).strokeColor(C.border).stroke();
         doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
@@ -739,12 +662,10 @@ function buildPictureBookPdf(story, childName, imageResults) {
       }
     }
 
-    /* ── Helper: final page with parent note + selections summary ── */
     function drawEndPage() {
       doc.addPage();
       doc.rect(0, 0, PW, PH).fill(C.bg);
 
-      // Left half — parent note
       const lx = PAD;
       const lw = HALF - PAD * 2;
       let   ly = PAD + 16;
@@ -760,7 +681,6 @@ function buildPictureBookPdf(story, childName, imageResults) {
          .lineWidth(0.5).strokeColor(C.border).stroke();
       ly += 16;
 
-      // Amber card
       const noteH = doc.font(fonts.body).fontSize(11).heightOfString(story.parentNote || '', { width: lw - 32 }) + 36;
       doc.roundedRect(lx, ly, lw, noteH, 10).fill(C.amberBg);
       doc.roundedRect(lx, ly, lw, noteH, 10).lineWidth(0.5).strokeColor(C.amberBorder).stroke();
@@ -769,7 +689,6 @@ function buildPictureBookPdf(story, childName, imageResults) {
       doc.font(fonts.body).fontSize(11).fillColor(C.amberText).lineGap(4)
          .text(story.parentNote || '', lx + 16, ly + 26, { width: lw - 32 });
 
-      // Right half — Kit's picks summary
       const rx = HALF + PAD;
       const rw = HALF - PAD * 2;
 
@@ -819,26 +738,20 @@ function buildPictureBookPdf(story, childName, imageResults) {
       });
     }
 
-    /* ── Build the PDF asynchronously ── */
     (async () => {
       try {
-        // Cover — async because it fetches the first illustration
         await drawCover();
 
-        // One spread per paragraph
         for (let i = 0; i < paragraphs.length; i++) {
           doc.addPage();
           await drawSpread(i, paragraphs[i], i === 0, i + 1);
         }
 
-        // End page
         drawEndPage();
 
-        /* ── Footers on all pages except cover ── */
         const range = doc.bufferedPageRange();
         for (let i = 1; i < range.count; i++) {
           doc.switchToPage(range.start + i);
-          // Footer bar — drawn on top of everything including full-bleed images
           doc.rect(0, PH - FOOTER, PW, FOOTER).fill(C.surface).fillOpacity(1);
           doc.moveTo(0, PH - FOOTER).lineTo(PW, PH - FOOTER)
              .lineWidth(0.5).strokeColor(C.border).stroke();
@@ -859,7 +772,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Email — Kit free trial delivery
+   Email builders
 ───────────────────────────────────────────────────────────── */
 function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false, storyPdfUrl = null, pictureBookUrl = null, audioUrl = null) {
   const isPaid    = plan !== 'kit';
@@ -877,13 +790,13 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
     attachMsg = `Today's story is ready to read. Use the button below to open the PDF.`;
   }
 
-  // Build download buttons HTML
   const btnStyle = `display:inline-block;padding:10px 22px;border-radius:999px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;text-decoration:none;margin:4px;`;
   const downloadButtons = [
-    storyPdfUrl    ? `<a href="${storyPdfUrl}"    target="_blank" style="${btnStyle}background:#1C1B18;color:#FAFAF8;">📖 Read the story</a>`           : '',
-    pictureBookUrl ? `<a href="${pictureBookUrl}" target="_blank" style="${btnStyle}background:#3C3489;color:#FAFAF8;">🎨 Open picture book</a>`          : '',
-    audioUrl       ? `<a href="${audioUrl}"       target="_blank" style="${btnStyle}background:#085041;color:#FAFAF8;">🎧 Play narration</a>`             : '',
+    storyPdfUrl    ? `<a href="${storyPdfUrl}"    target="_blank" style="${btnStyle}background:#1C1B18;color:#FAFAF8;">📖 Read the story</a>`      : '',
+    pictureBookUrl ? `<a href="${pictureBookUrl}" target="_blank" style="${btnStyle}background:#3C3489;color:#FAFAF8;">🎨 Open picture book</a>`   : '',
+    audioUrl       ? `<a href="${audioUrl}"       target="_blank" style="${btnStyle}background:#085041;color:#FAFAF8;">🎧 Play narration</a>`      : '',
   ].filter(Boolean).join('\n            ');
+
   const footerCta = isPaid ? '' : `
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
               You're on a <strong>7-day free trial</strong> — a new story from me every single day. Each one is completely unique; I never write the same story twice.
@@ -901,12 +814,13 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
                 </td>
               </tr>
             </table>`;
+
   const sign      = isPaid
     ? `I'll have another story ready for ${childName} tomorrow.<br/><br/><em>— Kit 🦊</em>`
     : `I hope ${childName} loves it.<br/><br/><em>— Kit 🦊</em>`;
   const footerNote = isPaid
     ? `Kit writes a new story for ${childName} every day on the Talekits ${planLabel} plan.`
-    : `You received this because you signed up for a Talekitss free trial.`;
+    : `You received this because you signed up for a Talekits free trial.`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -920,25 +834,15 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
   <tr>
     <td align="center" style="padding:40px 16px;">
       <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">
-
         <tr>
           <td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
-            <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">
-              Kit — Talekits Storywriter
-            </p>
-            <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
-              ${heading}
-            </h1>
+            <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">Kit — Talekits Storywriter</p>
+            <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">${heading}</h1>
           </td>
         </tr>
-
         <tr>
           <td style="background:#FFFFFF;padding:36px 40px;">
-
-            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              ${intro}
-            </p>
-
+            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">${intro}</p>
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
                 <td style="background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:10px;padding:20px 24px;">
@@ -947,19 +851,10 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
                 </td>
               </tr>
             </table>
-
-            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-              ${attachMsg}
-            </p>
-
+            <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">${attachMsg}</p>
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
-              <tr>
-                <td style="text-align:center;padding:8px 0;">
-                  ${downloadButtons}
-                </td>
-              </tr>
+              <tr><td style="text-align:center;padding:8px 0;">${downloadButtons}</td></tr>
             </table>
-
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
                 <td style="background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:10px;padding:16px 20px;">
@@ -968,23 +863,16 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
                 </td>
               </tr>
             </table>
-
             ${footerCta}
-
-            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#1C1B18;line-height:1.8;">
-              ${sign}
-            </p>
-
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#1C1B18;line-height:1.8;">${sign}</p>
           </td>
         </tr>
-
         <tr>
           <td style="background:#F3F2EE;border-radius:0 0 14px 14px;padding:24px 40px;border-top:1px solid #E0DED8;text-align:center;">
             <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">${footerNote}</p>
             <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekits — a new story, every day</p>
           </td>
         </tr>
-
       </table>
     </td>
   </tr>
@@ -997,9 +885,9 @@ function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLab
   const isPaid   = plan !== 'kit';
 
   const links = [
-    storyPdfUrl    ? `Story PDF: ${storyPdfUrl}`        : '',
-    pictureBookUrl ? `Picture book: ${pictureBookUrl}`  : '',
-    audioUrl       ? `Narration MP3: ${audioUrl}`       : '',
+    storyPdfUrl    ? `Story PDF: ${storyPdfUrl}`       : '',
+    pictureBookUrl ? `Picture book: ${pictureBookUrl}` : '',
+    audioUrl       ? `Narration MP3: ${audioUrl}`      : '',
   ].filter(Boolean).join('\n');
 
   let attachMsg;
@@ -1011,7 +899,7 @@ function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLab
     attachMsg = `Today's story is ready to read:\n\n${links}`;
   }
 
-  const closing  = isPaid
+  const closing = isPaid
     ? `You're on the Talekits ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
     : `You're on a 7-day free trial. Visit ${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'} to choose a plan and keep the stories coming.`;
 
@@ -1037,14 +925,8 @@ Talekits — a new story, every day`;
 }
 
 async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, hasAudio, storyPdfUrl, pictureBookUrl, audioUrl }) {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set — skipping email');
-    return;
-  }
-  if (!to) {
-    console.warn('No email address — skipping email');
-    return;
-  }
+  if (!process.env.RESEND_API_KEY) { console.warn('RESEND_API_KEY not set — skipping email'); return; }
+  if (!to) { console.warn('No email address — skipping email'); return; }
 
   const resend    = new Resend(process.env.RESEND_API_KEY);
   const isPaid    = plan !== 'kit';
@@ -1058,84 +940,52 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, has
     text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel, hasAudio, storyPdfUrl, pictureBookUrl, audioUrl),
   });
 
-  if (error) {
-    console.error('Resend error:', error);
-    throw new Error(`Email failed: ${error.message}`);
-  }
-
+  if (error) { console.error('Resend error:', error); throw new Error(`Email failed: ${error.message}`); }
   console.log(`Email sent to ${to} | Plan: ${plan} | Links: pdf=${!!storyPdfUrl} pb=${!!pictureBookUrl} audio=${!!audioUrl} | ID: ${data?.id}`);
 }
 
-async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer, pbFilename }) {
-  if (!process.env.RESEND_API_KEY || !to) return;
-
-  const planLabel = { cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || plan;
-  const resend    = new Resend(process.env.RESEND_API_KEY);
-
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background-color:#FAFAF8;font-family:Georgia,'Times New Roman',serif;">
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FAFAF8;">
-  <tr><td align="center" style="padding:40px 16px;">
-    <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;">
-      <tr><td style="background:#F3F2EE;border-radius:14px 14px 0 0;padding:32px 40px 24px;text-align:center;border-bottom:1px solid #E0DED8;">
-        <p style="margin:0 0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9C9A94;">Talekits — Picture Book</p>
-        <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:26px;font-weight:400;color:#1C1B18;line-height:1.25;">
-          ${childName}'s illustrated<br/>picture book is <em style="color:#6B6860;">ready</em>
-        </h1>
-      </td></tr>
-      <tr><td style="background:#FFFFFF;padding:36px 40px;">
-        <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#6B6860;line-height:1.7;">Hi there,</p>
-        <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
-          Kit has finished illustrating <strong>${storyTitle}</strong>. The full picture book is attached — open it on a tablet or iPad in landscape mode for the best reading experience.
-        </p>
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
-          <tr><td style="background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:10px;padding:16px 20px;">
-            <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#085041;">Picture book tip</p>
-            <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#085041;line-height:1.6;">
-              Each spread shows the story text on the left and the illustration on the right — just like a real picture book. Works beautifully on iPad, tablet, or printed at home.
-            </p>
-          </td></tr>
-        </table>
-      </td></tr>
-      <tr><td style="background:#F3F2EE;border-radius:0 0 14px 14px;padding:24px 40px;border-top:1px solid #E0DED8;text-align:center;">
-        <p style="margin:0 0 6px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#9C9A94;line-height:1.6;">You're on the Talekitss ${planLabel} plan. A new story arrives every day.</p>
-        <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:#6B6860;">Talekits — a new story, every day</p>
-      </td></tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>`;
-
-  const { error } = await resend.emails.send({
-    from:    'Kit from Talekit <kit@talekits.com>',
-    to:      [to],
-    subject: `${storyTitle} — ${childName}'s illustrated picture book is ready`,
-    html,
-    text:    `${childName}'s illustrated picture book is ready\n\nKit has finished illustrating "${storyTitle}". The picture book PDF is attached — open it on a tablet in landscape mode for the best experience.\n\nTalekits — a new story, every day`,
-    attachments: [{
-      filename: pbFilename,
-      content:  pbBuffer.toString('base64'),
-    }],
-  });
-
-  if (error) throw new Error(`Picture book email failed: ${error.message}`);
+/* ─────────────────────────────────────────────────────────────
+   Story archive index — saves a small JSON record to Blob so the
+   dashboard can retrieve all stories for a given user by email.
+───────────────────────────────────────────────────────────── */
+async function saveArchiveIndex({ email, storyId, title, childName, plan, date, files }) {
+  if (!email) return;
+  try {
+    const safeEmail = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const record    = {
+      storyId,
+      email,
+      childName,
+      plan,
+      title,
+      date,                         // "YYYY-MM-DD"
+      generatedAt: new Date().toISOString(),
+      files,                        // { storyPdf, pictureBook, audio }
+    };
+    const key = `archive/index/${safeEmail}/${storyId}.json`;
+    await put(key, JSON.stringify(record), {
+      access:          'public',
+      addRandomSuffix: false,
+      contentType:     'application/json',
+    });
+    console.log(`[ARCHIVE] Index saved: ${key}`);
+  } catch (err) {
+    // Non-fatal — don't fail story delivery if archive write fails
+    console.error(`[ARCHIVE] Failed to save index: ${err.message}`);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
    Build Claude text prompt from structured profile_json
-   Canonical prompt builder — no fragile text parsing needed.
 ───────────────────────────────────────────────────────────── */
 function buildTextFromJson(profileJson) {
   if (!profileJson) return null;
   const { childName, gender, selections = {}, details = {} } = profileJson;
   const CAT_LABELS = { age: 'AGE & FORMAT', themes: 'THEMES', art: 'ART STYLES', edu: 'EDUCATIONAL FOCUS', char: 'CHARACTERS' };
 
-  // Reconstruct grouped structure from flat key map
   const grouped = {};
   Object.entries(selections).forEach(([key, values]) => {
-    const pipeIdx = key.indexOf('|');
+    const pipeIdx  = key.indexOf('|');
     const catKey   = key.slice(0, pipeIdx);
     const groupName = key.slice(pipeIdx + 1);
     if (!grouped[catKey]) grouped[catKey] = {};
@@ -1167,17 +1017,15 @@ function buildTextFromJson(profileJson) {
    Main export
 ───────────────────────────────────────────────────────────── */
 async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null, narratorVoice = 'au_female') {
-  // Prefer structured JSON for the Claude prompt — eliminates comma-parsing issues
   const promptText = (profileJson && buildTextFromJson(profileJson)) || profileContent;
   if (!promptText) throw new Error('No profile content for story generation');
 
-  // Call Claude
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Content-Type':        'application/json',
-      'x-api-key':           process.env.ANTHROPIC_API_KEY,
-      'anthropic-version':   '2023-06-01',
+      'Content-Type':      'application/json',
+      'x-api-key':         process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
       model:      'claude-sonnet-4-20250514',
@@ -1230,13 +1078,12 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   let pdfBuffer = null;
   if (planConfig.pdf) {
     console.log(`[GS-4] Building story PDF...`);
-    pdfBuffer      = await buildPdf(story, childName, plan);
-    const blob     = await put(`stories/${base}.pdf`, pdfBuffer, { ...saveOpts, contentType: 'application/pdf' });
+    pdfBuffer  = await buildPdf(story, childName, plan);
+    const blob = await put(`stories/${base}.pdf`, pdfBuffer, { ...saveOpts, contentType: 'application/pdf' });
     outputs.push({ type: 'story-pdf', filename: `${base}.pdf`, url: blob.url });
     console.log(`[GS-4] Saved story PDF`);
   }
 
-  // Generate audio narration for Scout, Den, Pack
   let audioBuffer   = null;
   let audioFilename = null;
   if (planConfig.audio && story.story) {
@@ -1249,18 +1096,16 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       console.log(`[GS-4b] Audio saved: ${audio.filename} (${Math.round(audioBuffer.length / 1024)}KB)`);
     } catch (err) {
       console.error(`[GS-4b] Audio generation failed: ${err.message}`);
-      // Non-fatal — continue without audio
     }
   }
+
   let imageResults = [];
   if (planConfig.images && story.illustrations?.length) {
     try {
-      // Build a cover illustration prompt from the story title and selected art style
       const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
       const artSentence = `Painted in ${artStyle.toLowerCase().replace(/^painted in /i, '')}.`;
       const coverPrompt = `A children's book cover illustration inspired by the title "${story.title}". The image should feel iconic and inviting — a single strong visual moment that captures the heart of the story. Centre the main character or key element of the story in a warm, beautifully lit scene that makes a child want to open the book immediately. Wide landscape composition with a natural sky or atmospheric background. ${artSentence} No text, no title, no lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
 
-      // Prepend cover prompt — it becomes page 0, story illustrations start at page 1
       const allPrompts = [coverPrompt, ...story.illustrations];
 
       console.log(`[GS-5] Generating ${allPrompts.length} DALL-E 3 illustrations (1 cover + ${story.illustrations.length} pages)...`);
@@ -1270,11 +1115,8 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
         story.selections?.artStyle || 'children\'s book illustration'
       );
 
-      // Split cover (index 0) from page illustrations (index 1+)
       const coverResult = allResults[0] ? { ...allResults[0], page: 0 } : null;
       imageResults      = allResults.slice(1).map((r, i) => ({ ...r, page: i + 1 }));
-
-      // Merge cover back in so picture book builder can find it at page 0
       if (coverResult) imageResults = [coverResult, ...imageResults];
 
       const saved  = allResults.filter(i => i.url);
@@ -1286,13 +1128,12 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Build picture book PDF once images are ready
   let pbBuffer = null;
   if (planConfig.picturebook && imageResults.length) {
     try {
       console.log(`[GS-6] Building picture book PDF...`);
-      pbBuffer       = await buildPictureBookPdf(story, childName, imageResults);
-      const pbBlob   = await put(`stories/${base}-picturebook.pdf`, pbBuffer, { ...saveOpts, contentType: 'application/pdf' });
+      pbBuffer     = await buildPictureBookPdf(story, childName, imageResults);
+      const pbBlob = await put(`stories/${base}-picturebook.pdf`, pbBuffer, { ...saveOpts, contentType: 'application/pdf' });
       outputs.push({ type: 'picturebook-pdf', filename: `${base}-picturebook.pdf`, url: pbBlob.url });
       console.log(`[GS-6] Saved picture book PDF`);
     } catch (err) {
@@ -1300,7 +1141,6 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Collect Blob URLs for all generated outputs — send links, not attachments
   const storyPdfUrl    = outputs.find(o => o.type === 'story-pdf')?.url      || null;
   const pictureBookUrl = outputs.find(o => o.type === 'picturebook-pdf')?.url || null;
   const audioUrl       = outputs.find(o => o.type === 'audio-mp3')?.url       || null;
@@ -1330,6 +1170,25 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   } else {
     console.warn(`[GS-7] No email address — skipping email`);
   }
+
+  // ── Save archive index record ──────────────────────────────
+  // This is what populates the Story Archive in the dashboard.
+  // Non-fatal if it fails — story delivery is not affected.
+  const dateStr = new Date().toISOString().slice(0, 10);
+  await saveArchiveIndex({
+    email,
+    storyId:   base,
+    title:     story.title,
+    childName,
+    plan,
+    date:      dateStr,
+    files: {
+      storyPdf:    storyPdfUrl    || null,
+      pictureBook: pictureBookUrl || null,
+      audio:       audioUrl       || null,
+    },
+  });
+  // ───────────────────────────────────────────────────────────
 
   return outputs;
 }

@@ -1,4 +1,5 @@
 const { generateStory } = require('./generate-story');
+const { put }           = require('@vercel/blob');
 
 module.exports.maxDuration = 300;
 
@@ -8,6 +9,10 @@ module.exports.maxDuration = 300;
 
    POST /api/stress-test
    Body: { secret, email, plan, narratorVoice, storyIndex, total, sessionId }
+
+   Stories are assigned synthetic dates simulating the NEXT 7 days
+   (today + 1 through today + 7) so the story archive looks realistic
+   with one story per day grouped by date.
 ─────────────────────────────────────────────────────────────── */
 
 const TEST_PROFILES = [
@@ -212,6 +217,49 @@ CHARACTERS
   },
 ];
 
+/* ─────────────────────────────────────────────────────────────
+   Returns the date string for story N in the test run.
+   Story 0 → today + 1 day, story 6 → today + 7 days.
+   This makes the archive show 7 separate daily entries so the
+   date-grouped UI is easy to verify.
+─────────────────────────────────────────────────────────────── */
+function storyDate(storyIndex) {
+  const d = new Date();
+  d.setDate(d.getDate() + storyIndex + 1); // +1 so story 0 = tomorrow
+  return d.toISOString().slice(0, 10);     // "YYYY-MM-DD"
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Save a minimal archive index record directly to Vercel Blob
+   for the test account. This bypasses generateStory's internal
+   saveArchiveIndex so we can control the synthetic date.
+─────────────────────────────────────────────────────────────── */
+async function saveTestArchiveIndex({ email, storyId, title, childName, plan, date, files }) {
+  try {
+    const safeEmail = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const record    = {
+      storyId,
+      email,
+      childName,
+      plan,
+      title,
+      date,
+      generatedAt: new Date().toISOString(),
+      files,
+      _isStressTest: true,
+    };
+    const key = `archive/index/${safeEmail}/${storyId}.json`;
+    await put(key, JSON.stringify(record), {
+      access:          'public',
+      addRandomSuffix: false,
+      contentType:     'application/json',
+    });
+    console.log(`[STRESS ARCHIVE] Index saved for ${email} | date: ${date} | key: ${key}`);
+  } catch (err) {
+    console.error(`[STRESS ARCHIVE] Failed to save index: ${err.message}`);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'POST only' });
@@ -219,7 +267,7 @@ module.exports = async function handler(req, res) {
 
   const {
     secret,
-    email,
+    email         = 'test@talekits.com',  // default to test account
     plan          = 'scout',
     narratorVoice = 'au_female',
     storyIndex    = 0,
@@ -237,10 +285,14 @@ module.exports = async function handler(req, res) {
   const idx     = parseInt(storyIndex);
   const cap     = Math.min(parseInt(total), TEST_PROFILES.length);
   const profile = TEST_PROFILES[idx % TEST_PROFILES.length];
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `talekits-profile-stress-${sessionId}-${idx + 1}-${dateStr}.txt`;
 
-  console.log(`[STRESS ${sessionId}] Story ${idx + 1}/${cap} — ${profile.label}`);
+  // Assign a synthetic future date so each story lands on a different day
+  // in the archive. Story 0 = tomorrow, story 6 = 7 days from now.
+  const syntheticDate = storyDate(idx);
+
+  const filename = `talekits-profile-stress-${sessionId}-${idx + 1}-${syntheticDate}.txt`;
+
+  console.log(`[STRESS ${sessionId}] Story ${idx + 1}/${cap} — ${profile.label} — date: ${syntheticDate} — email: ${email}`);
 
   const start = Date.now();
   let storyResult;
@@ -260,11 +312,51 @@ module.exports = async function handler(req, res) {
     const outTypes = outputs.map(o => o.type).join(', ');
     console.log(`[STRESS ${sessionId}] Story ${idx + 1} done in ${elapsed}s | ${outTypes}`);
 
-    storyResult = { status: 'ok', story: idx + 1, label: profile.label, elapsed_s: elapsed, outputs: outTypes };
+    // ── Override the archive index with the synthetic date ────────────────
+    // generateStory already wrote an index record with today's real date.
+    // We overwrite it now with the simulated future date so the dashboard
+    // shows 7 separate days rather than all stories clumped on one date.
+    const storyPdfUrl    = outputs.find(o => o.type === 'story-pdf')?.url      || null;
+    const pictureBookUrl = outputs.find(o => o.type === 'picturebook-pdf')?.url || null;
+    const audioUrl       = outputs.find(o => o.type === 'audio-mp3')?.url       || null;
+
+    // Derive the storyId the same way generateStory does
+    const storyId = filename.replace('talekits-profile-', 'talekits-story-').replace('.txt', '');
+
+    await saveTestArchiveIndex({
+      email,
+      storyId,
+      title:     outputs._storyTitle || profile.label, // fallback to label if title not exposed
+      childName: profile.childName,
+      plan,
+      date:      syntheticDate,
+      files: {
+        storyPdf:    storyPdfUrl,
+        pictureBook: pictureBookUrl,
+        audio:       audioUrl,
+      },
+    });
+    // ─────────────────────────────────────────────────────────────────────
+
+    storyResult = {
+      status:    'ok',
+      story:     idx + 1,
+      label:     profile.label,
+      date:      syntheticDate,
+      elapsed_s: elapsed,
+      outputs:   outTypes,
+    };
   } catch (err) {
     const elapsed = Math.round((Date.now() - start) / 1000);
     console.error(`[STRESS ${sessionId}] Story ${idx + 1} failed: ${err.message}`);
-    storyResult = { status: 'error', story: idx + 1, label: profile.label, elapsed_s: elapsed, error: err.message };
+    storyResult = {
+      status:    'error',
+      story:     idx + 1,
+      label:     profile.label,
+      date:      syntheticDate,
+      elapsed_s: elapsed,
+      error:     err.message,
+    };
   }
 
   const nextIndex = idx + 1;
@@ -272,25 +364,29 @@ module.exports = async function handler(req, res) {
 
   // Fire next story as a background request — don't await, respond immediately
   if (!isLast) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
-    const nextPayload = JSON.stringify({ secret, email, plan, narratorVoice, storyIndex: nextIndex, total: cap, sessionId });
+    const baseUrl    = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
+    const nextPayload = JSON.stringify({
+      secret, email, plan, narratorVoice,
+      storyIndex: nextIndex,
+      total:      cap,
+      sessionId,
+    });
 
-    // Fire and forget — this starts the next Vercel function invocation
     fetch(`${baseUrl}/api/stress-test`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    nextPayload,
     }).catch(err => console.error(`[STRESS] Failed to chain story ${nextIndex + 1}: ${err.message}`));
 
-    console.log(`[STRESS ${sessionId}] Chained story ${nextIndex + 1}/${cap}`);
+    console.log(`[STRESS ${sessionId}] Chained story ${nextIndex + 1}/${cap} (date: ${storyDate(nextIndex)})`);
   } else {
-    console.log(`[STRESS ${sessionId}] All ${cap} stories complete`);
+    console.log(`[STRESS ${sessionId}] All ${cap} stories complete. Archive entries written for ${email}`);
   }
 
   return res.status(200).json({
     ...storyResult,
     sessionId,
-    next:     isLast ? null : nextIndex + 1,
+    next:      isLast ? null : nextIndex + 1,
     remaining: isLast ? 0   : cap - nextIndex,
     complete:  isLast,
   });

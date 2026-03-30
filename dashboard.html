@@ -65,220 +65,153 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   display: flex; flex-direction: column; gap: 0;
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
 }
-.sidebar-logo {
-  padding: 0 1.5rem 1.75rem;
-  border-bottom: 0.5px solid var(--border);
-}
-.sidebar-logo a {
-  font-family: var(--font-serif); font-style: italic; font-size: 1.35rem;
-  font-weight: 500; color: var(--text); text-decoration: none;
-}
+.sidebar-logo { padding: 0 1.5rem 1.75rem; border-bottom: 0.5px solid var(--border); }
+.sidebar-logo a { font-family: var(--font-serif); font-style: italic; font-size: 1.35rem; font-weight: 500; color: var(--text); text-decoration: none; }
 .sidebar-logo a em { color: var(--brand-orange); font-style: normal; }
 .sidebar-logo p { font-size: 11px; color: var(--text-3); margin-top: 2px; letter-spacing: 0.04em; }
 
 .sidebar-nav { padding: 1.25rem 0.75rem; flex: 1; }
-.nav-section-label {
-  font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text-3); padding: 0 0.75rem; margin-bottom: 6px; margin-top: 1rem;
-}
+.nav-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); padding: 0 0.75rem; margin-bottom: 6px; margin-top: 1rem; }
 .nav-section-label:first-child { margin-top: 0; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px; border-radius: var(--radius-md);
-  font-size: 14px; font-weight: 400; color: var(--text-2);
-  cursor: pointer; transition: all 0.12s; border: none; background: none;
-  width: 100%; text-align: left; text-decoration: none;
-}
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 400; color: var(--text-2); cursor: pointer; transition: all 0.12s; border: none; background: none; width: 100%; text-align: left; text-decoration: none; }
 .nav-item:hover { background: var(--surface-2); color: var(--text); }
 .nav-item.active { background: var(--bg); border: 0.5px solid var(--border-md); color: var(--text); font-weight: 500; }
 .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.6; }
 .nav-item.active svg { opacity: 1; }
-.nav-badge {
-  margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 7px;
-  border-radius: var(--radius-pill); background: var(--purple-bg);
-  color: var(--purple-text); border: 0.5px solid var(--purple-border);
-}
+.nav-badge { margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: var(--radius-pill); background: var(--purple-bg); color: var(--purple-text); border: 0.5px solid var(--purple-border); }
 
-.sidebar-footer {
-  padding: 1rem 1.5rem 0;
-  border-top: 0.5px solid var(--border);
-}
+.sidebar-footer { padding: 1rem 1.5rem 0; border-top: 0.5px solid var(--border); }
 .subscriber-info { font-size: 12px; color: var(--text-3); line-height: 1.5; }
 .subscriber-info strong { color: var(--text-2); font-weight: 500; display: block; font-size: 13px; }
-.plan-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 6px; padding: 2px 10px 2px 8px;
-  border-radius: var(--radius-pill); font-size: 11px; font-weight: 600;
-  background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid var(--blue-border);
-}
-.btn-signout {
-  display: block; width: 100%; margin-top: 10px;
-  padding: 7px 12px; border-radius: var(--radius-md);
-  font-family: var(--font); font-size: 13px; font-weight: 400;
-  color: var(--text-3); background: none; border: 0.5px solid var(--border);
-  cursor: pointer; text-align: left; transition: all 0.12s;
-}
+.plan-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 2px 10px 2px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid var(--blue-border); }
+.btn-signout { display: block; width: 100%; margin-top: 10px; padding: 7px 12px; border-radius: var(--radius-md); font-family: var(--font); font-size: 13px; font-weight: 400; color: var(--text-3); background: none; border: 0.5px solid var(--border); cursor: pointer; text-align: left; transition: all 0.12s; }
 .btn-signout:hover { color: var(--text); border-color: var(--border-md); background: var(--surface-2); }
 
 /* ── Main content ── */
 .main { padding: 0; overflow-y: auto; }
 
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1.25rem 2.5rem;
-  border-bottom: 0.5px solid var(--border);
-  background: var(--bg); position: sticky; top: 0; z-index: 10;
-}
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2.5rem; border-bottom: 0.5px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 10; }
 .topbar-title { font-family: var(--font-serif); font-style: italic; font-size: 1.35rem; font-weight: 500; }
 .topbar-actions { display: flex; align-items: center; gap: 10px; }
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 8px 18px; border-radius: var(--radius-pill);
-  font-family: var(--font-serif); font-style: italic; font-size: 14px;
-  background: var(--text); color: var(--bg); border: none; cursor: pointer;
-  transition: opacity 0.12s;
-}
+.btn-primary { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border-radius: var(--radius-pill); font-family: var(--font-serif); font-style: italic; font-size: 14px; background: var(--text); color: var(--bg); border: none; cursor: pointer; transition: opacity 0.12s; }
 .btn-primary:hover { opacity: 0.8; }
-.btn-secondary {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 7px 16px; border-radius: var(--radius-pill);
-  font-family: var(--font); font-size: 13px;
-  background: var(--surface); color: var(--text); border: 0.5px solid var(--border-md);
-  cursor: pointer; transition: all 0.12s;
-}
+.btn-secondary { display: inline-flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: var(--radius-pill); font-family: var(--font); font-size: 13px; background: var(--surface); color: var(--text); border: 0.5px solid var(--border-md); cursor: pointer; transition: all 0.12s; }
 .btn-secondary:hover { background: var(--surface-2); }
 
 .content { padding: 2.5rem; max-width: 900px; }
 
 /* ── Panels / sections ── */
 .section { margin-bottom: 2.5rem; }
-.section-title {
-  font-family: var(--font-serif); font-style: italic;
-  font-size: 1.1rem; font-weight: 500; color: var(--text);
-  margin-bottom: 1rem;
-}
-.card {
-  background: var(--surface);
-  border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.card-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 0.5px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.card-header-title {
-  font-size: 13px; font-weight: 600; color: var(--text);
-}
+.section-title { font-family: var(--font-serif); font-style: italic; font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 1rem; }
+.card { background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); overflow: hidden; }
+.card-header { padding: 1rem 1.5rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-header-title { font-size: 13px; font-weight: 600; color: var(--text); }
 .card-body { padding: 1.5rem; }
 
 /* ── Stats row ── */
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
-.stat-card {
-  background: var(--surface); border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
-}
+.stat-card { background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
 .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
 .stat-value { font-family: var(--font-serif); font-size: 2rem; font-weight: 500; color: var(--text); line-height: 1; }
 .stat-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
 
-/* ── Story archive grid ── */
-.story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-.story-card {
-  background: var(--surface); border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-lg); overflow: hidden;
-  transition: box-shadow 0.15s, transform 0.15s;
+/* ── Story archive — date-grouped ── */
+.date-group {
+  margin-bottom: 0.75rem;
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
 }
-.story-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.story-card-thumb {
-  height: 120px; background: var(--surface-2);
-  display: flex; align-items: center; justify-content: center;
+.date-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  cursor: pointer; user-select: none;
+  transition: background 0.12s;
+  border-bottom: 0.5px solid transparent;
+}
+.date-group-header:hover { background: var(--surface-2); }
+.date-group-header.open { border-bottom-color: var(--border); }
+.date-group-date {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1rem; font-weight: 500; color: var(--text);
+}
+.date-group-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.date-group-right { display: flex; align-items: center; gap: 10px; }
+.date-group-count {
+  font-size: 11px; font-weight: 600; padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid var(--blue-border);
+}
+.date-group-chevron { width: 16px; height: 16px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
+.date-group-chevron.open { transform: rotate(180deg); }
+.date-group-body { display: none; padding: 0.25rem 1.25rem 1rem; background: var(--bg); }
+.date-group-body.open { display: block; }
+
+/* ── Story entry row ── */
+.story-entry {
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 0.875rem 0;
   border-bottom: 0.5px solid var(--border);
 }
-.story-card-thumb svg { width: 32px; height: 32px; color: var(--text-3); }
-.story-card-body { padding: 0.875rem 1rem; }
-.story-card-title {
-  font-family: var(--font-serif); font-style: italic;
-  font-size: 14px; font-weight: 500; color: var(--text);
-  margin-bottom: 4px; line-height: 1.35;
+.story-entry:last-child { border-bottom: none; padding-bottom: 0; }
+.story-entry-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  background: var(--surface); border: 0.5px solid var(--border-md);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
 }
-.story-card-meta { font-size: 11px; color: var(--text-3); margin-bottom: 8px; }
-.story-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.story-entry-icon svg { width: 18px; height: 18px; color: var(--text-3); }
+.story-entry-body { flex: 1; min-width: 0; }
+.story-entry-title {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.story-entry-meta { font-size: 11px; color: var(--text-3); margin-bottom: 7px; }
+.story-entry-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .story-pill {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: var(--radius-pill);
+  padding: 4px 10px; border-radius: var(--radius-pill);
   font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: none;
   transition: opacity 0.12s; border: 0.5px solid;
 }
-.story-pill:hover { opacity: 0.8; }
-.pill-story { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); }
-.pill-book  { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
+.story-pill:hover { opacity: 0.78; }
+.pill-story  { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+.pill-book   { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
+.pill-audio  { background: var(--teal-bg);   color: var(--teal-text);   border-color: var(--teal-border); }
 
 /* ── Profile editor ── */
-.profile-card {
-  background: var(--surface); border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;
-}
-.profile-avatar {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--purple-bg); border: 0.5px solid var(--purple-border);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
+.profile-card { background: var(--surface); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; }
+.profile-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--purple-bg); border: 0.5px solid var(--purple-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .profile-avatar svg { width: 20px; height: 20px; color: var(--purple-text); }
 .profile-info { flex: 1; }
 .profile-name { font-weight: 600; font-size: 15px; color: var(--text); }
 .profile-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
-.profile-actions { display: flex; gap: 6px; }
 
 /* ── Form elements ── */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); }
-.form-input, .form-select {
-  font-family: var(--font); font-size: 14px;
-  background: var(--bg); border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-md); color: var(--text);
-  padding: 8px 12px; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-  width: 100%;
-}
-.form-input:focus, .form-select:focus {
-  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,92,230,0.1);
-}
+.form-input, .form-select { font-family: var(--font); font-size: 14px; background: var(--bg); border: 0.5px solid var(--border-md); border-radius: var(--radius-md); color: var(--text); padding: 8px 12px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%; }
+.form-input:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,92,230,0.1); }
 .form-input::placeholder { color: var(--text-3); }
 
 /* ── Delivery time selector ── */
 .time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.time-btn {
-  padding: 8px 6px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500;
-  border: 0.5px solid var(--border-md); background: var(--bg); color: var(--text-2);
-  cursor: pointer; text-align: center; transition: all 0.12s;
-}
+.time-btn { padding: 8px 6px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; border: 0.5px solid var(--border-md); background: var(--bg); color: var(--text-2); cursor: pointer; text-align: center; transition: all 0.12s; }
 .time-btn:hover { background: var(--surface-2); color: var(--text); }
 .time-btn.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
 
 /* ── Info/alert banners ── */
-.banner {
-  border-radius: var(--radius-md); padding: 12px 16px;
-  font-size: 13px; line-height: 1.6; margin-bottom: 1.25rem;
-  display: flex; align-items: flex-start; gap: 10px; border: 0.5px solid;
-}
+.banner { border-radius: var(--radius-md); padding: 12px 16px; font-size: 13px; line-height: 1.6; margin-bottom: 1.25rem; display: flex; align-items: flex-start; gap: 10px; border: 0.5px solid; }
 .banner-amber { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
 .banner-green  { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
 .banner-blue   { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
 .banner svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
 
 /* ── Login page ── */
-.login-wrap {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  padding: 2rem 1.25rem;
-}
-.login-card {
-  background: var(--bg); border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-lg); padding: 2.5rem 2rem;
-  max-width: 420px; width: 100%;
-}
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1.25rem; }
+.login-card { background: var(--bg); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); padding: 2.5rem 2rem; max-width: 420px; width: 100%; }
 .login-logo { font-family: var(--font-serif); font-style: italic; font-size: 1.5rem; font-weight: 500; color: var(--text); margin-bottom: 4px; }
 .login-logo em { color: var(--brand-orange); font-style: normal; }
 .login-sub { font-size: 14px; color: var(--text-2); margin-bottom: 2rem; line-height: 1.5; }
@@ -286,21 +219,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .login-footer a { color: var(--accent); text-decoration: none; }
 
 /* ── Password setup overlay ── */
-.setup-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 1.25rem;
-}
-.setup-modal {
-  background: var(--bg); border: 0.5px solid var(--border-md);
-  border-radius: var(--radius-lg); padding: 2rem; max-width: 400px; width: 100%;
-}
+.setup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1.25rem; }
+.setup-modal { background: var(--bg); border: 0.5px solid var(--border-md); border-radius: var(--radius-lg); padding: 2rem; max-width: 400px; width: 100%; }
 
-.spinner {
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--border-md); border-top-color: var(--text);
-  animation: spin 0.7s linear infinite; display: inline-block;
-}
+.spinner { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-md); border-top-color: var(--text); animation: spin 0.7s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Empty state ── */
@@ -310,14 +232,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .empty-state p { font-size: 14px; color: var(--text-2); line-height: 1.6; }
 
 /* ── Site header (login page only) ── */
-.site-header {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(250,250,248,0.92);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-bottom: 0.5px solid var(--border-md);
-  padding: 0 2rem; height: 52px;
-  display: flex; align-items: center; justify-content: space-between;
-}
+.site-header { position: sticky; top: 0; z-index: 50; background: rgba(250,250,248,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 0.5px solid var(--border-md); padding: 0 2rem; height: 52px; display: flex; align-items: center; justify-content: space-between; }
 .site-header-logo { font-family: var(--font-serif); font-style: italic; font-size: 1.25rem; font-weight: 500; color: var(--text); text-decoration: none; }
 .site-header-logo em { color: var(--brand-orange); font-style: normal; }
 .site-header-link { font-size: 13px; color: var(--text-2); text-decoration: none; padding: 5px 12px; border-radius: 999px; transition: all 0.12s; }
@@ -326,14 +241,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 
 /* ── Profile preference library tags ── */
 .pedit-library { font-family: var(--font); }
-.ptag {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; font-size: 12px; font-weight: 400;
-  border-radius: var(--radius-pill); border: 1px solid var(--border);
-  background: var(--surface); color: var(--text-2);
-  cursor: pointer; user-select: none; transition: border-color 0.1s, font-weight 0.1s;
-  line-height: 1.5;
-}
+.ptag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-size: 12px; font-weight: 400; border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; user-select: none; transition: border-color 0.1s, font-weight 0.1s; line-height: 1.5; }
 .ptag:hover { border-color: var(--border-md); background: var(--surface-2); color: var(--text); }
 .ptag-theme  { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
 .ptag-art    { background: var(--teal-bg);   color: var(--teal-text);   border-color: var(--teal-border); }
@@ -370,7 +278,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 </head>
 <body>
 
-<!-- ── Login screen (shown when not authenticated) ── -->
+<!-- ── Login screen ── -->
 <div id="login-screen">
   <header class="site-header">
     <a class="site-header-logo" href="/">Tale<em>kits</em></a>
@@ -380,7 +288,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
     <div class="login-card">
       <p class="login-logo">Tale<em>kits</em></p>
       <p class="login-sub">Sign in to manage your subscription and view your story archive.</p>
-
       <div style="display:flex;flex-direction:column;gap:1rem;">
         <div class="form-group">
           <label class="form-label" for="login-email">Email address</label>
@@ -392,11 +299,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
             onkeydown="if(event.key==='Enter') doLogin()" />
         </div>
         <p id="login-error" style="font-size:12px;color:#E05050;min-height:14px;"></p>
-        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="doLogin()" id="login-btn">
-          Sign in
-        </button>
+        <button class="btn-primary" style="width:100%;justify-content:center;" onclick="doLogin()" id="login-btn">Sign in</button>
       </div>
-
       <p class="login-footer">
         <a href="#" onclick="showForgotPassword(); return false;">Forgot your password?</a>
         &nbsp;·&nbsp;
@@ -406,31 +310,23 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   </div>
 </div>
 
-<!-- ── Password setup overlay (shown after account creation) ── -->
+<!-- ── Password setup overlay ── -->
 <div id="setup-overlay" class="setup-overlay" style="display:none;">
   <div class="setup-modal">
     <h2 style="font-family:var(--font-serif);font-style:italic;font-size:1.3rem;margin-bottom:8px;">Welcome to Talekits</h2>
     <p style="font-size:14px;color:var(--text-2);margin-bottom:1.5rem;line-height:1.6;">Please set a password for your account so you can sign in to manage your subscription.</p>
     <div style="display:flex;flex-direction:column;gap:1rem;">
-      <div class="form-group">
-        <label class="form-label">New password</label>
-        <input class="form-input" id="setup-password" type="password" placeholder="Min. 8 characters" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Confirm password</label>
-        <input class="form-input" id="setup-password-2" type="password" placeholder="Repeat password" />
-      </div>
+      <div class="form-group"><label class="form-label">New password</label><input class="form-input" id="setup-password" type="password" placeholder="Min. 8 characters" /></div>
+      <div class="form-group"><label class="form-label">Confirm password</label><input class="form-input" id="setup-password-2" type="password" placeholder="Repeat password" /></div>
       <p id="setup-error" style="font-size:12px;color:#E05050;min-height:14px;"></p>
       <button class="btn-primary" style="width:100%;justify-content:center;" onclick="doSetupPassword()">Set password &amp; continue</button>
     </div>
   </div>
 </div>
 
-<!-- ── Main dashboard (shown when authenticated) ── -->
+<!-- ── Main dashboard ── -->
 <div id="dashboard-screen" style="display:none;">
   <div class="layout">
-
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <a href="/">Tale<em>kits</em></a>
@@ -481,13 +377,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
       </div>
     </aside>
 
-    <!-- Main -->
     <main class="main">
       <div class="topbar">
         <h1 class="topbar-title" id="topbar-title">Overview</h1>
         <div class="topbar-actions" id="topbar-actions"></div>
       </div>
-
       <div class="content" id="content-area">
         <div class="empty-state"><div class="spinner"></div></div>
       </div>
@@ -499,11 +393,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 /* ─────────────────────────────────────────────
    State
 ─────────────────────────────────────────────── */
-let authToken    = localStorage.getItem('tk_token') || null;
+let authToken      = localStorage.getItem('tk_token') || null;
 let subscriberData = null;
 let currentSection = 'overview';
 
-const PLAN_LABELS = { kit: 'Free Trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' };
+const PLAN_LABELS  = { kit: 'Free Trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' };
 const PLAN_COLOURS = {
   kit:   { bg: 'var(--green-bg)',  text: 'var(--green-text)',  border: 'var(--green-border)' },
   cub:   { bg: 'var(--blue-bg)',   text: 'var(--blue-text)',   border: 'var(--blue-border)' },
@@ -516,20 +410,18 @@ const PLAN_COLOURS = {
    Init
 ─────────────────────────────────────────────── */
 async function init() {
-  // Check for password setup token in URL
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const isSetup = params.get('setup') === 'true';
 
   if (isSetup) {
-    // Extract token from URL hash (Supabase sends it as #access_token=...)
-    const hash = window.location.hash;
+    const hash       = window.location.hash;
     const hashParams = new URLSearchParams(hash.replace('#', ''));
-    const token = hashParams.get('access_token');
+    const token      = hashParams.get('access_token');
     if (token) {
       authToken = token;
       localStorage.setItem('tk_token', token);
-      document.getElementById('setup-overlay').style.display = 'flex';
-      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('setup-overlay').style.display  = 'flex';
+      document.getElementById('login-screen').style.display   = 'none';
       document.getElementById('dashboard-screen').style.display = 'block';
       await loadDashboard();
       return;
@@ -545,12 +437,12 @@ async function init() {
 }
 
 function showLogin() {
-  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('login-screen').style.display    = 'block';
   document.getElementById('dashboard-screen').style.display = 'none';
 }
 
 function showDashboard() {
-  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display    = 'none';
   document.getElementById('dashboard-screen').style.display = 'block';
 }
 
@@ -558,10 +450,10 @@ function showDashboard() {
    Auth
 ─────────────────────────────────────────────── */
 async function doLogin() {
-  const email    = document.getElementById('login-email').value.trim();
+  const email  = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-  const errEl    = document.getElementById('login-error');
-  const btn      = document.getElementById('login-btn');
+  const errEl  = document.getElementById('login-error');
+  const btn    = document.getElementById('login-btn');
 
   if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; return; }
 
@@ -606,7 +498,7 @@ async function doSetupPassword() {
   if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return; }
   if (pw !== pw2)    { err.textContent = 'Passwords do not match.'; return; }
 
-  const res  = await fetch('/api/auth?action=set-password', {
+  const res = await fetch('/api/auth?action=set-password', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ access_token: authToken, password: pw }),
   });
@@ -636,21 +528,15 @@ async function loadDashboard() {
     const data = await res.json();
     subscriberData = data.subscriber;
 
-    // Update sidebar
     document.getElementById('sidebar-email').textContent = data.user.email;
-    const plan = subscriberData?.plan || 'kit';
+    const plan   = subscriberData?.plan || 'kit';
     const planEl = document.getElementById('sidebar-plan');
     planEl.textContent = PLAN_LABELS[plan] || plan;
     const pc = PLAN_COLOURS[plan] || PLAN_COLOURS.cub;
-    planEl.style.background   = pc.bg;
-    planEl.style.color        = pc.text;
-    planEl.style.borderColor  = pc.border;
+    planEl.style.background  = pc.bg;
+    planEl.style.color       = pc.text;
+    planEl.style.borderColor = pc.border;
 
-    // Story count badge
-    const stories = subscriberData?.story_deliveries?.length || '—';
-    document.getElementById('story-count-badge').textContent = stories;
-
-    // Show narrator voice nav item only for plans with audio
     const AUDIO_PLANS = new Set(['scout', 'den', 'pack']);
     const narratorNav = document.getElementById('nav-narrator');
     if (narratorNav) narratorNav.style.display = AUDIO_PLANS.has(plan) ? 'flex' : 'none';
@@ -666,8 +552,7 @@ async function loadDashboard() {
 const SECTION_TITLES = {
   overview: 'Overview', archive: 'Story archive',
   profiles: 'Child profiles', delivery: 'Delivery time',
-  narrator: 'Narrator voice',
-  subscription: 'Subscription', account: 'Account settings',
+  narrator: 'Narrator voice', subscription: 'Subscription', account: 'Account settings',
 };
 
 function showSection(name, el) {
@@ -679,19 +564,19 @@ function showSection(name, el) {
 }
 
 function renderSection(name) {
-  const area = document.getElementById('content-area');
+  const area    = document.getElementById('content-area');
   const actions = document.getElementById('topbar-actions');
   actions.innerHTML = '';
 
   switch (name) {
-    case 'overview':    renderOverview(area, actions); break;
-    case 'archive':     renderArchive(area, actions);  break;
-    case 'profiles':    renderProfiles(area, actions); break;
-    case 'delivery':    renderDelivery(area, actions); break;
-    case 'narrator':    renderNarrator(area, actions); break;
-    case 'subscription':renderSubscription(area);      break;
-    case 'account':     renderAccount(area);           break;
-    default:            area.innerHTML = '<p>Coming soon.</p>';
+    case 'overview':     renderOverview(area, actions);    break;
+    case 'archive':      renderArchive(area, actions);     break;
+    case 'profiles':     renderProfiles(area, actions);    break;
+    case 'delivery':     renderDelivery(area, actions);    break;
+    case 'narrator':     renderNarrator(area, actions);    break;
+    case 'subscription': renderSubscription(area);         break;
+    case 'account':      renderAccount(area);              break;
+    default:             area.innerHTML = '<p>Coming soon.</p>';
   }
 }
 
@@ -743,72 +628,169 @@ function renderOverview(area, actions) {
   loadRecentStories();
 }
 
-async function loadRecentStories() {
-  const area = document.getElementById('recent-stories-area');
-  if (!area) return;
-  try {
-    const res  = await fetch('/api/dashboard-api?action=story-archive&limit=6', {
-      headers: { 'Authorization': `Bearer ${authToken}` },
-    });
-    const data = await res.json();
-    if (!data.stories?.length) {
-      area.innerHTML = `<div class="empty-state"><p>No stories yet — your first one is on its way.</p></div>`;
-      return;
-    }
-    area.innerHTML = `<div class="story-grid">${data.stories.map(storyCardHtml).join('')}</div>`;
-  } catch { area.innerHTML = '<p style="color:var(--text-3);font-size:13px;">Could not load stories.</p>'; }
-}
-
 /* ─────────────────────────────────────────────
-   Story archive
+   Story archive — date-grouped
 ─────────────────────────────────────────────── */
 function renderArchive(area, actions) {
-  area.innerHTML = `<div id="archive-grid"><div class="spinner"></div></div>`;
+  area.innerHTML = `<div id="archive-list"><div class="empty-state"><div class="spinner"></div></div></div>`;
   loadArchivePage(1);
 }
 
 async function loadArchivePage(page) {
-  const area = document.getElementById('archive-grid');
+  const area = document.getElementById('archive-list');
   if (!area) return;
+
   try {
-    const res  = await fetch(`/api/dashboard-api?action=story-archive&page=${page}&limit=12`, {
+    const res  = await fetch(`/api/story-archive?page=${page}&limit=30`, {
       headers: { 'Authorization': `Bearer ${authToken}` },
     });
     const data = await res.json();
+
     if (!data.stories?.length) {
-      area.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📖</div><h3>No stories yet</h3><p>Your first story will appear here once it arrives in your inbox.</p></div>`;
+      area.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📖</div>
+          <h3>No stories yet</h3>
+          <p>Your stories will appear here, grouped by date, once they start arriving.</p>
+        </div>`;
       return;
     }
+
+    // Update badge
     document.getElementById('story-count-badge').textContent = data.total;
-    area.innerHTML = `
-      <div class="story-grid">${data.stories.map(storyCardHtml).join('')}</div>
-      ${data.total > 12 ? `<div style="display:flex;justify-content:center;gap:8px;margin-top:1.5rem;">
-        ${page > 1 ? `<button class="btn-secondary" onclick="loadArchivePage(${page-1})">← Previous</button>` : ''}
-        <span style="align-self:center;font-size:13px;color:var(--text-3)">Page ${page}</span>
-        ${page * 12 < data.total ? `<button class="btn-secondary" onclick="loadArchivePage(${page+1})">Next →</button>` : ''}
-      </div>` : ''}
-    `;
-  } catch { area.innerHTML = '<p style="color:var(--text-3);font-size:13px;">Could not load archive.</p>'; }
+
+    // Sort dates descending (newest first)
+    const sortedDates = Object.keys(data.byDate).sort((a, b) => b.localeCompare(a));
+
+    const groupsHtml = sortedDates.map((date, idx) => {
+      const stories    = data.byDate[date];
+      const isToday    = date === new Date().toISOString().slice(0, 10);
+      const isExpanded = idx < 3; // auto-expand 3 most recent dates
+      const formatted  = formatArchiveDate(date);
+      const count      = stories.length;
+      const childNames = [...new Set(stories.map(s => s.childName).filter(Boolean))].join(', ');
+
+      return `
+        <div class="date-group">
+          <div class="date-group-header${isExpanded ? ' open' : ''}" onclick="toggleDateGroup('${date}')">
+            <div>
+              <p class="date-group-date">${isToday ? '✨ ' : ''}${esc(formatted)}</p>
+              <p class="date-group-meta">${childNames ? esc(childNames) + ' · ' : ''}${count} stor${count === 1 ? 'y' : 'ies'}</p>
+            </div>
+            <div class="date-group-right">
+              <span class="date-group-count">${count}</span>
+              <svg class="date-group-chevron${isExpanded ? ' open' : ''}" id="chev-${date}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="4,6 8,10 12,6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="date-group-body${isExpanded ? ' open' : ''}" id="dgb-${date}">
+            ${stories.map(storyEntryHtml).join('')}
+          </div>
+        </div>`;
+    }).join('');
+
+    const pagination = data.totalPages > 1 ? `
+      <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:1.5rem;">
+        ${page > 1 ? `<button class="btn-secondary" onclick="loadArchivePage(${page - 1})">← Newer</button>` : ''}
+        <span style="font-size:13px;color:var(--text-3);">Page ${page} of ${data.totalPages}</span>
+        ${page < data.totalPages ? `<button class="btn-secondary" onclick="loadArchivePage(${page + 1})">Older →</button>` : ''}
+      </div>` : '';
+
+    area.innerHTML = groupsHtml + pagination;
+
+  } catch (err) {
+    area.innerHTML = `<p style="color:var(--text-3);font-size:13px;">Could not load archive: ${esc(err.message)}</p>`;
+  }
 }
 
-function storyCardHtml(story) {
-  const date   = story.sent_at ? new Date(story.sent_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-  const child  = story.child_profiles?.child_name || '';
-  const title  = story.story_title || 'Untitled story';
+function toggleDateGroup(date) {
+  const body = document.getElementById(`dgb-${date}`);
+  const chev = document.getElementById(`chev-${date}`);
+  const hdr  = body?.previousElementSibling;
+  if (!body) return;
+
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev?.classList.toggle('open', !isOpen);
+  hdr?.classList.toggle('open', !isOpen);
+}
+
+function formatArchiveDate(dateStr) {
+  if (!dateStr || dateStr === 'unknown') return 'Unknown date';
+  const d         = new Date(dateStr + 'T12:00:00');
+  const today     = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const sameDay = (a, b) => a.toDateString() === b.toDateString();
+  if (sameDay(d, today))     return 'Today';
+  if (sameDay(d, yesterday)) return 'Yesterday';
+
+  return d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function storyEntryHtml(story) {
+  const title     = story.title || 'Untitled story';
+  const child     = story.childName || '';
+  const plan      = story.plan || '';
+  const planLabel = { kit: 'Free Trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || '';
+  const files     = story.files || {};
+  const metaParts = [child, planLabel].filter(Boolean).join(' · ');
+
   return `
-    <div class="story-card">
-      <div class="story-card-thumb">
-        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M6 4h14l6 6v18H6z"/><path d="M20 4v6h6"/><path d="M10 14h12M10 18h12M10 22h8"/></svg>
+    <div class="story-entry">
+      <div class="story-entry-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M7 8h10M7 12h10M7 16h6"/>
+        </svg>
       </div>
-      <div class="story-card-body">
-        <p class="story-card-title">${esc(title)}</p>
-        <p class="story-card-meta">${child ? esc(child) + ' · ' : ''}${esc(date)}</p>
-        <div class="story-card-actions">
-          ${story.story_pdf_url   ? `<a href="${story.story_pdf_url}"   target="_blank" class="story-pill pill-story">Story PDF</a>` : ''}
-          ${story.picturebook_url ? `<a href="${story.picturebook_url}" target="_blank" class="story-pill pill-book">Picture book</a>` : ''}
+      <div class="story-entry-body">
+        <p class="story-entry-title">${esc(title)}</p>
+        ${metaParts ? `<p class="story-entry-meta">${esc(metaParts)}</p>` : ''}
+        <div class="story-entry-actions">
+          ${files.storyPdf    ? `<a href="${files.storyPdf}"    target="_blank" class="story-pill pill-story">📖 Story</a>`        : ''}
+          ${files.pictureBook ? `<a href="${files.pictureBook}" target="_blank" class="story-pill pill-book">🎨 Picture book</a>` : ''}
+          ${files.audio       ? `<a href="${files.audio}"       target="_blank" class="story-pill pill-audio">🎧 Narration</a>`   : ''}
+          ${!files.storyPdf && !files.pictureBook && !files.audio ? `<span style="font-size:11px;color:var(--text-3);font-style:italic;">Files processing…</span>` : ''}
         </div>
       </div>
     </div>`;
+}
+
+async function loadRecentStories() {
+  const area = document.getElementById('recent-stories-area');
+  if (!area) return;
+  try {
+    const res  = await fetch(`/api/story-archive?page=1&limit=6`, {
+      headers: { 'Authorization': `Bearer ${authToken}` },
+    });
+    const data = await res.json();
+
+    if (!data.stories?.length) {
+      area.innerHTML = `<div class="empty-state"><p style="font-size:14px;color:var(--text-2);">No stories yet — your first one is on its way.</p></div>`;
+      return;
+    }
+
+    // Update sidebar badge
+    document.getElementById('story-count-badge').textContent = data.total;
+
+    area.innerHTML = `
+      <div style="border:0.5px solid var(--border-md);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface);">
+        <div style="padding:0.25rem 1.25rem 0.75rem;">
+          ${data.stories.map(storyEntryHtml).join('')}
+        </div>
+        ${data.total > 6 ? `
+          <div style="padding:0.75rem 1.25rem;border-top:0.5px solid var(--border);text-align:center;">
+            <button class="btn-secondary" style="font-size:13px;" onclick="showSection('archive', document.querySelector('[data-section=archive]'))">
+              View all ${data.total} stories →
+            </button>
+          </div>` : ''}
+      </div>`;
+  } catch {
+    area.innerHTML = '<p style="color:var(--text-3);font-size:13px;">Could not load stories.</p>';
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -822,8 +804,7 @@ function renderProfiles(area, actions) {
   const limit    = PROFILE_LIMITS[plan] || 1;
   const canAdd   = profiles.length < limit;
 
-  actions.innerHTML = canAdd
-    ? `<button class="btn-primary" onclick="showAddProfile()">+ Add profile</button>` : '';
+  actions.innerHTML = canAdd ? `<button class="btn-primary" onclick="showAddProfile()">+ Add profile</button>` : '';
 
   const overLimit = profiles.length > limit;
 
@@ -831,7 +812,7 @@ function renderProfiles(area, actions) {
     ${overLimit ? `
     <div class="banner" style="background:var(--red-bg);color:var(--red-text);border-color:var(--red-border);margin-bottom:1.25rem;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 11v.5"/></svg>
-      <div>Your ${PLAN_LABELS[plan]} plan supports up to <strong>${limit} child profile${limit > 1 ? 's' : ''}</strong> but you have ${profiles.length}. Please remove ${profiles.length - limit} profile${profiles.length - limit > 1 ? 's' : ''} to stay within your plan limit.</div>
+      <div>Your ${PLAN_LABELS[plan]} plan supports up to <strong>${limit} child profile${limit > 1 ? 's' : ''}</strong> but you have ${profiles.length}. Please remove ${profiles.length - limit} to stay within your plan limit.</div>
     </div>` : `
     <div class="banner banner-blue" style="margin-bottom:1.25rem;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
@@ -877,24 +858,17 @@ function renderProfiles(area, actions) {
 function profileCardHtml(profile, limit) {
   const genderLabel  = { boy: 'Boy', girl: 'Girl', other: 'Other', neutral: 'Other' }[profile.gender] || '—';
   const genderColour = { boy: 'var(--blue-text)', girl: 'var(--pink-text)', other: 'var(--green-text)', neutral: 'var(--green-text)' }[profile.gender] || 'var(--text-3)';
-  const added = profile.created_at
-    ? new Date(profile.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-    : '—';
+  const added = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
   return `
     <div class="profile-card" id="profile-card-${profile.id}" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;">
-
-      <!-- Header row -->
       <div style="display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;">
         <div class="profile-avatar">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="6" r="3.5"/><path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7"/></svg>
         </div>
         <div class="profile-info" style="flex:1;">
           <p class="profile-name" id="pname-display-${profile.id}">${esc(profile.child_name)}</p>
-          <p class="profile-meta">
-            <span style="color:${genderColour};font-weight:500;">${genderLabel}</span>
-            &nbsp;·&nbsp; Added ${added}
-          </p>
+          <p class="profile-meta"><span style="color:${genderColour};font-weight:500;">${genderLabel}</span>&nbsp;·&nbsp; Added ${added}</p>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <button class="btn-secondary" style="font-size:12px;padding:5px 12px;" onclick="toggleProfileEdit('${profile.id}')">
@@ -906,59 +880,47 @@ function profileCardHtml(profile, limit) {
           </button>
         </div>
       </div>
-
-      <!-- Inline edit panel (hidden by default) -->
       <div id="profile-edit-${profile.id}" style="display:none;border-top:0.5px solid var(--border);background:var(--bg);">
-
-        <!-- Name + gender row -->
         <div style="padding:1.25rem 1.5rem;border-bottom:0.5px solid var(--border);">
           <div class="form-grid" style="margin-bottom:0;">
             <div class="form-group">
               <label class="form-label">Child's name</label>
-              <input class="form-input" id="pedit-name-${profile.id}" type="text" value="${esc(profile.child_name)}"
-                oninput="markProfileDirty('${profile.id}')" />
+              <input class="form-input" id="pedit-name-${profile.id}" type="text" value="${esc(profile.child_name)}" oninput="markProfileDirty('${profile.id}')" />
             </div>
             <div class="form-group">
               <label class="form-label">Gender</label>
               <div style="display:flex;gap:6px;padding-top:4px;">
-                <span class="gender-pill gender-pill-boy${profile.gender === 'boy' ? ' selected' : ''}"
-                  onclick="selectEditGender('${profile.id}', 'boy', this)">Boy</span>
-                <span class="gender-pill gender-pill-girl${profile.gender === 'girl' ? ' selected' : ''}"
-                  onclick="selectEditGender('${profile.id}', 'girl', this)">Girl</span>
-                <span class="gender-pill gender-pill-other${(profile.gender === 'other' || profile.gender === 'neutral') ? ' selected' : ''}"
-                  onclick="selectEditGender('${profile.id}', 'other', this)">Other</span>
+                <span class="gender-pill gender-pill-boy${profile.gender === 'boy' ? ' selected' : ''}"   onclick="selectEditGender('${profile.id}', 'boy',   this)">Boy</span>
+                <span class="gender-pill gender-pill-girl${profile.gender === 'girl' ? ' selected' : ''}" onclick="selectEditGender('${profile.id}', 'girl',  this)">Girl</span>
+                <span class="gender-pill gender-pill-other${(profile.gender === 'other' || profile.gender === 'neutral') ? ' selected' : ''}" onclick="selectEditGender('${profile.id}', 'other', this)">Other</span>
               </div>
               <input type="hidden" id="pedit-gender-${profile.id}" value="${profile.gender || ''}" />
             </div>
           </div>
         </div>
-
-        <!-- Preference library -->
         <div style="padding:1.25rem 1.5rem;">
           <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;">Story preferences</p>
           <div id="pedit-library-${profile.id}" class="pedit-library"></div>
         </div>
-
-        <!-- Save bar -->
         <div style="padding:1rem 1.5rem;border-top:0.5px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;">
-          <button class="btn-primary" id="pedit-save-${profile.id}" onclick="saveProfileEdit('${profile.id}')">
-            Save changes
-          </button>
+          <button class="btn-primary" id="pedit-save-${profile.id}" onclick="saveProfileEdit('${profile.id}')">Save changes</button>
           <button class="btn-secondary" onclick="toggleProfileEdit('${profile.id}')">Cancel</button>
           <p id="pedit-status-${profile.id}" style="font-size:12px;min-height:14px;color:var(--green-text);margin-left:4px;"></p>
         </div>
       </div>
-
     </div>`;
 }
 
-/* ── Profile edit helpers ── */
 function toggleProfileEdit(id) {
   const panel = document.getElementById(`profile-edit-${id}`);
   if (!panel) return;
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) document.getElementById(`pedit-name-${id}`)?.focus();
+  if (!isOpen) {
+    const profile = subscriberData?.child_profiles?.find(p => p.id === id);
+    renderProfileLibrary(id, profile);
+    document.getElementById(`pedit-name-${id}`)?.focus();
+  }
 }
 
 function markProfileDirty(id) {
@@ -988,16 +950,12 @@ async function saveProfileEdit(id) {
   const status = document.getElementById(`pedit-status-${id}`);
 
   if (!name) { if (status) { status.textContent = 'Name cannot be empty.'; status.style.color = '#E05050'; } return; }
-
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;vertical-align:middle;display:inline-block;"></span> Saving…'; }
 
-  // Build profile_json as the source of truth
   const sel          = profileSelections[id] || new Set();
   const existingProfile = subscriberData?.child_profiles?.find(p => p.id === id);
   const existingDetails = existingProfile?.profile_json?.details || {};
   const profile_json    = buildProfileJsonFromSelections(name, gender, sel, existingDetails);
-
-  // Also build the text version for Claude (kept for backward compatibility)
   const profile_content = buildProfileContent(name, gender, sel, existingDetails);
 
   try {
@@ -1007,17 +965,10 @@ async function saveProfileEdit(id) {
       body:    JSON.stringify({ profile_id: id, child_name: name, gender, profile_content, profile_json }),
     });
     const data = await res.json();
-
     if (!res.ok) throw new Error(data.error || 'Could not save changes.');
 
-    // Update local data immediately
     const profile = subscriberData?.child_profiles?.find(p => p.id === id);
-    if (profile) {
-      profile.child_name      = name;
-      profile.gender          = gender;
-      profile.profile_content = profile_content;
-      profile.profile_json    = profile_json;
-    }
+    if (profile) { profile.child_name = name; profile.gender = gender; profile.profile_content = profile_content; profile.profile_json = profile_json; }
 
     const nameDisplay = document.getElementById(`pname-display-${id}`);
     if (nameDisplay) nameDisplay.textContent = name;
@@ -1035,14 +986,13 @@ async function saveProfileEdit(id) {
 async function confirmRemoveProfile(id, name) {
   if (!confirm(`Remove ${name}'s profile? This cannot be undone.`)) return;
 
-  const res  = await fetch('/api/dashboard-api?action=update-profile', {
+  const res = await fetch('/api/dashboard-api?action=update-profile', {
     method:  'PATCH',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
     body:    JSON.stringify({ profile_id: id, is_active: false }),
   });
 
   if (res.ok) {
-    // Remove from local data and re-render
     if (subscriberData?.child_profiles) {
       subscriberData.child_profiles = subscriberData.child_profiles.filter(p => p.id !== id);
     }
@@ -1081,12 +1031,8 @@ async function saveNewProfile() {
   });
   const data = await res.json();
 
-  if (!res.ok) {
-    if (errEl) errEl.textContent = data.error || 'Could not add profile.';
-    return;
-  }
+  if (!res.ok) { if (errEl) errEl.textContent = data.error || 'Could not add profile.'; return; }
 
-  // Add to local data and re-render
   if (subscriberData?.child_profiles) {
     subscriberData.child_profiles.push({
       id:           data.profile.id,
@@ -1104,9 +1050,9 @@ async function saveNewProfile() {
    Delivery time
 ─────────────────────────────────────────────── */
 function renderDelivery(area, actions) {
-  const sub          = subscriberData;
-  const currentTime  = sub?.delivery_time || '07:00';
-  const currentTz    = sub?.delivery_timezone || 'Australia/Melbourne';
+  const sub         = subscriberData;
+  const currentTime = sub?.delivery_time || '07:00';
+  const currentTz   = sub?.delivery_timezone || 'Australia/Melbourne';
 
   const TIMES = ['05:00','06:00','07:00','08:00','18:00','19:00','20:00','21:00'];
   const TZ_OPTIONS = [
@@ -1120,7 +1066,6 @@ function renderDelivery(area, actions) {
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4l2.5 2"/></svg>
       <div>Stories are generated and sent at your chosen time each day. Currently set to <strong>${currentTime}</strong> (${currentTz.replace('Australia/', '')}).</div>
     </div>
-
     <div class="section">
       <p class="section-title">Delivery time</p>
       <p style="font-size:13px;color:var(--text-2);margin-bottom:1rem;">When would you like Kit's story to arrive?</p>
@@ -1128,7 +1073,6 @@ function renderDelivery(area, actions) {
         ${TIMES.map(t => `<button class="time-btn${t === currentTime ? ' selected' : ''}" onclick="selectTime('${t}', this)">${t}</button>`).join('')}
       </div>
     </div>
-
     <div class="section">
       <p class="section-title">Timezone</p>
       <div style="max-width:320px;">
@@ -1137,7 +1081,6 @@ function renderDelivery(area, actions) {
         </select>
       </div>
     </div>
-
     <p id="delivery-save-msg" style="font-size:13px;color:var(--green-text);min-height:18px;"></p>
   `;
 }
@@ -1171,45 +1114,16 @@ async function saveDeliverySettings() {
    Narrator voice
 ─────────────────────────────────────────────── */
 const VOICE_OPTIONS = [
-  {
-    id:      'au_female',
-    label:   'Charlotte',
-    sub:     'Australian Female',
-    desc:    'Warm and expressive — a great choice for bedtime stories',
-    flag:    '🇦🇺',
-    gender:  'female',
-  },
-  {
-    id:      'au_male',
-    label:   'Neil',
-    sub:     'Australian Male',
-    desc:    'Friendly and natural — works beautifully for adventure stories',
-    flag:    '🇦🇺',
-    gender:  'male',
-  },
-  {
-    id:      'us_female',
-    label:   'Jessa',
-    sub:     'American Female',
-    desc:    'Clear and engaging — ideal for educational and exciting stories',
-    flag:    '🇺🇸',
-    gender:  'female',
-  },
-  {
-    id:      'us_male',
-    label:   'Ryan',
-    sub:     'American Male',
-    desc:    'Confident and warm — a steady, reassuring narrator',
-    flag:    '🇺🇸',
-    gender:  'male',
-  },
+  { id: 'au_female', label: 'Charlotte', sub: 'Australian Female', desc: 'Warm and expressive — a great choice for bedtime stories', flag: '🇦🇺', gender: 'female' },
+  { id: 'au_male',   label: 'Neil',      sub: 'Australian Male',   desc: 'Friendly and natural — works beautifully for adventure stories', flag: '🇦🇺', gender: 'male' },
+  { id: 'us_female', label: 'Jessa',     sub: 'American Female',   desc: 'Clear and engaging — ideal for educational and exciting stories', flag: '🇺🇸', gender: 'female' },
+  { id: 'us_male',   label: 'Ryan',      sub: 'American Male',     desc: 'Confident and warm — a steady, reassuring narrator', flag: '🇺🇸', gender: 'male' },
 ];
 
 function renderNarrator(area, actions) {
-  const plan    = subscriberData?.plan || 'kit';
+  const plan = subscriberData?.plan || 'kit';
   const AUDIO_PLANS = new Set(['scout', 'den', 'pack']);
 
-  // Guard — should not be reachable for non-audio plans, but just in case
   if (!AUDIO_PLANS.has(plan)) {
     area.innerHTML = `
       <div class="banner banner-amber">
@@ -1224,83 +1138,51 @@ function renderNarrator(area, actions) {
   area.innerHTML = `
     <div class="banner banner-blue" style="margin-bottom:1.5rem;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M4 9a4 4 0 0 0 8 0M8 13v2"/></svg>
-      <div>Kit will use this voice to narrate <strong>${subscriberData?.child_profiles?.map(p => p.child_name).join(', ') || 'your children'}'s</strong> stories. The change takes effect on the next story generated.</div>
+      <div>Kit will use this voice to narrate <strong>${esc(subscriberData?.child_profiles?.map(p => p.child_name).join(', ') || 'your children')}'s</strong> stories. The change takes effect on the next story generated.</div>
     </div>
-
     <div id="voice-cards" style="display:flex;flex-direction:column;gap:0.875rem;">
       ${VOICE_OPTIONS.map(v => voiceCardHtml(v, current)).join('')}
     </div>
-
     <p id="voice-save-msg" style="font-size:13px;color:var(--green-text);min-height:18px;margin-top:1rem;"></p>
   `;
 }
 
 function voiceCardHtml(voice, selectedId) {
-  const isSelected = voice.id === selectedId;
-  const genderColour = voice.gender === 'female' ? 'var(--pink-text)' : 'var(--blue-text)';
-  const genderBg     = voice.gender === 'female' ? 'var(--pink-bg)'   : 'var(--blue-bg)';
-  const genderBorder = voice.gender === 'female' ? 'var(--pink-border)': 'var(--blue-border)';
+  const isSelected   = voice.id === selectedId;
+  const genderColour = voice.gender === 'female' ? 'var(--pink-text)'   : 'var(--blue-text)';
+  const genderBg     = voice.gender === 'female' ? 'var(--pink-bg)'     : 'var(--blue-bg)';
+  const genderBorder = voice.gender === 'female' ? 'var(--pink-border)' : 'var(--blue-border)';
 
   return `
-    <div
-      id="voice-card-${voice.id}"
-      onclick="selectVoice('${voice.id}')"
-      style="
-        display:flex; align-items:center; gap:1rem;
-        padding:1.125rem 1.5rem;
-        background:var(--surface);
-        border:${isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)'};
-        border-radius:var(--radius-lg);
-        cursor:pointer;
-        transition:border-color 0.12s, box-shadow 0.12s;
-      "
-    >
-      <!-- Flag + gender badge -->
+    <div id="voice-card-${voice.id}" onclick="selectVoice('${voice.id}')"
+      style="display:flex;align-items:center;gap:1rem;padding:1.125rem 1.5rem;background:var(--surface);border:${isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)'};border-radius:var(--radius-lg);cursor:pointer;transition:border-color 0.12s;">
       <div style="flex-shrink:0;text-align:center;width:44px;">
         <div style="font-size:1.75rem;line-height:1;">${voice.flag}</div>
-        <span style="
-          display:inline-block;margin-top:5px;
-          font-size:10px;font-weight:600;padding:1px 7px;
-          border-radius:999px;border:0.5px solid ${genderBorder};
-          background:${genderBg};color:${genderColour};
-          text-transform:capitalize;
-        ">${voice.gender}</span>
+        <span style="display:inline-block;margin-top:5px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:999px;border:0.5px solid ${genderBorder};background:${genderBg};color:${genderColour};text-transform:capitalize;">${voice.gender}</span>
       </div>
-
-      <!-- Label + description -->
       <div style="flex:1;">
         <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 1px;">${voice.label} <span style="font-size:12px;font-weight:400;color:var(--text-3);">${voice.sub}</span></p>
         <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.5;">${voice.desc}</p>
       </div>
-
-      <!-- Selected indicator -->
-      <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;
-        border:${isSelected ? '2px solid var(--text)' : '1.5px solid var(--border-md)'};
-        background:${isSelected ? 'var(--text)' : 'transparent'};
-        display:flex;align-items:center;justify-content:center;
-        transition:all 0.12s;">
+      <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:${isSelected ? '2px solid var(--text)' : '1.5px solid var(--border-md)'};background:${isSelected ? 'var(--text)' : 'transparent'};display:flex;align-items:center;justify-content:center;transition:all 0.12s;">
         ${isSelected ? `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>` : ''}
       </div>
     </div>`;
 }
 
 async function selectVoice(voiceId) {
-  // Update UI immediately
   document.querySelectorAll('[id^="voice-card-"]').forEach(card => {
-    const id         = card.id.replace('voice-card-', '');
-    const isSelected = id === voiceId;
-    card.style.border = isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)';
+    const id = card.id.replace('voice-card-', '');
+    const isSel = id === voiceId;
+    card.style.border = isSel ? '2px solid var(--text)' : '0.5px solid var(--border-md)';
     const dot = card.querySelector('div:last-child');
     if (dot) {
-      dot.style.border     = isSelected ? '2px solid var(--text)' : '1.5px solid var(--border-md)';
-      dot.style.background = isSelected ? 'var(--text)' : 'transparent';
-      dot.innerHTML        = isSelected
-        ? `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>`
-        : '';
+      dot.style.border     = isSel ? '2px solid var(--text)' : '1.5px solid var(--border-md)';
+      dot.style.background = isSel ? 'var(--text)' : 'transparent';
+      dot.innerHTML        = isSel ? `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6.5 5,9.5 10,3"/></svg>` : '';
     }
   });
 
-  // Save to Supabase
   const msg = document.getElementById('voice-save-msg');
   try {
     const res = await fetch('/api/dashboard-api?action=narrator-voice', {
@@ -1309,15 +1191,16 @@ async function selectVoice(voiceId) {
       body:    JSON.stringify({ narrator_voice: voiceId }),
     });
     if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
-
-    // Update local state
     if (subscriberData) subscriberData.narrator_voice = voiceId;
     if (msg) { msg.textContent = '✓ Voice saved — takes effect on your next story'; setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
-
   } catch (err) {
     if (msg) { msg.textContent = `Could not save: ${err.message}`; msg.style.color = '#E05050'; }
   }
 }
+
+/* ─────────────────────────────────────────────
+   Subscription
+─────────────────────────────────────────────── */
 function renderSubscription(area) {
   const sub  = subscriberData;
   const plan = sub?.plan || 'kit';
@@ -1336,7 +1219,6 @@ function renderSubscription(area) {
         </div>
       </div>
     </div>
-
     <div class="banner banner-blue" style="margin-bottom:1.5rem;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
       <div>To upgrade, downgrade, or cancel your subscription, please manage it through Stripe's customer portal. <a href="#" onclick="openBillingPortal()" style="color:var(--blue-text);font-weight:600;">Open billing portal →</a></div>
@@ -1366,7 +1248,6 @@ function renderAccount(area) {
         </div>
       </div>
     </div>
-
     <div class="section">
       <p class="section-title">Data & privacy</p>
       <div class="banner banner-amber" style="max-width:480px;">
@@ -1394,7 +1275,7 @@ async function changePassword() {
 }
 
 /* ─────────────────────────────────────────────
-   Preference library data (mirrors index.html)
+   Preference library
 ─────────────────────────────────────────────── */
 const LIBRARY = {
   age: { label: "Age & format", cls: "age", groups: {
@@ -1439,64 +1320,48 @@ const LIBRARY = {
 };
 
 const LIB_RADIO_GROUPS = new Set(["Age brackets", "Reading level"]);
-
-// Per-profile selected sets, keyed by profile ID
 const profileSelections = {};
 
-/* ── Load selections from profile_json directly (no parsing needed) ── */
 function loadSelectionsFromJson(profileJson) {
   const sel = new Set();
   if (!profileJson?.selections) return sel;
   Object.entries(profileJson.selections).forEach(([key, values]) => {
-    // key = "catKey|groupName", values = array of tag texts
-    const pipeIdx   = key.indexOf('|');
-    const catKey    = key.slice(0, pipeIdx);
+    const pipeIdx = key.indexOf('|');
+    const catKey  = key.slice(0, pipeIdx);
     const groupName = key.slice(pipeIdx + 1);
-    const arr       = Array.isArray(values) ? values : [values];
+    const arr = Array.isArray(values) ? values : [values];
     arr.forEach(tag => sel.add(`${catKey}|${groupName}|${tag}`));
   });
   return sel;
 }
 
-/* ── Build profile_json from name, gender, selections set ── */
 function buildProfileJsonFromSelections(name, gender, sel, existingDetails) {
   const selections = {};
   [...sel].forEach(k => {
-    const parts     = k.split('|');
-    const catKey    = parts[0];
+    const parts   = k.split('|');
+    const catKey  = parts[0];
     const groupName = parts[1];
-    const tag       = parts.slice(2).join('|');
-    const key       = `${catKey}|${groupName}`;
+    const tag     = parts.slice(2).join('|');
+    const key     = `${catKey}|${groupName}`;
     if (!selections[key]) selections[key] = [];
     selections[key].push(tag);
   });
-
-  return {
-    childName:  name,
-    gender:     gender || '',
-    selections,
-    details:    existingDetails || {},
-    updatedAt:  new Date().toISOString(),
-  };
+  return { childName: name, gender: gender || '', selections, details: existingDetails || {}, updatedAt: new Date().toISOString() };
 }
 
-/* ── Legacy: build profile_content text from JSON (for Claude prompt) ── */
 function buildProfileContent(name, gender, sel, details) {
-  // Build JSON first, then convert to text via the same logic as generate-story.js
-  const profileJson = buildProfileJsonFromSelections(name, gender, sel, details);
-  const CAT_LABELS  = { age: 'AGE & FORMAT', themes: 'THEMES', art: 'ART STYLES', edu: 'EDUCATIONAL FOCUS', char: 'CHARACTERS' };
-
   const grouped = {};
   [...sel].forEach(k => {
-    const parts     = k.split('|');
-    const catKey    = parts[0];
+    const parts   = k.split('|');
+    const catKey  = parts[0];
     const groupName = parts[1];
-    const tag       = parts.slice(2).join('|');
+    const tag     = parts.slice(2).join('|');
     if (!grouped[catKey]) grouped[catKey] = {};
     if (!grouped[catKey][groupName]) grouped[catKey][groupName] = [];
     grouped[catKey][groupName].push(tag);
   });
 
+  const CAT_LABELS = { age: 'AGE & FORMAT', themes: 'THEMES', art: 'ART STYLES', edu: 'EDUCATIONAL FOCUS', char: 'CHARACTERS' };
   const lines = ['TALEKIT STORY PROFILE', '─'.repeat(36)];
   if (name)   lines.push(`Child's name: ${name}`);
   if (gender) lines.push(`Child's gender: ${gender}`);
@@ -1508,10 +1373,7 @@ function buildProfileContent(name, gender, sel, details) {
     lines.push(label);
     Object.entries(grouped[catKey]).forEach(([groupName, values]) => {
       lines.push(`  ${groupName}: ${values.join(', ')}`);
-      values.forEach(val => {
-        const detail = details?.[val];
-        if (detail) lines.push(`    → ${val}: ${detail}`);
-      });
+      values.forEach(val => { if (details?.[val]) lines.push(`    → ${val}: ${details[val]}`); });
     });
     lines.push('');
   });
@@ -1519,23 +1381,13 @@ function buildProfileContent(name, gender, sel, details) {
   return lines.join('\n').trimEnd();
 }
 
-const DETAIL_BOX_CONFIGS = {
-  "Child's real pet as a supporting character": { label: "Tell us about your pet" },
-  "Child's friend incorporated as sidekick":    { label: "Friend's name" },
-  "Family members woven into the story":        { label: "Family members" },
-};
-
-/* ── Render the preference library for a profile edit panel ── */
 function renderProfileLibrary(profileId, profile) {
   const container = document.getElementById(`pedit-library-${profileId}`);
   if (!container) return;
 
-  // Load selections directly from profile_json — no text parsing
   const profileJson = profile?.profile_json || null;
   profileSelections[profileId] = loadSelectionsFromJson(profileJson);
-  console.log(`[Profile ${profileId}] Loaded ${profileSelections[profileId].size} selections from profile_json`);
 
-  // Render categories
   let html = '';
   Object.entries(LIBRARY).forEach(([catKey, cat]) => {
     html += `<div style="margin-bottom:1.75rem;">
@@ -1553,9 +1405,8 @@ function renderProfileLibrary(profileId, profile) {
         <div style="display:flex;flex-wrap:wrap;gap:6px;">`;
 
       tags.forEach(tag => {
-        const key    = `${catKey}|${groupName}|${tag}`;
-        const isSel  = profileSelections[profileId]?.has(key);
-        const safeId = profileId.replace(/-/g, '_');
+        const key   = `${catKey}|${groupName}|${tag}`;
+        const isSel = profileSelections[profileId]?.has(key);
         html += `<span
           class="ptag ptag-${cat.cls}${isSel ? ' ptag-selected' : ''}"
           data-key="${esc(key)}"
@@ -1575,7 +1426,6 @@ function renderProfileLibrary(profileId, profile) {
   container.innerHTML = html;
 }
 
-/* ── Toggle a tag in a profile edit panel ── */
 function toggleProfileTag(profileId, key, el) {
   if (!profileSelections[profileId]) profileSelections[profileId] = new Set();
   const sel       = profileSelections[profileId];
@@ -1588,14 +1438,10 @@ function toggleProfileTag(profileId, key, el) {
     el.innerHTML = el.innerHTML.replace(/<svg[^>]*>.*?<\/svg>/s, '');
   } else {
     if (isRadio) {
-      // Deselect others in same group
       [...sel].filter(k => k.split('|')[1] === groupName).forEach(k => {
         sel.delete(k);
         const otherEl = document.querySelector(`[data-pid="${profileId}"][data-key="${CSS.escape(k)}"]`);
-        if (otherEl) {
-          otherEl.classList.remove('ptag-selected');
-          otherEl.innerHTML = otherEl.innerHTML.replace(/<svg[^>]*>.*?<\/svg>/s, '');
-        }
+        if (otherEl) { otherEl.classList.remove('ptag-selected'); otherEl.innerHTML = otherEl.innerHTML.replace(/<svg[^>]*>.*?<\/svg>/s, ''); }
       });
     }
     sel.add(key);
@@ -1603,20 +1449,6 @@ function toggleProfileTag(profileId, key, el) {
     if (!el.querySelector('svg')) {
       el.insertAdjacentHTML('afterbegin', '<svg style="width:11px;height:11px;flex-shrink:0;" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5,10 11,3"/></svg>');
     }
-  }
-}
-
-/* ── Override toggleProfileEdit to also render library ── */
-const _origToggleProfileEdit = toggleProfileEdit;
-function toggleProfileEdit(id) {
-  const panel = document.getElementById(`profile-edit-${id}`);
-  if (!panel) return;
-  const isOpen = panel.style.display !== 'none';
-  panel.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) {
-    const profile = subscriberData?.child_profiles?.find(p => p.id === id);
-    renderProfileLibrary(id, profile);
-    document.getElementById(`pedit-name-${id}`)?.focus();
   }
 }
 
