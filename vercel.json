@@ -1,7 +1,13 @@
 {
   "rewrites": [
-    { "source": "/success",   "destination": "/success.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" }
+    {
+      "source": "/success",
+      "destination": "/success.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    }
   ],
   "crons": [
     {
@@ -10,16 +16,41 @@
     }
   ],
   "functions": {
-    "api/webhook.js":          { "maxDuration": 300 },
-    "api/generate-story.js":   { "maxDuration": 300 },
-    "api/generate-images.js":  { "maxDuration": 300 },
-    "api/generate-audio.js":   { "maxDuration": 120 },
-    "api/start-trial.js":      { "maxDuration": 300 },
-    "api/schedule-stories.js": { "maxDuration": 300 },
-    "api/stress-test.js":      { "maxDuration": 300 },
-    "api/auth.js":             { "maxDuration": 30  },
-    "api/dashboard-api.js":    { "maxDuration": 30  },
-    "api/upload-char-photos.js": { "maxDuration": 60  }
-    "api/story-archive.js":    { "maxDuration": 30  }
+    "api/webhook.js": {
+      "maxDuration": 300
+    },
+    "api/generate-story.js": {
+      "maxDuration": 300
+    },
+    "api/generate-images.js": {
+      "maxDuration": 300
+    },
+    "api/generate-audio.js": {
+      "maxDuration": 120
+    },
+    "api/start-trial.js": {
+      "maxDuration": 300
+    },
+    "api/schedule-stories.js": {
+      "maxDuration": 300
+    },
+    "api/stress-test.js": {
+      "maxDuration": 300
+    },
+    "api/auth.js": {
+      "maxDuration": 30
+    },
+    "api/dashboard-api.js": {
+      "maxDuration": 30
+    },
+    "api/upload-char-photos.js": {
+      "maxDuration": 60
+    },
+    "api/story-archive.js": {
+      "maxDuration": 30
+    },
+    "api/pack-enquiry.js": {
+      "maxDuration": 30
+    }
   }
 }
