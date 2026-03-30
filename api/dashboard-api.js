@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET' && action === 'overview') {
     const { data: profiles } = await supabase
       .from('child_profiles')
-      .select('id, child_name, gender, profile_content, profile_json, is_active, created_at')
+      .select('id, child_name, gender, profile_content, profile_json, is_active, created_at, char_custom, char_custom_photos_uploaded, char_custom_photos_path')
       .eq('subscriber_id', subscriber.id)
       .order('created_at');
 
@@ -82,7 +82,7 @@ module.exports = async function handler(req, res) {
 
   /* ── POST /api/dashboard?action=add-profile ── */
   if (req.method === 'POST' && action === 'add-profile') {
-    const PROFILE_LIMITS = { cub: 1, scout: 3, den: 5, pack: 30, kit: 1 };
+    const PROFILE_LIMITS = { cub: 1, scout: 1, den: 3, grove: 5, pack: 30, kit: 1 };
     const limit = PROFILE_LIMITS[subscriber.plan] || 1;
 
     const { count } = await supabase

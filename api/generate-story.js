@@ -42,10 +42,9 @@ function ensureFonts() { /* no-op — built-ins need no registration */ }
 ───────────────────────────────────────────────────────────── */
 const PLAN_OUTPUTS = {
   kit:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false, audio: false },
-  cub:   { storyTxt: true, illustrationsTxt: false, pdf: true,  images: false, picturebook: false, audio: true  },
+  cub:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: false },
   scout: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
   den:   { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
-  grove: { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
   pack:  { storyTxt: true, illustrationsTxt: true,  pdf: true,  images: true,  picturebook: true,  audio: true  },
 };
 
@@ -152,45 +151,41 @@ STORY WRITING RULES
 - End on a warm, satisfying note appropriate to the age.
 
 ═══════════════════════════════════════
-ILLUSTRATION PROMPT RULES — sent directly to DALL-E 3
+ILLUSTRATION PROMPT RULES — sent to Flux 2 [dev] via fal.ai
 ═══════════════════════════════════════
-- Write EXACTLY one illustration prompt per paragraph of the story — no more, no fewer. If the story has 6 paragraphs, write 6 prompts. If it has 10, write 10. This is critical — every page must have an illustration.
-- Each prompt must describe the SPECIFIC scene happening in its matching paragraph. Read the paragraph first, then write an illustration that shows exactly what is happening in that paragraph. A reader looking at the illustration should be able to follow the story.
-- Each prompt must be a full descriptive paragraph in natural language — no keyword lists, no Midjourney-style parameters.
-- Start every prompt with "A children's book illustration of..." to anchor the aesthetic.
-- Describe the protagonist consistently in EVERY prompt using the same physical details (species, colour, size, expression) so the character looks the same across all images.
-- Describe the scene in full: who is present, where they are, what is happening, lighting, mood, and camera framing.
-- For Ages 2–3: always specify large, close-up, simple compositions with bold colours and minimal background detail.
-- End every prompt with the art style written as a sentence, e.g. "Painted in soft watercolour with warm pastel tones."
+Flux 2 [dev] responds best to structured, descriptive prompts. Follow these rules exactly.
 
-DALL-E 3 CONTENT SAFETY — THIS IS CRITICAL. Every prompt is sent directly to DALL-E 3 which has strict content filters. A blocked prompt causes a timeout that can crash the entire story generation. You must follow these rules without exception:
+PROMPT STRUCTURE — write every prompt in this order:
+1. Subject line: what is happening and who is doing it — specific, visual, present-tense action
+2. Character description: consistent physical details for the protagonist in EVERY prompt (species, colours, size, key features, expression). Use the exact same descriptors every time so the character looks identical across all images.
+3. Setting: where this scene takes place — environment, time of day, weather, key background elements
+4. Mood and lighting: the emotional atmosphere expressed through light — warm golden hour, soft morning haze, bright midday sun, cool moonlight, etc.
+5. Composition: framing and camera — close-up portrait, wide establishing shot, medium shot, bird's eye view, low angle, etc.
+6. Art style tag: a short, comma-separated style descriptor — e.g. "children's picture book illustration, soft watercolour, warm pastel palette" or "children's book art, flat vector illustration, bold outlines, bright primary colours"
+7. Quality tags: always end with "high quality, detailed illustration, safe for children, no text, no watermarks"
 
-NEVER use any of these words or concepts in illustration prompts, even indirectly:
-- Emotions: scared, frightened, afraid, terrified, anxious, nervous, worried, upset, sad, crying, sobbing, tears
-- Actions: running away, hiding, falling, stumbling, attacking, chasing, fighting, struggling, trapped
-- Atmosphere: dark, shadow, gloomy, stormy, threatening, dangerous, ominous, eerie, spooky
-- Characters: monster, villain, enemy, giant (threatening), beast (threatening)
-- Physical states: hurt, wounded, bleeding, sick, ill
+PROMPT FORMAT — write as a single dense paragraph of natural language, NOT a bullet list. Pack all seven elements into flowing prose. Example:
+"A young red fox cub with bright amber eyes, a white-tipped tail, and small rounded ears reaches up on tiptoe to place a glowing lantern on a wooden shelf inside a cosy treehouse. Warm golden light spills across the wooden floor and illuminates shelves of tiny jars and maps pinned to the walls. Late afternoon, soft orange glow through a round porthole window. Medium shot, slightly low angle to make the treehouse feel grand. Children's picture book illustration, gouache painterly style, warm earthy tones. High quality, detailed illustration, safe for children, no text, no watermarks."
 
-ALWAYS reframe tense or emotional moments as positive and playful:
-- "looking surprised" not "looking scared"
-- "eyes wide with wonder" not "eyes wide with fear"
-- "dramatic silver clouds with golden light" not "dark storm clouds"
-- "running quickly with excitement" not "running away"
-- "looking for something" not "hiding"
-- "a big fluffy cloud" not "a threatening wave"
-- "a playful shadow on the ground" not "a dark shadow"
+CONSISTENCY RULES:
+- Describe the protagonist's physical appearance in EVERY prompt using identical wording. Copy the exact descriptor phrase from prompt to prompt — this is critical for visual consistency across the story.
+- For Ages 2–3: always specify "close-up composition, simple bold shapes, minimal background, large expressive character".
+- For Ages 8–10: you may use "cinematic composition, detailed environment, atmospheric lighting".
 
-Every illustration must feel warm, bright, safe, and joyful — even if that specific paragraph contains tension in the story text. The illustration shows the POSITIVE version of the scene.
+SAFE CONTENT — Flux has a safety filter. Keep all prompts child-safe and positive:
+- No violence, threat, or peril — reframe as adventure and curiosity
+- No darkness or shadows as mood — use "golden light", "soft glow", "bright and warm"
+- No distressed expressions — use "wide-eyed with wonder", "beaming with excitement", "curious and alert"
+- Environments should feel inviting and magical, never threatening
 
-Always end with: "No text, no speech bubbles, no borders, no watermarks, safe for children."
+Always end with: "high quality, detailed illustration, safe for children, no text, no watermarks."
 
 Respond with a valid JSON object only. No markdown fences, no preamble, nothing else.
 
 {
   "title": "Story title",
   "story": "Full story text. Use \\n\\n to separate paragraphs.",
-  "illustrations": ["Full DALL-E 3 prompt for page 1", "Full DALL-E 3 prompt for page 2", "...prompts per age bracket rules"],
+  "illustrations": ["Flux 2 [dev] prompt for page 1 — subject + character + setting + mood + composition + style tags + quality tags", "...one prompt per paragraph"],
   "parentNote": "One sentence explaining the educational or emotional theme for parents.",
   "selections": {
     "storyLength": "selected value",
@@ -204,9 +199,7 @@ Respond with a valid JSON object only. No markdown fences, no preamble, nothing 
     "culturalRepresentation": "selected value or null",
     "recurringElement": "selected value or null"
   }
-}
-
-If CHAR_CUSTOM: true is present in the profile: for the FIRST story, describe the protagonist's appearance fully as normal. For ALL subsequent stories, keep the protagonist's physical description intentionally open (e.g. "a young child with a bright smile" rather than specifying hair colour, eye colour, or skin tone) — this leaves space for LoRA-based character customisation to be applied at image generation time.`;
+}`;
 
 /* ─────────────────────────────────────────────────────────────
    Text file builders
@@ -227,10 +220,19 @@ function buildStoryTxt(story, childName) {
   ].join('\n');
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Flux 2 [dev] cover prompt builder
+   Structured for Flux — subject-first, style tags, quality tags.
+───────────────────────────────────────────────────────────── */
+function buildFluxCoverPrompt(title, styleTag) {
+  const style = styleTag || 'soft watercolour, warm pastel tones';
+  return `Children's picture book cover for a story called "${title}". A single iconic scene — the main character stands centre-frame in a warm, beautifully lit environment that captures the heart of the story. The composition is wide landscape, inviting and bold, designed to make a child want to open the book. Soft golden light, cheerful and magical atmosphere, rich background detail with a natural sky. ${style}, children's picture book illustration, high quality, detailed, no text, no title lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
+}
+
 function buildIllustrationsTxt(story, childName) {
   const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
-  const artSentence = `Painted in ${artStyle.toLowerCase().replace(/^painted in /i, '')}.`;
-  const coverPrompt = `A children's book cover illustration inspired by the title "${story.title}". The image should feel iconic and inviting — a single strong visual moment that captures the heart of the story. Centre the main character or key element of the story in a warm, beautifully lit scene that makes a child want to open the book immediately. Wide landscape composition with a natural sky or atmospheric background. ${artSentence} No text, no title, no lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
+  const styleTag    = artStyle.toLowerCase().replace(/^painted in /i, '');
+  const coverPrompt = buildFluxCoverPrompt(story.title, styleTag);
 
   const lines = [
     `ILLUSTRATION PROMPTS — ${story.title.toUpperCase()}`,
@@ -1019,14 +1021,9 @@ function buildTextFromJson(profileJson) {
 /* ─────────────────────────────────────────────────────────────
    Main export
 ───────────────────────────────────────────────────────────── */
-async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null, narratorVoice = 'au_female', charCustom = false) {
+async function generateStory(profileContent, childName, profileFilename, plan = 'kit', email = null, profileJson = null, narratorVoice = 'au_female') {
   const promptText = (profileJson && buildTextFromJson(profileJson)) || profileContent;
   if (!promptText) throw new Error('No profile content for story generation');
-
-  // Append char customisation flag so Claude keeps protagonist appearance generic from story 2+
-  const charCustomNote = charCustom
-    ? '\n\nCHAR_CUSTOM: true \u2014 This child has purchased Character Customisation. From story 2 onwards, keep the protagonist\'s physical description open and generic (e.g. "a child with warm features") so LoRA fine-tuning can be applied. For this first story only, use a fully described default protagonist as normal.'
-    : '';
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1041,7 +1038,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       system:     SYSTEM_PROMPT,
       messages: [{
         role:    'user',
-        content: `Here is the child's story profile. Please generate a story now.\n\n${promptText}${charCustomNote}`,
+        content: `Here is the child's story profile. Please generate a story now.\n\n${promptText}`,
       }],
     }),
   });
@@ -1110,17 +1107,26 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   let imageResults = [];
   if (planConfig.images && story.illustrations?.length) {
     try {
-      const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
-      const artSentence = `Painted in ${artStyle.toLowerCase().replace(/^painted in /i, '')}.`;
-      const coverPrompt = `A children's book cover illustration inspired by the title "${story.title}". The image should feel iconic and inviting — a single strong visual moment that captures the heart of the story. Centre the main character or key element of the story in a warm, beautifully lit scene that makes a child want to open the book immediately. Wide landscape composition with a natural sky or atmospheric background. ${artSentence} No text, no title, no lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
+      const artStyle   = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
+      const styleTag   = artStyle.toLowerCase().replace(/^painted in /i, '');
+      const coverPrompt = buildFluxCoverPrompt(story.title, styleTag);
 
       const allPrompts = [coverPrompt, ...story.illustrations];
 
-      console.log(`[GS-5] Generating ${allPrompts.length} DALL-E 3 illustrations (1 cover + ${story.illustrations.length} pages)...`);
+      // Only use LoRA when the subscriber has paid for Character Customisation ($14.99),
+      // uploaded their photos, AND a LoRA has been trained and the URL stored on the profile.
+      // For every other subscriber this is null and Flux 2 [dev] runs in standard mode.
+      const loraUrl = (profileJson?.charCustom && profileJson?.charCustomPhotosUploaded && profileJson?.loraUrl)
+        ? profileJson.loraUrl
+        : null;
+
+      console.log(`[GS-5] Generating ${allPrompts.length} Flux 2 [dev] illustrations (1 cover + ${story.illustrations.length} pages)${loraUrl ? ' [LoRA]' : ''}...`);
       const allResults = await generateIllustrations(
         allPrompts,
         base,
-        story.selections?.artStyle || 'children\'s book illustration'
+        artStyle,
+        undefined,
+        loraUrl
       );
 
       const coverResult = allResults[0] ? { ...allResults[0], page: 0 } : null;

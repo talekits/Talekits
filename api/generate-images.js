@@ -44,9 +44,7 @@ async function generateWithGptImageMini(prompt, quality = GPT_IMAGE_MINI_QUALITY
 
     if (isContentBlock && !isFallback) {
       console.warn(`Content filter hit — using safe fallback prompt immediately`);
-      const artMatch = prompt.match(/[Pp]ainted in[^.]+\./);
-      const artStyle = artMatch ? artMatch[0] : 'Painted in soft watercolour with warm pastel tones.';
-      const safeFallback = `A children's book illustration of a cheerful animal character standing in a sunny meadow filled with colourful wildflowers. The character has a big friendly smile and is looking ahead with bright curious eyes. Soft golden sunlight fills the scene. Wide landscape composition with a clear blue sky and a few fluffy white clouds. ${artStyle} No text, no speech bubbles, no borders, no watermarks, safe for children.`;
+      const safeFallback = `Cheerful fox cub character with bright amber eyes and a fluffy orange tail, standing in a sunny meadow with colourful wildflowers. Big friendly smile, looking ahead with curiosity. Soft golden sunlight, wide open landscape, clear blue sky with fluffy white clouds. Children's picture book illustration, soft watercolour, warm pastel palette. High quality, detailed illustration, safe for children, no text, no watermarks.`;
       return generateWithGptImageMini(safeFallback, quality, true);
     }
 
@@ -69,21 +67,27 @@ async function generateWithFlux(prompt, loraUrl = null, loraScale = 0.6, isFallb
     throw new Error('FAL_API_KEY not set — cannot use Flux provider');
   }
 
+  // Route to correct endpoint:
+  // - fal-ai/flux/dev        → standard text-to-image (no LoRA)
+  // - fal-ai/flux-lora       → text-to-image with custom LoRA weights
+  const endpoint = loraUrl ? 'fal-ai/flux-lora' : 'fal-ai/flux/dev';
+
   const body = {
     prompt,
-    image_size:          'landscape_16_9',
+    image_size:          'landscape_4_3',  // 4:3 suits children's book spreads
     num_inference_steps: 28,
     guidance_scale:      3.5,
     num_images:          1,
     output_format:       'jpeg',
     enable_safety_checker: true,
+    sync_mode:           true,             // wait for result in same request (faster on Vercel)
   };
 
   if (loraUrl) {
     body.loras = [{ path: loraUrl, scale: loraScale }];
   }
 
-  const response = await fetch('https://fal.run/fal-ai/flux-2/lora', {
+  const response = await fetch(`https://fal.run/${endpoint}`, {
     method:  'POST',
     headers: {
       'Content-Type':  'application/json',
@@ -102,9 +106,7 @@ async function generateWithFlux(prompt, loraUrl = null, loraScale = 0.6, isFallb
 
     if (isSafetyBlock && !isFallback) {
       console.warn(`Flux safety filter hit — using safe fallback prompt`);
-      const artMatch = prompt.match(/[Pp]ainted in[^.]+\./);
-      const artStyle = artMatch ? artMatch[0] : 'Painted in soft watercolour with warm pastel tones.';
-      const safeFallback = `A children's book illustration of a cheerful fox character standing in a sunny meadow filled with colourful wildflowers. The fox has a big friendly smile and bright curious eyes. Soft golden sunlight fills the scene. Wide landscape composition. ${artStyle} No text, no borders, safe for children.`;
+      const safeFallback = `Cheerful fox cub character with bright amber eyes and a fluffy orange tail, standing in a sunny meadow with colourful wildflowers. Big friendly smile, looking ahead with curiosity. Soft golden sunlight, wide open landscape, clear blue sky with fluffy white clouds. Children's picture book illustration, soft watercolour, warm pastel palette. High quality, detailed illustration, safe for children, no text, no watermarks.`;
       return generateWithFlux(safeFallback, loraUrl, loraScale, true);
     }
 
@@ -136,62 +138,67 @@ async function saveBufferToBlob(imageBuffer, blobPath, contentType = 'image/jpeg
 /* ─────────────────────────────────────────────────────────────
    Main export — generate all illustration images for a story.
 
-   loraUrl: optional — if provided (Den+ subscribers with a
-     trained LoRA), Flux is used. Otherwise GPT Image Mini.
-   quality: GPT Image Mini quality tier ('low'|'medium'|'high').
-     Ignored when using Flux.
+   Provider logic:
+   - Flux 2 [dev] is ALWAYS used by default (fal-ai/flux/dev)
+   - Flux with LoRA is used when loraUrl is provided — this only
+     happens when the subscriber has paid for Character Customisation
+     ($14.99 add-on), uploaded photos, and a LoRA has been trained
+     on their child's likeness (lora_url stored on child_profiles row)
+   - GPT Image Mini is kept as an emergency fallback ONLY if Flux
+     fails for a non-safety reason
+
+   quality: GPT Image Mini quality tier — only used if Flux fails
+     and the fallback fires.
 
    Returns array of { page, prompt, url } objects.
 ───────────────────────────────────────────────────────────── */
 async function generateIllustrations(illustrations, storyBase, artStyle, quality = GPT_IMAGE_MINI_QUALITY, loraUrl = null) {
   const results  = [];
-  const provider = loraUrl ? 'flux' : 'gpt-image-mini';
+  // Flux 2 [dev] is always the provider.
+  // loraUrl is only set when char_custom is active AND photos have been trained —
+  // in that case we hit fal-ai/flux-lora instead of fal-ai/flux/dev.
+  const mode = loraUrl ? 'flux-lora' : 'flux-dev';
 
-  console.log(`Generating ${illustrations.length} illustrations | provider: ${provider}${loraUrl ? ' (LoRA)' : ''} | quality: ${quality}`);
+  console.log(`[IMG] Generating ${illustrations.length} illustrations | mode: ${mode} | endpoint: ${loraUrl ? 'fal-ai/flux-lora' : 'fal-ai/flux/dev'}${loraUrl ? ' | lora: ' + loraUrl : ''}`);
 
   for (let i = 0; i < illustrations.length; i++) {
     const pageNum = i + 1;
     const prompt  = illustrations[i];
 
     try {
-      console.log(`Generating image ${pageNum}/${illustrations.length}`);
+      console.log(`[IMG] Image ${pageNum}/${illustrations.length} — ${mode}`);
 
-      let imageBuffer;
-
-      if (provider === 'flux') {
-        imageBuffer = await generateWithFlux(prompt, loraUrl);
-      } else {
-        imageBuffer = await generateWithGptImageMini(prompt, quality);
-      }
+      // Always use Flux. loraUrl is null for standard generation,
+      // populated only for Character Customisation subscribers.
+      let imageBuffer = await generateWithFlux(prompt, loraUrl);
 
       const blobPath = `stories/${storyBase}/page-${String(pageNum).padStart(2, '0')}.jpg`;
       const savedUrl = await saveBufferToBlob(imageBuffer, blobPath, 'image/jpeg');
 
-      results.push({ page: pageNum, prompt, url: savedUrl });
-      console.log(`Image ${pageNum} saved: ${blobPath}`);
+      results.push({ page: pageNum, prompt, url: savedUrl, mode });
+      console.log(`[IMG] Image ${pageNum} saved: ${blobPath}`);
 
-      // Flux is fast (~4-7s) — GPT Image Mini can be slow on complex prompts
-      // Smaller delay is fine for either
+      // Brief pause between requests — fal.ai handles concurrency well but
+      // a small gap avoids rate limit spikes on large stories
       if (i < illustrations.length - 1) {
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 300));
       }
 
     } catch (err) {
-      console.error(`Image ${pageNum} failed (${provider}): ${err.message}`);
+      console.error(`[IMG] Image ${pageNum} failed (${mode}): ${err.message}`);
 
-      // If Flux fails for a non-safety reason, fall back to GPT Image Mini
-      // rather than leaving the page blank
-      if (provider === 'flux') {
-        console.warn(`Image ${pageNum} — Flux failed, falling back to GPT Image Mini`);
-        try {
-          const fallbackBuffer = await generateWithGptImageMini(prompt, quality);
-          const blobPath       = `stories/${storyBase}/page-${String(pageNum).padStart(2, '0')}.jpg`;
-          const savedUrl       = await saveBufferToBlob(fallbackBuffer, blobPath);
-          results.push({ page: pageNum, prompt, url: savedUrl, provider_used: 'gpt-image-mini-fallback' });
-          continue;
-        } catch (fbErr) {
-          console.error(`Image ${pageNum} fallback also failed: ${fbErr.message}`);
-        }
+      // Flux failed for a non-safety reason — try GPT Image Mini as emergency fallback
+      // so the page isn't blank rather than holding up the whole story
+      console.warn(`[IMG] Image ${pageNum} — Flux failed, trying GPT Image Mini emergency fallback`);
+      try {
+        const fallbackBuffer = await generateWithGptImageMini(prompt, quality);
+        const blobPath       = `stories/${storyBase}/page-${String(pageNum).padStart(2, '0')}.jpg`;
+        const savedUrl       = await saveBufferToBlob(fallbackBuffer, blobPath);
+        results.push({ page: pageNum, prompt, url: savedUrl, mode: 'gpt-image-mini-fallback' });
+        console.warn(`[IMG] Image ${pageNum} — fallback succeeded`);
+        continue;
+      } catch (fbErr) {
+        console.error(`[IMG] Image ${pageNum} — fallback also failed: ${fbErr.message}`);
       }
 
       results.push({ page: pageNum, prompt, url: null, error: err.message });
@@ -201,9 +208,10 @@ async function generateIllustrations(illustrations, storyBase, artStyle, quality
   const manifest = {
     storyBase,
     artStyle,
-    provider,
+    mode,
+    endpoint: loraUrl ? 'fal-ai/flux-lora' : 'fal-ai/flux/dev',
     loraUrl: loraUrl || null,
-    quality: provider === 'gpt-image-mini' ? quality : null,
+    quality: null, // Flux doesn't use quality tiers
     generatedAt: new Date().toISOString(),
     images: results,
   };
