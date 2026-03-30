@@ -861,7 +861,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
 /* ─────────────────────────────────────────────────────────────
    Email — Kit free trial delivery
 ───────────────────────────────────────────────────────────── */
-function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false) {
+function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false, storyPdfUrl = null, pictureBookUrl = null, audioUrl = null) {
   const isPaid    = plan !== 'kit';
   const heading   = `I wrote ${childName} a story`;
   const intro     = isPaid
@@ -870,12 +870,20 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
 
   let attachMsg;
   if (isPaid && hasAudio) {
-    attachMsg = `I've attached three things to this email — the story PDF, the illustrated picture book, and an MP3 narration you can listen to together at bedtime. Open the picture book on a tablet for the full illustrated experience, or press play on the MP3 for listening on the go.`;
+    attachMsg = `Today's story comes in three formats — a story PDF, an illustrated picture book, and an MP3 narration. Use the buttons below to open each one.`;
   } else if (isPaid) {
-    attachMsg = `I've attached two things — the full story PDF for reading aloud, and the illustrated picture book that brings every scene to life. Open the picture book on a tablet or iPad for the best experience.`;
+    attachMsg = `Today's story comes with a full story PDF and an illustrated picture book. Use the buttons below to open each one.`;
   } else {
-    attachMsg = `I've attached the full story as a PDF. Find a cosy spot together, open it up, and enjoy.`;
+    attachMsg = `Today's story is ready to read. Use the button below to open the PDF.`;
   }
+
+  // Build download buttons HTML
+  const btnStyle = `display:inline-block;padding:10px 22px;border-radius:999px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;text-decoration:none;margin:4px;`;
+  const downloadButtons = [
+    storyPdfUrl    ? `<a href="${storyPdfUrl}"    target="_blank" style="${btnStyle}background:#1C1B18;color:#FAFAF8;">📖 Read the story</a>`           : '',
+    pictureBookUrl ? `<a href="${pictureBookUrl}" target="_blank" style="${btnStyle}background:#3C3489;color:#FAFAF8;">🎨 Open picture book</a>`          : '',
+    audioUrl       ? `<a href="${audioUrl}"       target="_blank" style="${btnStyle}background:#085041;color:#FAFAF8;">🎧 Play narration</a>`             : '',
+  ].filter(Boolean).join('\n            ');
   const footerCta = isPaid ? '' : `
             <p style="margin:0 0 18px;font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#1C1B18;line-height:1.7;">
               You're on a <strong>7-day free trial</strong> — a new story from me every single day. Each one is completely unique; I never write the same story twice.
@@ -944,17 +952,13 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
               ${attachMsg}
             </p>
 
-            ${hasAudio ? `
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
               <tr>
-                <td style="background:#E1F5EE;border:0.5px solid #5DCAA5;border-radius:10px;padding:16px 20px;">
-                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#085041;">🎧 Narration included</p>
-                  <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#085041;line-height:1.6;">
-                    Your MP3 narration is attached. Play it through your phone, tablet, or smart speaker — perfect for the car, bedtime, or anywhere away from a screen.
-                  </p>
+                <td style="text-align:center;padding:8px 0;">
+                  ${downloadButtons}
                 </td>
               </tr>
-            </table>` : ''}
+            </table>
 
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
               <tr>
@@ -989,16 +993,22 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
 </html>`;
 }
 
-function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false) {
+function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false, storyPdfUrl = null, pictureBookUrl = null, audioUrl = null) {
   const isPaid   = plan !== 'kit';
+
+  const links = [
+    storyPdfUrl    ? `Story PDF: ${storyPdfUrl}`        : '',
+    pictureBookUrl ? `Picture book: ${pictureBookUrl}`  : '',
+    audioUrl       ? `Narration MP3: ${audioUrl}`       : '',
+  ].filter(Boolean).join('\n');
 
   let attachMsg;
   if (isPaid && hasAudio) {
-    attachMsg = `Three files are attached — the full story PDF, the illustrated picture book, and an MP3 narration. Open the picture book on a tablet for the full illustrated experience, or play the MP3 for bedtime listening.`;
+    attachMsg = `Today's story comes in three formats. Use the links below to open each one:\n\n${links}`;
   } else if (isPaid) {
-    attachMsg = `Two files are attached — the full story PDF and your illustrated picture book. Open the picture book on a tablet for the full illustrated experience.`;
+    attachMsg = `Today's story comes with a PDF and illustrated picture book. Use the links below:\n\n${links}`;
   } else {
-    attachMsg = `The full story is attached as a PDF. Find a cosy spot and enjoy reading it together.`;
+    attachMsg = `Today's story is ready to read:\n\n${links}`;
   }
 
   const closing  = isPaid
@@ -1026,7 +1036,7 @@ ${closing}
 Talekits — a new story, every day`;
 }
 
-async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, hasAudio, attachments }) {
+async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, hasAudio, storyPdfUrl, pictureBookUrl, audioUrl }) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set — skipping email');
     return;
@@ -1044,9 +1054,8 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, has
     from:    'Kit from Talekits <kit@talekits.com>',
     to:      [to],
     subject: `${storyTitle} — ${childName}'s Talekits story`,
-    html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel, hasAudio),
-    text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel, hasAudio),
-    attachments,
+    html:    buildEmailHtml(childName, storyTitle, parentNote, plan, planLabel, hasAudio, storyPdfUrl, pictureBookUrl, audioUrl),
+    text:    buildEmailText(childName, storyTitle, parentNote, plan, planLabel, hasAudio, storyPdfUrl, pictureBookUrl, audioUrl),
   });
 
   if (error) {
@@ -1054,7 +1063,7 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, has
     throw new Error(`Email failed: ${error.message}`);
   }
 
-  console.log(`Email sent to ${to} | Plan: ${plan} | Attachments: ${attachments.length} | ID: ${data?.id}`);
+  console.log(`Email sent to ${to} | Plan: ${plan} | Links: pdf=${!!storyPdfUrl} pb=${!!pictureBookUrl} audio=${!!audioUrl} | ID: ${data?.id}`);
 }
 
 async function sendPictureBookEmail({ to, childName, storyTitle, plan, pbBuffer, pbFilename }) {
@@ -1291,46 +1300,29 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     }
   }
 
-  // Send single combined email once all outputs are ready
+  // Collect Blob URLs for all generated outputs — send links, not attachments
+  const storyPdfUrl    = outputs.find(o => o.type === 'story-pdf')?.url      || null;
+  const pictureBookUrl = outputs.find(o => o.type === 'picturebook-pdf')?.url || null;
+  const audioUrl       = outputs.find(o => o.type === 'audio-mp3')?.url       || null;
+
   if (email) {
     try {
-      const attachments = [];
-
-      if (pdfBuffer) {
-        attachments.push({
-          filename: `${base}.pdf`,
-          content:  pdfBuffer.toString('base64'),
-        });
-      }
-
-      if (pbBuffer) {
-        attachments.push({
-          filename: `${base}-picturebook.pdf`,
-          content:  pbBuffer.toString('base64'),
-        });
-      }
-
-      if (audioBuffer && audioFilename) {
-        attachments.push({
-          filename: audioFilename,
-          content:  audioBuffer.toString('base64'),
-        });
-      }
-
-      if (attachments.length) {
-        console.log(`[GS-7] Sending email to ${email} with ${attachments.length} attachment(s)${audioBuffer ? ' (incl. audio)' : ''}...`);
+      if (storyPdfUrl || pictureBookUrl || audioUrl) {
+        console.log(`[GS-7] Sending email to ${email} with download links | audio:${!!audioUrl} picturebook:${!!pictureBookUrl}`);
         await sendStoryEmail({
-          to:         email,
+          to:            email,
           childName,
-          storyTitle: story.title,
-          parentNote: story.parentNote,
+          storyTitle:    story.title,
+          parentNote:    story.parentNote,
           plan,
-          hasAudio:   !!audioBuffer,
-          attachments,
+          hasAudio:      !!audioUrl,
+          storyPdfUrl,
+          pictureBookUrl,
+          audioUrl,
         });
         console.log(`[GS-7] Email sent successfully`);
       } else {
-        console.warn(`[GS-7] No attachments to send — skipping email`);
+        console.warn(`[GS-7] No output URLs available — skipping email`);
       }
     } catch (err) {
       console.error(`[GS-7] Email send failed: ${err.message}`);

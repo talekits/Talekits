@@ -3,20 +3,17 @@ const { generateStory } = require('./generate-story');
 module.exports.maxDuration = 300;
 
 /* ─────────────────────────────────────────────────────────────
-   POST /api/stress-test
-   Body: { secret, email, count, plan, narratorVoice }
+   Stress test endpoint — generates one story per request.
+   Call with storyIndex=0 to start, it auto-chains to the next.
 
-   Generates `count` full stories sequentially and emails each one.
-   Streams progress as newline-delimited JSON so you can watch in real time.
-   Protected by CRON_SECRET (same secret used by the scheduler).
+   POST /api/stress-test
+   Body: { secret, email, plan, narratorVoice, storyIndex, total, sessionId }
 ─────────────────────────────────────────────────────────────── */
 
-// 7 varied profiles — different ages, themes, art styles and tones
-// so each story comes out genuinely different
 const TEST_PROFILES = [
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'Pirates & ocean adventure',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -44,8 +41,8 @@ CHARACTERS
   Protagonist personalisation: Child's own name as the hero`,
   },
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'Talking objects / silly fairy tale',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -72,8 +69,8 @@ CHARACTERS
   Protagonist type: Everyday object come to life`,
   },
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'Space & robots mystery',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -100,8 +97,8 @@ CHARACTERS
   Protagonist type: Alien or space explorer`,
   },
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'Wild animals in the rainforest',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -128,8 +125,8 @@ CHARACTERS
   Protagonist type: Animal hero`,
   },
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'Jungle dinosaur expedition',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -157,8 +154,8 @@ CHARACTERS
   Protagonist personalisation: Child's own name as the hero`,
   },
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'Dreams & bedtime adventure',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -185,8 +182,8 @@ CHARACTERS
   Protagonist type: Human child`,
   },
   {
-    childName: 'James',
-    gender:    'boy',
+    childName: 'James', gender: 'boy',
+    label: 'World cultures journey',
     content: `TALEKIT STORY PROFILE
 ────────────────────────────────────
 Child's name: James
@@ -220,82 +217,81 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'POST only' });
   }
 
-  const { secret, email, count = 7, plan = 'scout', narratorVoice = 'au_female' } = req.body;
+  const {
+    secret,
+    email,
+    plan          = 'scout',
+    narratorVoice = 'au_female',
+    storyIndex    = 0,
+    total         = 7,
+    sessionId     = Date.now().toString(),
+  } = req.body;
 
-  // Auth check
   if (secret !== process.env.CRON_SECRET) {
-    return res.status(401).json({ error: 'Unauthorised — wrong secret' });
+    return res.status(401).json({ error: 'Unauthorised' });
   }
-
   if (!email) {
     return res.status(400).json({ error: 'email required' });
   }
 
-  const total   = Math.min(parseInt(count) || 7, 10); // cap at 10
-  const results = [];
+  const idx     = parseInt(storyIndex);
+  const cap     = Math.min(parseInt(total), TEST_PROFILES.length);
+  const profile = TEST_PROFILES[idx % TEST_PROFILES.length];
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const filename = `talekits-profile-stress-${sessionId}-${idx + 1}-${dateStr}.txt`;
 
-  // Stream progress as newline-delimited JSON
-  res.setHeader('Content-Type', 'application/x-ndjson');
-  res.setHeader('Transfer-Encoding', 'chunked');
-  res.setHeader('Cache-Control', 'no-cache');
+  console.log(`[STRESS ${sessionId}] Story ${idx + 1}/${cap} — ${profile.label}`);
 
-  const log = (obj) => {
-    res.write(JSON.stringify(obj) + '\n');
-    console.log('[STRESS]', JSON.stringify(obj));
-  };
+  const start = Date.now();
+  let storyResult;
 
-  log({ event: 'start', total, plan, email, narratorVoice, timestamp: new Date().toISOString() });
+  try {
+    const outputs = await generateStory(
+      profile.content,
+      profile.childName,
+      filename,
+      plan,
+      email,
+      null,
+      narratorVoice
+    );
 
-  for (let i = 0; i < total; i++) {
-    const profile  = TEST_PROFILES[i % TEST_PROFILES.length];
-    const dateStr  = new Date().toISOString().slice(0, 10);
-    const filename = `talekits-profile-stress-${i + 1}-${dateStr}.txt`;
-    const storyNum = i + 1;
+    const elapsed  = Math.round((Date.now() - start) / 1000);
+    const outTypes = outputs.map(o => o.type).join(', ');
+    console.log(`[STRESS ${sessionId}] Story ${idx + 1} done in ${elapsed}s | ${outTypes}`);
 
-    log({ event: 'story_start', story: storyNum, total, profile: profile.content.split('\n')[0].trim() });
-
-    const start = Date.now();
-    try {
-      const outputs = await generateStory(
-        profile.content,
-        profile.childName,
-        filename,
-        plan,
-        email,
-        null,            // profileJson — use text content directly for this test
-        narratorVoice
-      );
-
-      const elapsed  = Math.round((Date.now() - start) / 1000);
-      const outTypes = outputs.map(o => o.type).join(', ');
-
-      log({ event: 'story_done', story: storyNum, elapsed_s: elapsed, outputs: outTypes });
-      results.push({ story: storyNum, status: 'ok', elapsed_s: elapsed, outputs: outTypes });
-
-    } catch (err) {
-      const elapsed = Math.round((Date.now() - start) / 1000);
-      log({ event: 'story_error', story: storyNum, elapsed_s: elapsed, error: err.message });
-      results.push({ story: storyNum, status: 'error', elapsed_s: elapsed, error: err.message });
-    }
-
-    // Brief pause between stories to avoid rate limits
-    if (i < total - 1) {
-      log({ event: 'pause', message: `Waiting 3s before story ${storyNum + 1}…` });
-      await new Promise(r => setTimeout(r, 3000));
-    }
+    storyResult = { status: 'ok', story: idx + 1, label: profile.label, elapsed_s: elapsed, outputs: outTypes };
+  } catch (err) {
+    const elapsed = Math.round((Date.now() - start) / 1000);
+    console.error(`[STRESS ${sessionId}] Story ${idx + 1} failed: ${err.message}`);
+    storyResult = { status: 'error', story: idx + 1, label: profile.label, elapsed_s: elapsed, error: err.message };
   }
 
-  const succeeded = results.filter(r => r.status === 'ok').length;
-  const failed    = results.filter(r => r.status === 'error').length;
+  const nextIndex = idx + 1;
+  const isLast    = nextIndex >= cap;
 
-  log({
-    event:     'complete',
-    total,
-    succeeded,
-    failed,
-    timestamp: new Date().toISOString(),
-    results,
+  // Fire next story as a background request — don't await, respond immediately
+  if (!isLast) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
+    const nextPayload = JSON.stringify({ secret, email, plan, narratorVoice, storyIndex: nextIndex, total: cap, sessionId });
+
+    // Fire and forget — this starts the next Vercel function invocation
+    fetch(`${baseUrl}/api/stress-test`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    nextPayload,
+    }).catch(err => console.error(`[STRESS] Failed to chain story ${nextIndex + 1}: ${err.message}`));
+
+    console.log(`[STRESS ${sessionId}] Chained story ${nextIndex + 1}/${cap}`);
+  } else {
+    console.log(`[STRESS ${sessionId}] All ${cap} stories complete`);
+  }
+
+  return res.status(200).json({
+    ...storyResult,
+    sessionId,
+    next:     isLast ? null : nextIndex + 1,
+    remaining: isLast ? 0   : cap - nextIndex,
+    complete:  isLast,
   });
-
-  res.end();
 };
