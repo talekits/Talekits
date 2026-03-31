@@ -506,7 +506,15 @@ function buildPictureBookPdf(story, childName, imageResults) {
       if (img.url && img.page !== undefined) imageMap[img.page] = img.url;
     });
 
-    const paragraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
+    const allParagraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
+
+    // Cap rendered paragraphs to the number of page illustrations available (pages 1..N in imageMap).
+    // This ensures every spread has an image and prevents a text-only final page when the
+    // illustration cap (max 6) is fewer than the story paragraph count.
+    const pageImageCount = Object.keys(imageMap).filter(k => Number(k) >= 1).length;
+    const paragraphs = pageImageCount > 0 && pageImageCount < allParagraphs.length
+      ? allParagraphs.slice(0, pageImageCount)
+      : allParagraphs;
 
     function getLayoutMode(para) {
       const wc = (para || '').split(/\s+/).filter(Boolean).length;
@@ -536,10 +544,10 @@ function buildPictureBookPdf(story, childName, imageResults) {
         const barH = 130;
         const barY = PH - barH - FOOTER;
 
-        doc.save()
-           .rect(0, barY - 30, PW, 30).fillOpacity(0.3).fillColor('#FAFAF8').fill()
-           .rect(0, barY, PW, barH).fillOpacity(0.92).fillColor('#FAFAF8').fill()
-           .restore();
+        // Fade strip above the text bar
+        doc.save().fillOpacity(0.28).rect(0, barY - 30, PW, 30).fillColor('#FAFAF8').fill().restore();
+        // Solid-ish text bar
+        doc.save().fillOpacity(0.90).rect(0, barY, PW, barH).fillColor('#FAFAF8').fill().restore();
 
         const bodySize   = wordCount <= 10 ? 24 : wordCount <= 15 ? 20 : 17;
         const lineGapVal = bodySize >= 20 ? 8 : 6;
@@ -578,14 +586,9 @@ function buildPictureBookPdf(story, childName, imageResults) {
              .text(`Illustration ${paraIndex + 1}`, IMG_X, IMG_Y + IMG_H / 2 - 8, { width: IMG_W, align: 'center' });
         }
 
-        // Soft feathered edge at the text/image boundary — no hard line
-        for (let sx = 0; sx < 32; sx++) {
-          const alpha = ((32 - sx) / 32) * 0.12;
-          doc.save()
-             .rect(IMG_X + sx, 0, 1, IMG_H)
-             .fillOpacity(alpha).fillColor('#1C1B18').fill()
-             .restore();
-        }
+        // Soft shadow at the text/image boundary — two rects avoids per-pixel opacity banding
+        doc.save().fillOpacity(0.06).rect(IMG_X, 0, 20, IMG_H).fillColor('#1C1B18').fill().restore();
+        doc.save().fillOpacity(0.03).rect(IMG_X + 20, 0, 16, IMG_H).fillColor('#1C1B18').fill().restore();
 
         const textX = 28;
         const textW = TEXT_COL_W - 28 - 14;
@@ -666,57 +669,53 @@ function buildPictureBookPdf(story, childName, imageResults) {
           valign: 'center',
         });
 
-        // Dark gradient at top (for brand label)
-        for (let i = 0; i < 80; i++) {
-          const alpha = ((80 - i) / 80) * 0.65;
-          doc.save().rect(0, i, PW, 1)
-             .fillOpacity(alpha).fillColor('#1C1B18').fill().restore();
-        }
+        // ── Thin Talekits header bar — matches website style ──────────────
+        const HEADER_H = 36;
+        doc.rect(0, 0, PW, HEADER_H).fill('#1C1B18');
+        doc.font(fonts.italic).fontSize(13).fillColor('#FAFAF8')
+           .text('Talekits', PAD, 11, { width: PW - PAD * 2, align: 'center', lineBreak: false });
 
-        // Dark gradient at bottom (for title + child name)
-        for (let i = 0; i < 180; i++) {
-          const alpha = (i / 180) * 0.82;
-          doc.save().rect(0, PH - 180 + i, PW, 1)
-             .fillOpacity(alpha).fillColor('#1C1B18').fill().restore();
-        }
+        // ── Bottom scrim — two solid semi-transparent rects (no loop) ─────
+        // Use a single save/restore with explicit fillOpacity to avoid bleed
+        doc.save().fillOpacity(0.45)
+           .rect(0, PH - 160, PW, 60).fillColor('#1C1B18').fill()
+           .restore();
+        doc.save().fillOpacity(0.80)
+           .rect(0, PH - 100, PW, 100).fillColor('#1C1B18').fill()
+           .restore();
 
-        // Brand label — top centre
-        doc.font(fonts.sans).fontSize(9).fillColor('#FFFFFF')
-           .text('T A L E K I T S', PAD, 20, { width: PW - PAD * 2, align: 'center', characterSpacing: 3 });
-
-        // Story title — large, italic, bottom section
-        const titleFontSize = story.title.length > 28 ? 34 : story.title.length > 18 ? 40 : 48;
+        // Story title — large, italic, white
+        const titleFontSize = story.title.length > 28 ? 34 : story.title.length > 18 ? 40 : 46;
         doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
-           .text(story.title, PAD, PH - 130, { width: PW - PAD * 2, align: 'center' });
+           .text(story.title, PAD, PH - 118, { width: PW - PAD * 2, align: 'center' });
 
         // "A story for [child]" — below title
-        doc.font(fonts.sans).fontSize(11).fillColor('#F0EDE4')
-           .text(`A story for ${childName}`, PAD, PH - 46, { width: PW - PAD * 2, align: 'center' });
+        doc.font(fonts.sans).fontSize(11).fillColor('#E8E5DC')
+           .text(`A story for ${childName}`, PAD, PH - 42, { width: PW - PAD * 2, align: 'center' });
 
       } else {
         // Fallback cover — no illustration available
-        // Warm illustrated feel using shapes and colour
         doc.rect(0, 0, PW, PH).fill('#FDF6E3');
-        doc.rect(0, 0, PW, PH * 0.45).fill('#E8830A');
+        doc.rect(0, 0, PW, PH * 0.5).fill('#E8830A');
 
-        // Decorative circle
-        doc.save().circle(PW / 2, PH * 0.32, 110)
-           .fillOpacity(0.15).fillColor('#FFFFFF').fill().restore();
-        doc.save().circle(PW / 2, PH * 0.32, 80)
-           .fillOpacity(0.12).fillColor('#FFFFFF').fill().restore();
+        // Decorative circles
+        doc.save().fillOpacity(0.15).circle(PW / 2, PH * 0.3, 120).fillColor('#FFFFFF').fill().restore();
+        doc.save().fillOpacity(0.10).circle(PW / 2, PH * 0.3, 85).fillColor('#FFFFFF').fill().restore();
 
-        doc.font(fonts.sans).fontSize(9).fillColor('#FFFFFF')
-           .text('T A L E K I T S', PAD, 24, { width: PW - PAD * 2, align: 'center', characterSpacing: 3 });
+        // Header bar
+        doc.rect(0, 0, PW, 36).fill('#1C1B18');
+        doc.font(fonts.italic).fontSize(13).fillColor('#FAFAF8')
+           .text('Talekits', PAD, 11, { width: PW - PAD * 2, align: 'center', lineBreak: false });
 
         const titleFontSize = story.title.length > 28 ? 28 : story.title.length > 18 ? 34 : 40;
         doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
-           .text(story.title, PAD, PH * 0.18, { width: PW - PAD * 2, align: 'center' });
+           .text(story.title, PAD, PH * 0.2, { width: PW - PAD * 2, align: 'center' });
 
         doc.font(fonts.sans).fontSize(12).fillColor(C.text)
-           .text(`A story for ${childName}`, PAD, PH * 0.56, { width: PW - PAD * 2, align: 'center' });
+           .text(`A story for ${childName}`, PAD, PH * 0.57, { width: PW - PAD * 2, align: 'center' });
 
         doc.font(fonts.body).fontSize(10).fillColor(C.text2)
-           .text(date, PAD, PH * 0.56 + 22, { width: PW - PAD * 2, align: 'center' });
+           .text(date, PAD, PH * 0.57 + 22, { width: PW - PAD * 2, align: 'center' });
       }
     }
 
