@@ -151,55 +151,76 @@ STORY WRITING RULES
 - End on a warm, satisfying note appropriate to the age.
 
 ═══════════════════════════════════════
-ILLUSTRATION PROMPT RULES — sent to Flux 2 [dev] via fal.ai
+PICTURE BOOK PAGE CHUNKING — CRITICAL
 ═══════════════════════════════════════
-Flux 2 [dev] responds best to structured, descriptive prompts. Follow these rules exactly.
+The picture book displays exactly 6 illustrated pages. You must divide the story into exactly 6 page chunks regardless of how many paragraphs it has.
 
-ILLUSTRATION COUNT — CRITICAL:
-Generate EXACTLY one illustration prompt per paragraph of the story — no more, no fewer.
-Count your paragraphs first, then write exactly that many prompts in the same order.
-The illustrations array must have the same length as the number of paragraphs.
+Step 1 — Write the full story text as normal, in flowing paragraphs.
+Step 2 — Mentally divide the full story into 6 roughly equal narrative sections. Each section spans one or more consecutive paragraphs. Think of these as "chapters" of the picture book — each one covers a distinct beat or moment in the story arc.
+Step 3 — For each of the 6 sections, identify the single most visually interesting or emotionally resonant moment. That moment becomes the illustration prompt for that page.
+Step 4 — In the "pageChunks" array, record: (a) which paragraph indices belong to this chunk (0-indexed), and (b) the illustration prompt for that chunk.
 
-PROMPT STRUCTURE — write every prompt in this order:
-1. Subject line: what is happening and who is doing it — specific, visual, present-tense action
-2. Character description: consistent physical details for the protagonist in EVERY prompt (species, colours, size, key features, expression). Use the EXACT same descriptors every time so the character looks identical across all images — copy-paste the descriptor phrase verbatim from prompt to prompt.
-3. Setting: where this scene takes place — environment, time of day, weather, key background elements
-4. Mood and lighting: the emotional atmosphere expressed through light — warm golden hour, soft morning haze, bright midday sun, cool moonlight, etc.
-5. Composition: framing and camera — close-up portrait, wide establishing shot, medium shot, bird's eye view, low angle, etc.
-6. Art style tag: a short, comma-separated style descriptor — e.g. "children's picture book illustration, soft watercolour, warm pastel palette" or "children's book art, flat vector illustration, bold outlines, bright primary colours"
-7. Quality tags: always end with "high quality, detailed illustration, safe for children, no text, no watermarks, no borders, no red lines, no page dividers, no ruled lines"
+This means illustration prompts are NOT one-per-paragraph. They represent the key visual moment across a chunk of the story.
 
-PROMPT FORMAT — write as a single dense paragraph of natural language, NOT a bullet list. Pack all seven elements into flowing prose. Example:
-"A young red fox cub with bright amber eyes, a white-tipped tail, and small rounded ears reaches up on tiptoe to place a glowing lantern on a wooden shelf inside a cosy treehouse. Warm golden light spills across the wooden floor and illuminates shelves of tiny jars and maps pinned to the walls. Late afternoon, soft orange glow through a round porthole window. Medium shot, slightly low angle to make the treehouse feel grand. Children's picture book illustration, gouache painterly style, warm earthy tones. High quality, detailed illustration, safe for children, no text, no watermarks, no borders, no red lines, no page dividers."
+═══════════════════════════════════════
+ILLUSTRATION PROMPT RULES — Flux 2 [dev] via fal.ai
+═══════════════════════════════════════
 
-CHARACTER CONSISTENCY — the most important rule:
-Define a short "character anchor" phrase for the protagonist in your first prompt (e.g. "a small girl with curly auburn hair, round brown eyes, and a yellow raincoat"). Then copy that exact phrase into EVERY subsequent illustration prompt. Do not rephrase, summarise, or vary it — identical wording is what produces a consistent character across all images.
+CHARACTER ANCHOR — generate this FIRST before writing any illustration prompt:
+1. Identify the story protagonist (the main character who drives the plot).
+2. Write a single compact descriptor phrase of 15–25 words covering: species/age/build, hair/fur/skin colour, eye colour, key distinguishing features, and default outfit for this story. Example: "a small girl aged about six with long black hair in two plaits, warm brown eyes, light olive skin, wearing a bright red coat and yellow boots".
+3. If the profile includes "Child's appearance (for illustrations)", incorporate those physical details into the descriptor — they override your invented ones for that character.
+4. If the protagonist has a companion who appears in most scenes (sidekick, pet, friend), create a second short anchor phrase for them too.
+5. Output these anchors in the "characterAnchor" field of the JSON. Copy the protagonist anchor word-for-word into EVERY illustration prompt. Never rephrase it.
 
-ANTI-ARTIFACT RULES — Flux sometimes generates stray lines or borders if prompts are ambiguous:
-- Always explicitly include "no borders, no red lines, no ruled lines, no dividing lines, no page edges" in every prompt's quality tags.
-- Describe the illustration as a standalone scene, not a page layout: "a scene showing...", not "an illustration with a border showing...".
-- Never mention books, pages, frames, panels, or spreads in the prompt — describe only the scene itself.
-- Use "full colour, seamless background" to discourage white/coloured margins.
+ART STYLE — use a rich, precise formulation. Do not just say "watercolour". Instead describe the medium, line treatment, palette, texture, and reference feel. Examples:
+- "children's picture book illustration in the style of classic British picture books — confident ink outlines with flat watercolour wash, warm cream paper texture, slightly imperfect hand-drawn lines, limited palette of 5–6 harmonious colours, characters with large expressive eyes and rounded proportions"
+- "children's book art in a bold gouache painterly style — thick, confident brushstrokes, rich saturated jewel-tones on a warm ivory ground, slight visible texture from the paper beneath, clear ink contour lines around characters"
+- "children's picture book in a mid-century modern illustrative style — clean flat shapes with subtle grain texture, a limited palette of terracotta, sage green, mustard and cream, simple geometric environments, characters with minimal but expressive faces"
+- "children's book illustration in a soft pencil-and-watercolour style — delicate graphite sketching under translucent washes, soft feathered edges where colour meets paper, warm pastel tones with occasional bright accent colours, cosy domestic settings"
+Choose the style that matches the selected Art Style option from the profile, then expand it to a full rich descriptor like the examples above.
+
+PROMPT STRUCTURE — write each prompt as one dense prose paragraph covering:
+1. Action: what is happening and who is doing it — present-tense, specific, visual
+2. Protagonist anchor: copy the exact characterAnchor phrase verbatim
+3. Supporting characters: if present, describe them consistently using their anchor phrase
+4. Setting: environment, time of day, key background details — described as a standalone scene, never as a page or book spread
+5. Mood and lighting: expressed through warm golden hour / soft morning haze / etc.
+6. Composition: close-up portrait / wide establishing shot / medium shot / etc.
+7. Art style: the rich descriptor you defined — identical wording in every prompt
+8. Quality tags: "high quality, detailed illustration, safe for children, full bleed, seamless background, no text, no speech bubbles, no watermarks, no borders, no frames, no ruled lines, no dividing lines, no page edges"
 
 CONSISTENCY RULES:
-- Describe the protagonist's physical appearance in EVERY prompt using identical wording. Copy the exact descriptor phrase from prompt to prompt — this is critical for visual consistency across the story.
-- For Ages 2–3: always specify "close-up composition, simple bold shapes, minimal background, large expressive character".
-- For Ages 8–10: you may use "cinematic composition, detailed environment, atmospheric lighting".
+- The protagonist anchor phrase must appear verbatim in every single prompt. Never shorten, rephrase, or vary it.
+- The art style descriptor must be identical in every prompt.
+- If clothing changes during the story (swimwear, costume, etc.), note the change explicitly but keep all other anchor details identical.
+- For Ages 2–3: always add "close-up composition, bold simple shapes, large expressive character, minimal background detail".
+- For Ages 8–10: you may add "cinematic framing, rich atmospheric detail, dramatic lighting".
 
 SAFE CONTENT — Flux has a safety filter. Keep all prompts child-safe and positive:
 - No violence, threat, or peril — reframe as adventure and curiosity
-- No darkness or shadows as mood — use "golden light", "soft glow", "bright and warm"
-- No distressed expressions — use "wide-eyed with wonder", "beaming with excitement", "curious and alert"
-- Environments should feel inviting and magical, never threatening
+- No darkness or fear as a mood — use "warm golden light", "soft glow", "bright cheerful atmosphere"
+- No distressed expressions — use "wide-eyed with wonder", "beaming with delight", "curious and alert"
+- Environments must feel inviting and magical, never threatening
 
-Always end with: "high quality, detailed illustration, safe for children, no text, no watermarks, no borders, no red lines, no page dividers."
+Always end with: "high quality, detailed illustration, safe for children, full bleed, seamless background, no text, no speech bubbles, no watermarks, no borders, no frames, no ruled lines, no dividing lines."
 
 Respond with a valid JSON object only. No markdown fences, no preamble, nothing else.
 
 {
   "title": "Story title",
   "story": "Full story text. Use \\n\\n to separate paragraphs.",
-  "illustrations": ["Flux 2 [dev] prompt for page 1 — MUST have exactly one entry per paragraph, no more, no fewer"],
+  "characterAnchor": {
+    "protagonist": "The exact 15–25 word physical descriptor for the protagonist — copied verbatim into every illustration prompt",
+    "companion": "Optional: compact descriptor for a sidekick/pet/friend who appears frequently, or null"
+  },
+  "pageChunks": [
+    {
+      "paragraphIndices": [0, 1],
+      "illustrationPrompt": "Full Flux prompt for this page chunk — action + protagonist anchor + setting + mood + composition + art style + quality tags"
+    },
+    "... exactly 6 entries total"
+  ],
   "parentNote": "One sentence explaining the educational or emotional theme for parents.",
   "selections": {
     "storyLength": "selected value",
@@ -236,17 +257,24 @@ function buildStoryTxt(story, childName) {
 
 /* ─────────────────────────────────────────────────────────────
    Flux 2 [dev] cover prompt builder
-   Structured for Flux — subject-first, style tags, quality tags.
+   Injects the characterAnchor so the cover and page images share
+   the same character descriptor — enabling two-pass consistency.
 ───────────────────────────────────────────────────────────── */
-function buildFluxCoverPrompt(title, styleTag) {
-  const style = styleTag || 'soft watercolour, warm pastel tones';
-  return `Children's picture book cover for a story called "${title}". A single iconic scene — the main character stands centre-frame in a warm, beautifully lit environment that captures the heart of the story. The composition is wide landscape, inviting and bold, designed to make a child want to open the book. Soft golden light, cheerful and magical atmosphere, rich background detail with a natural sky. ${style}, children's picture book illustration, high quality, detailed, no text, no title lettering, no speech bubbles, no borders, no watermarks, safe for children.`;
+function buildFluxCoverPrompt(title, styleTag, characterAnchor) {
+  const style = styleTag || 'children\'s picture book illustration with confident ink outlines, flat watercolour wash, warm cream paper texture, limited harmonious palette';
+  const protagonistDesc = characterAnchor?.protagonist
+    ? `The story's protagonist — ${characterAnchor.protagonist} — stands centre-frame as the hero of the scene. `
+    : 'The story\'s main character stands centre-frame as the hero of the scene. ';
+  const companionDesc = characterAnchor?.companion
+    ? `Their companion — ${characterAnchor.companion} — appears close by. `
+    : '';
+  return `A children's picture book cover illustration for a story called "${title}". ${protagonistDesc}${companionDesc}A single iconic, inviting scene that captures the heart of the story — wide landscape composition designed to make a child want to open the book immediately. Warm golden light, cheerful and magical atmosphere, rich background detail. ${style}. High quality, detailed illustration, safe for children, full bleed, seamless background, no text, no title lettering, no speech bubbles, no watermarks, no borders, no frames, no ruled lines.`;
 }
 
 function buildIllustrationsTxt(story, childName) {
   const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
   const styleTag    = artStyle.toLowerCase().replace(/^painted in /i, '');
-  const coverPrompt = buildFluxCoverPrompt(story.title, styleTag);
+  const coverPrompt = buildFluxCoverPrompt(story.title, styleTag, story.characterAnchor);
 
   const lines = [
     `ILLUSTRATION PROMPTS — ${story.title.toUpperCase()}`,
@@ -254,15 +282,33 @@ function buildIllustrationsTxt(story, childName) {
     `A Talekits story for ${childName}`,
     `Art style: ${story.selections?.artStyle || 'Not specified'}`,
     '',
-    'COVER',
-    coverPrompt,
-    '',
   ];
-  (story.illustrations || []).forEach((p, i) => {
-    lines.push(`Page ${i + 1}`);
-    lines.push(p);
+
+  if (story.characterAnchor?.protagonist) {
+    lines.push('CHARACTER ANCHOR');
+    lines.push(`  Protagonist: ${story.characterAnchor.protagonist}`);
+    if (story.characterAnchor.companion) lines.push(`  Companion:   ${story.characterAnchor.companion}`);
     lines.push('');
-  });
+  }
+
+  lines.push('COVER');
+  lines.push(coverPrompt);
+  lines.push('');
+
+  // Support both old (illustrations[]) and new (pageChunks[]) schema
+  if (story.pageChunks?.length) {
+    story.pageChunks.forEach((chunk, i) => {
+      lines.push(`Page ${i + 1} (paragraphs ${(chunk.paragraphIndices || []).map(n => n + 1).join(', ')})`);
+      lines.push(chunk.illustrationPrompt || '');
+      lines.push('');
+    });
+  } else {
+    (story.illustrations || []).forEach((p, i) => {
+      lines.push(`Page ${i + 1}`);
+      lines.push(p);
+      lines.push('');
+    });
+  }
   return lines.join('\n');
 }
 
@@ -482,6 +528,9 @@ function buildPdf(story, childName, plan) {
 
 /* ─────────────────────────────────────────────────────────────
    Picture book PDF — landscape, iPad-friendly
+   Layout: true two-column — text panel left, image panel right.
+   No overlapping text on images. No gradients.
+   Talekits wordmark: "Tale" = #6B6860, "kits" = #E8830A on #FAFAF8.
 ───────────────────────────────────────────────────────────── */
 function buildPictureBookPdf(story, childName, imageResults) {
   return new Promise((resolve, reject) => {
@@ -494,272 +543,228 @@ function buildPictureBookPdf(story, childName, imageResults) {
 
     ensureFonts();
 
-    const PW     = doc.page.width;
-    const PH     = doc.page.height;
+    const PW     = doc.page.width;   // 841.89
+    const PH     = doc.page.height;  // 595.28
     const HALF   = PW / 2;
-    const PAD    = 44;
-    const FOOTER = 32;
+    const PAD    = 36;
+    const FOOTER = 28;
+    const HEADER = 36;               // Talekits header bar height
     const date   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 
+    // ── Image map: page 0 = cover, pages 1..N = story pages ──
     const imageMap = {};
     (imageResults || []).forEach(img => {
       if (img.url && img.page !== undefined) imageMap[img.page] = img.url;
     });
 
+    // ── Build page text chunks from pageChunks or paragraph fallback ──
+    // Each entry in pageTexts is the full text block for that picture book page.
+    let pageTexts = [];
     const allParagraphs = (story.story || '').split(/\n\n+/).filter(p => p.trim());
 
-    // Cap rendered paragraphs to the number of page illustrations available (pages 1..N in imageMap).
-    // This ensures every spread has an image and prevents a text-only final page when the
-    // illustration cap (max 6) is fewer than the story paragraph count.
+    if (story.pageChunks?.length) {
+      // New schema: Claude pre-divided the story into 6 chunks
+      pageTexts = story.pageChunks.map(chunk => {
+        const indices = chunk.paragraphIndices || [];
+        return indices.map(i => allParagraphs[i] || '').filter(Boolean).join('\n\n');
+      }).filter(t => t.trim());
+    } else {
+      // Legacy schema: one paragraph per page (capped to available images)
+      const pageImageCount = Object.keys(imageMap).filter(k => Number(k) >= 1).length;
+      pageTexts = pageImageCount > 0 && pageImageCount < allParagraphs.length
+        ? allParagraphs.slice(0, pageImageCount)
+        : allParagraphs;
+    }
+
+    // Cap to available page images
     const pageImageCount = Object.keys(imageMap).filter(k => Number(k) >= 1).length;
-    const paragraphs = pageImageCount > 0 && pageImageCount < allParagraphs.length
-      ? allParagraphs.slice(0, pageImageCount)
-      : allParagraphs;
-
-    function getLayoutMode(para) {
-      const wc = (para || '').split(/\s+/).filter(Boolean).length;
-      return wc <= 20 ? 'fullbleed' : 'split';
+    if (pageImageCount > 0 && pageTexts.length > pageImageCount) {
+      pageTexts = pageTexts.slice(0, pageImageCount);
     }
 
-    async function drawSpread(paraIndex, para, isFirst, pageIndex) {
-      const mode     = isFirst ? 'split' : getLayoutMode(para);
-      const imgUrl   = imageMap[paraIndex + 1];
-      const wordCount = (para || '').split(/\s+/).filter(Boolean).length;
-
-      let imgBuf = null;
-      if (imgUrl) {
-        try {
-          const imgRes = await fetch(imgUrl);
-          if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
-        } catch { }
-      }
-
-      if (mode === 'fullbleed') {
-        doc.rect(0, 0, PW, PH).fill(C.surface);
-
-        if (imgBuf) {
-          doc.image(imgBuf, 0, 0, { width: PW, height: PH, cover: [PW, PH], align: 'center', valign: 'center' });
-        }
-
-        const barH = 130;
-        const barY = PH - barH - FOOTER;
-
-        // Fade strip above the text bar
-        doc.save().fillOpacity(0.28).rect(0, barY - 30, PW, 30).fillColor('#FAFAF8').fill().restore();
-        // Solid-ish text bar
-        doc.save().fillOpacity(0.90).rect(0, barY, PW, barH).fillColor('#FAFAF8').fill().restore();
-
-        const bodySize   = wordCount <= 10 ? 24 : wordCount <= 15 ? 20 : 17;
-        const lineGapVal = bodySize >= 20 ? 8 : 6;
-        const textPad    = 40;
-
-        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
-           .text(para || '', textPad, barY + 14, { width: PW - textPad * 2, align: 'center' });
-
-        doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
-           .text(`${pageIndex}`, PW - PAD - 20, barY + 6, { width: 20, align: 'right' });
-
-      } else {
-        // ── Split layout: illustration fills right ~60%, text panel on left ──
-        // Inspired by real children's picture books — clean white text area,
-        // illustration bleeds to edge, warm and inviting.
-        const TEXT_COL_W = Math.floor(PW * 0.38);
-        const IMG_X      = TEXT_COL_W;
-        const IMG_W      = PW - TEXT_COL_W;
-        const IMG_Y      = 0;
-        const IMG_H      = PH - FOOTER;
-
-        // Cream background for whole page
-        doc.rect(0, 0, PW, PH).fill('#FFFDF8');
-
-        if (imgBuf) {
-          doc.image(imgBuf, IMG_X, IMG_Y, {
-            width:  IMG_W,
-            height: IMG_H,
-            cover:  [IMG_W, IMG_H],
-            align:  'center',
-            valign: 'center',
-          });
-        } else {
-          doc.rect(IMG_X, IMG_Y, IMG_W, IMG_H).fill(C.surface2);
-          doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
-             .text(`Illustration ${paraIndex + 1}`, IMG_X, IMG_Y + IMG_H / 2 - 8, { width: IMG_W, align: 'center' });
-        }
-
-        // Soft shadow at the text/image boundary — two rects avoids per-pixel opacity banding
-        doc.save().fillOpacity(0.06).rect(IMG_X, 0, 20, IMG_H).fillColor('#1C1B18').fill().restore();
-        doc.save().fillOpacity(0.03).rect(IMG_X + 20, 0, 16, IMG_H).fillColor('#1C1B18').fill().restore();
-
-        const textX = 28;
-        const textW = TEXT_COL_W - 28 - 14;
-        let   ty    = PAD + 12;
-
-        if (isFirst) {
-          // First spread: show Talekits label + story title + child name
-          doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
-             .text('TALEKITS', textX, ty, { width: textW, characterSpacing: 1.2 });
-          ty += 14;
-
-          doc.font(fonts.italic).fontSize(16).fillColor(C.text).lineGap(3)
-             .text(story.title, textX, ty, { width: textW });
-          ty = doc.y + 8;
-
-          doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 14, ty)
-             .lineWidth(0.4).strokeColor(C.border).stroke();
-          ty += 10;
-
-          doc.font(fonts.sans).fontSize(7.5).fillColor(C.text2)
-             .text(`A story for ${childName}`, textX, ty, { width: textW });
-          ty += 11;
-          doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
-             .text(date, textX, ty, { width: textW });
-          ty += 22;
-        } else {
-          // Page number, small and subtle
-          doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
-             .text(`${pageIndex}`, textX, ty, { width: textW });
-          ty += 20;
-        }
-
-        // Body text — scale font to word count
-        const bodySize   = wordCount <= 20 ? 18 : wordCount <= 35 ? 15 : wordCount <= 55 ? 13 : 11;
-        const lineGapVal = bodySize >= 16 ? 9 : bodySize >= 13 ? 7 : 5;
-
-        // Vertically centre text in the available area
-        const textAreaH = IMG_H - ty - PAD;
-        const textH     = doc.font(fonts.body).fontSize(bodySize).heightOfString(para || '', { width: textW, lineGap: lineGapVal });
-        if (!isFirst && textH < textAreaH * 0.65) {
-          ty += Math.floor((textAreaH - textH) / 2);
-        }
-
-        if (isFirst && para) {
-          // Drop cap for the opening paragraph
-          const letter  = para.charAt(0);
-          const rest    = para.slice(1);
-          const capSize = Math.max(bodySize * 2.6, 38);
-          doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
-             .text(letter, textX, ty - 4, { lineBreak: false });
-          const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 4;
-          doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
-             .text(rest, textX + capW, ty + Math.floor(capSize * 0.28), { width: textW - capW });
-        } else if (para) {
-          doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lineGapVal)
-             .text(para || '', textX, ty, { width: textW });
-        }
-      }
+    // ── Talekits wordmark helper — "Tale" in #6B6860, "kits" in #E8830A ──
+    function drawTalekitsWordmark(x, y, fontSize, align, maxWidth) {
+      // Measure both parts
+      const taleW = doc.font(fonts.italic).fontSize(fontSize).widthOfString('Tale');
+      const kitsW = doc.font(fonts.italic).fontSize(fontSize).widthOfString('kits');
+      const totalW = taleW + kitsW;
+      let startX = x;
+      if (align === 'center') startX = x + (maxWidth - totalW) / 2;
+      else if (align === 'right') startX = x + maxWidth - totalW;
+      doc.font(fonts.italic).fontSize(fontSize).fillColor('#6B6860')
+         .text('Tale', startX, y, { lineBreak: false });
+      doc.font(fonts.italic).fontSize(fontSize).fillColor('#E8830A')
+         .text('kits', startX + taleW, y, { lineBreak: false });
     }
 
-    async function drawCover() {
-      const coverBuf = imageMap[0]
-        ? await (async () => {
-            try {
-              const r = await fetch(imageMap[0]);
-              return r.ok ? Buffer.from(await r.arrayBuffer()) : null;
-            } catch { return null; }
-          })()
-        : null;
+    // ── Header bar helper ──
+    function drawHeader(pageWidth) {
+      doc.rect(0, 0, pageWidth, HEADER).fill('#FAFAF8');
+      doc.moveTo(0, HEADER).lineTo(pageWidth, HEADER)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
+      drawTalekitsWordmark(0, 10, 14, 'center', pageWidth);
+    }
 
-      if (coverBuf) {
-        // Full-bleed illustration
-        doc.image(coverBuf, 0, 0, {
-          width:  PW,
-          height: PH,
-          cover:  [PW, PH],
+    // ── Footer bar helper ──
+    function drawFooter(pageIndex, totalPages, title) {
+      const fy = PH - FOOTER;
+      doc.rect(0, fy, PW, FOOTER).fill('#FAFAF8');
+      doc.moveTo(0, fy).lineTo(PW, fy).lineWidth(0.5).strokeColor(C.border).stroke();
+      doc.font(fonts.sans).fontSize(7.5).fillColor(C.text3)
+         .text(`${title}  ·  Page ${pageIndex} of ${totalPages}`, PAD, fy + 9, { width: PW - PAD * 2, align: 'center' });
+    }
+
+    // ── Draw a spread page: text left, image right, no overlap ──
+    async function drawSpread(pageText, pageNum, isFirst, imgBuf) {
+      // True non-overlapping two-column layout
+      // Left column: cream background, text only
+      // Right column: illustration only, bleeds to edges (top/bottom/right)
+      const TEXT_COL_W = Math.floor(PW * 0.36);  // ~303px text panel
+      const IMG_X      = TEXT_COL_W;
+      const IMG_W      = PW - TEXT_COL_W;
+      const CONTENT_Y  = HEADER;                  // below header
+      const CONTENT_H  = PH - HEADER - FOOTER;   // between header and footer
+
+      // Text panel background — clean cream, no image behind it
+      doc.rect(0, CONTENT_Y, TEXT_COL_W, CONTENT_H).fill('#FFFDF8');
+
+      // Image panel
+      if (imgBuf) {
+        doc.image(imgBuf, IMG_X, CONTENT_Y, {
+          width:  IMG_W,
+          height: CONTENT_H,
+          cover:  [IMG_W, CONTENT_H],
           align:  'center',
           valign: 'center',
         });
-
-        // ── Thin Talekits header bar — matches website style ──────────────
-        const HEADER_H = 36;
-        doc.rect(0, 0, PW, HEADER_H).fill('#1C1B18');
-        doc.font(fonts.italic).fontSize(13).fillColor('#FAFAF8')
-           .text('Talekits', PAD, 11, { width: PW - PAD * 2, align: 'center', lineBreak: false });
-
-        // ── Bottom scrim — two solid semi-transparent rects (no loop) ─────
-        // Use a single save/restore with explicit fillOpacity to avoid bleed
-        doc.save().fillOpacity(0.45)
-           .rect(0, PH - 160, PW, 60).fillColor('#1C1B18').fill()
-           .restore();
-        doc.save().fillOpacity(0.80)
-           .rect(0, PH - 100, PW, 100).fillColor('#1C1B18').fill()
-           .restore();
-
-        // Story title — large, italic, white
-        const titleFontSize = story.title.length > 28 ? 34 : story.title.length > 18 ? 40 : 46;
-        doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
-           .text(story.title, PAD, PH - 118, { width: PW - PAD * 2, align: 'center' });
-
-        // "A story for [child]" — below title
-        doc.font(fonts.sans).fontSize(11).fillColor('#E8E5DC')
-           .text(`A story for ${childName}`, PAD, PH - 42, { width: PW - PAD * 2, align: 'center' });
-
       } else {
-        // Fallback cover — no illustration available
-        doc.rect(0, 0, PW, PH).fill('#FDF6E3');
-        doc.rect(0, 0, PW, PH * 0.5).fill('#E8830A');
+        doc.rect(IMG_X, CONTENT_Y, IMG_W, CONTENT_H).fill(C.surface2);
+        doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
+           .text('Illustration loading…', IMG_X, CONTENT_Y + CONTENT_H / 2 - 8, { width: IMG_W, align: 'center' });
+      }
 
-        // Decorative circles
-        doc.save().fillOpacity(0.15).circle(PW / 2, PH * 0.3, 120).fillColor('#FFFFFF').fill().restore();
-        doc.save().fillOpacity(0.10).circle(PW / 2, PH * 0.3, 85).fillColor('#FFFFFF').fill().restore();
+      // Thin separator line between text and image panels
+      doc.moveTo(TEXT_COL_W, CONTENT_Y).lineTo(TEXT_COL_W, CONTENT_Y + CONTENT_H)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
 
-        // Header bar
-        doc.rect(0, 0, PW, 36).fill('#1C1B18');
-        doc.font(fonts.italic).fontSize(13).fillColor('#FAFAF8')
-           .text('Talekits', PAD, 11, { width: PW - PAD * 2, align: 'center', lineBreak: false });
+      // Text content inside the left panel
+      const textX = PAD;
+      const textW = TEXT_COL_W - PAD - 20;
+      let ty = CONTENT_Y + PAD;
 
-        const titleFontSize = story.title.length > 28 ? 28 : story.title.length > 18 ? 34 : 40;
-        doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
-           .text(story.title, PAD, PH * 0.2, { width: PW - PAD * 2, align: 'center' });
+      if (isFirst) {
+        // First spread: show title + child byline above text
+        doc.font(fonts.italic).fontSize(15).fillColor(C.text).lineGap(3)
+           .text(story.title, textX, ty, { width: textW });
+        ty = doc.y + 6;
+        doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 20, ty)
+           .lineWidth(0.4).strokeColor(C.border).stroke();
+        ty += 10;
+        doc.font(fonts.sans).fontSize(7.5).fillColor(C.text2)
+           .text(`A story for ${childName}`, textX, ty, { width: textW });
+        ty += 10;
+        doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
+           .text(date, textX, ty, { width: textW });
+        ty += 22;
+      }
 
-        doc.font(fonts.sans).fontSize(12).fillColor(C.text)
-           .text(`A story for ${childName}`, PAD, PH * 0.57, { width: PW - PAD * 2, align: 'center' });
+      // Body text — scale font to word count of the chunk
+      const wordCount = (pageText || '').split(/\s+/).filter(Boolean).length;
+      const bodySize  = wordCount <= 25 ? 16 : wordCount <= 50 ? 14 : wordCount <= 80 ? 12 : 10.5;
+      const lgap      = bodySize >= 14 ? 8 : bodySize >= 12 ? 6 : 5;
 
-        doc.font(fonts.body).fontSize(10).fillColor(C.text2)
-           .text(date, PAD, PH * 0.57 + 22, { width: PW - PAD * 2, align: 'center' });
+      // Vertically centre text in the remaining panel height
+      const textAreaH = CONTENT_H - (ty - CONTENT_Y) - PAD;
+      const textH     = doc.font(fonts.body).fontSize(bodySize)
+                          .heightOfString(pageText || '', { width: textW, lineGap: lgap });
+      if (!isFirst && textH < textAreaH * 0.7) {
+        ty += Math.floor((textAreaH - textH) / 2);
+      }
+
+      if (isFirst && pageText) {
+        // Drop cap on first page
+        const letter  = pageText.charAt(0);
+        const rest    = pageText.slice(1);
+        const capSize = Math.min(Math.max(bodySize * 2.4, 34), 52);
+        doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
+           .text(letter, textX, ty - 4, { lineBreak: false });
+        const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 4;
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lgap)
+           .text(rest, textX + capW, ty + Math.floor(capSize * 0.28), { width: textW - capW });
+      } else if (pageText) {
+        doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lgap)
+           .text(pageText, textX, ty, { width: textW });
       }
     }
 
-    function drawEndPage() {
+    // ── Cover page ──
+    async function drawCover(coverBuf) {
+      if (coverBuf) {
+        // Full-bleed illustration
+        doc.image(coverBuf, 0, 0, { width: PW, height: PH, cover: [PW, PH], align: 'center', valign: 'center' });
+      } else {
+        // Solid fallback
+        doc.rect(0, 0, PW, PH).fill('#E8830A');
+        doc.save().fillOpacity(0.15).circle(PW / 2, PH * 0.38, 150).fillColor('#FFFFFF').fill().restore();
+      }
+
+      // Header bar — solid, no gradient
+      doc.rect(0, 0, PW, HEADER).fill('#FAFAF8');
+      doc.moveTo(0, HEADER).lineTo(PW, HEADER).lineWidth(0.5).strokeColor(C.border).stroke();
+      drawTalekitsWordmark(0, 10, 14, 'center', PW);
+
+      // Bottom title area — solid dark band, no gradient
+      const TITLE_BAR_H = 100;
+      const TITLE_BAR_Y = PH - TITLE_BAR_H;
+      doc.rect(0, TITLE_BAR_Y, PW, TITLE_BAR_H).fill('#1C1B18');
+
+      // Story title
+      const titleFontSize = story.title.length > 30 ? 28 : story.title.length > 20 ? 34 : 40;
+      doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
+         .text(story.title, PAD, TITLE_BAR_Y + 14, { width: PW - PAD * 2, align: 'center' });
+
+      // "A story for [child]"
+      doc.font(fonts.sans).fontSize(10).fillColor('#9C9A94')
+         .text(`A story for ${childName}`, PAD, TITLE_BAR_Y + TITLE_BAR_H - 22, { width: PW - PAD * 2, align: 'center' });
+    }
+
+    // ── End page ──
+    function drawEndPage(totalSpreads) {
       doc.addPage();
-      doc.rect(0, 0, PW, PH).fill(C.bg);
+      doc.rect(0, 0, PW, PH).fill('#FAFAF8');
+      drawHeader(PW);
+      drawFooter(totalSpreads + 1, totalSpreads + 1, story.title);
 
-      const lx = PAD;
+      const contentY = HEADER + PAD;
       const lw = HALF - PAD * 2;
-      let   ly = PAD + 16;
+      let ly = contentY;
 
-      doc.font(fonts.italic).fontSize(16).fillColor(C.text)
-         .text('A note for', lx, ly, { width: lw });
-      ly = doc.y;
-      doc.font(fonts.italic).fontSize(16).fillColor(C.text2)
-         .text('parents', lx, ly, { width: lw });
-      ly = doc.y + 16;
+      doc.font(fonts.italic).fontSize(15).fillColor(C.text)
+         .text('A note for parents', PAD, ly, { width: lw });
+      ly = doc.y + 14;
+      doc.moveTo(PAD, ly).lineTo(HALF - PAD, ly).lineWidth(0.4).strokeColor(C.border).stroke();
+      ly += 14;
 
-      doc.moveTo(lx, ly).lineTo(HALF - PAD, ly)
-         .lineWidth(0.5).strokeColor(C.border).stroke();
-      ly += 16;
-
-      const noteH = doc.font(fonts.body).fontSize(11).heightOfString(story.parentNote || '', { width: lw - 32 }) + 36;
-      doc.roundedRect(lx, ly, lw, noteH, 10).fill(C.amberBg);
-      doc.roundedRect(lx, ly, lw, noteH, 10).lineWidth(0.5).strokeColor(C.amberBorder).stroke();
-      doc.font(fonts.sansBold).fontSize(9).fillColor(C.amberText)
-         .text('PARENT NOTE', lx + 16, ly + 10, { characterSpacing: 1, width: lw - 32 });
+      const noteH = doc.font(fonts.body).fontSize(11)
+                      .heightOfString(story.parentNote || '', { width: lw - 32 }) + 36;
+      doc.rect(PAD, ly, lw, noteH).fill(C.amberBg);
+      doc.rect(PAD, ly, lw, noteH).lineWidth(0.5).strokeColor(C.amberBorder).stroke();
+      doc.font(fonts.sansBold).fontSize(8).fillColor(C.amberText)
+         .text('PARENT NOTE', PAD + 14, ly + 10, { characterSpacing: 1, width: lw - 28 });
       doc.font(fonts.body).fontSize(11).fillColor(C.amberText).lineGap(4)
-         .text(story.parentNote || '', lx + 16, ly + 26, { width: lw - 32 });
+         .text(story.parentNote || '', PAD + 14, ly + 26, { width: lw - 28 });
 
+      // Right panel: "What Kit picked"
       const rx = HALF + PAD;
       const rw = HALF - PAD * 2;
-
-      doc.moveTo(HALF, PAD).lineTo(HALF, PH - FOOTER - PAD)
+      doc.moveTo(HALF, HEADER + PAD).lineTo(HALF, PH - FOOTER - PAD)
          .lineWidth(0.5).strokeColor(C.border).stroke();
 
-      doc.font(fonts.italic).fontSize(16).fillColor(C.text)
-         .text('What Kit', rx, PAD + 16, { width: rw });
-      doc.font(fonts.italic).fontSize(16).fillColor(C.text2)
-         .text('picked', rx, doc.y, { width: rw });
+      doc.font(fonts.italic).fontSize(15).fillColor(C.text)
+         .text('What Kit picked', rx, contentY, { width: rw });
+      let ry = doc.y + 18;
 
       const sel = story.selections || {};
-      let ry    = doc.y + 20;
-
       const rows = [
         { label: 'Themes',    value: sel.themes,          bg: C.purpleBg, text: C.purpleText, border: C.purpleBorder },
         { label: 'Art style', value: sel.artStyle,         bg: C.tealBg,   text: C.tealText,   border: C.tealBorder   },
@@ -769,57 +774,51 @@ function buildPictureBookPdf(story, childName, imageResults) {
 
       rows.forEach(row => {
         if (!row.value || (Array.isArray(row.value) && !row.value.length)) return;
-        if (ry > PH - FOOTER - 40) return;
-
-        doc.font(fonts.sansBold).fontSize(8).fillColor(C.text3)
+        if (ry > PH - FOOTER - 36) return;
+        doc.font(fonts.sansBold).fontSize(7.5).fillColor(C.text3)
            .text(row.label.toUpperCase(), rx, ry, { characterSpacing: 0.8 });
-        ry += 13;
-
+        ry += 12;
         const vals = Array.isArray(row.value) ? row.value : [row.value];
-        let   px   = rx;
-
+        let px = rx;
         vals.forEach(v => {
           if (!v) return;
-          const tw   = doc.font(fonts.sans).fontSize(9).widthOfString(v);
-          const pw   = tw + 20;
+          const tw = doc.font(fonts.sans).fontSize(8.5).widthOfString(v);
+          const pw = tw + 18;
           if (px + pw > PW - PAD) { px = rx; ry += 22; }
-
-          doc.roundedRect(px, ry, pw, 18, 9).fill(row.bg);
-          doc.roundedRect(px, ry, pw, 18, 9).lineWidth(0.5).strokeColor(row.border).stroke();
-          doc.font(fonts.sans).fontSize(9).fillColor(row.text)
-             .text(v, px + 10, ry + 4, { width: tw, lineBreak: false });
-
+          doc.roundedRect(px, ry, pw, 17, 8).fill(row.bg);
+          doc.roundedRect(px, ry, pw, 17, 8).lineWidth(0.5).strokeColor(row.border).stroke();
+          doc.font(fonts.sans).fontSize(8.5).fillColor(row.text)
+             .text(v, px + 9, ry + 3, { width: tw, lineBreak: false });
           px += pw + 5;
         });
-        ry += 28;
+        ry += 26;
       });
     }
 
+    // ── Main async draw loop ──
     (async () => {
       try {
-        await drawCover();
+        // Cover
+        const coverBuf = imageMap[0]
+          ? await fetch(imageMap[0]).then(r => r.ok ? r.arrayBuffer().then(Buffer.from) : null).catch(() => null)
+          : null;
+        await drawCover(coverBuf);
 
-        for (let i = 0; i < paragraphs.length; i++) {
+        // Story spreads
+        for (let i = 0; i < pageTexts.length; i++) {
           doc.addPage();
-          await drawSpread(i, paragraphs[i], i === 0, i + 1);
+          drawHeader(PW);
+          drawFooter(i + 1, pageTexts.length, story.title);
+
+          const imgUrl = imageMap[i + 1];
+          const imgBuf = imgUrl
+            ? await fetch(imgUrl).then(r => r.ok ? r.arrayBuffer().then(Buffer.from) : null).catch(() => null)
+            : null;
+
+          await drawSpread(pageTexts[i], i + 1, i === 0, imgBuf);
         }
 
-        drawEndPage();
-
-        const range = doc.bufferedPageRange();
-        for (let i = 1; i < range.count; i++) {
-          doc.switchToPage(range.start + i);
-          doc.rect(0, PH - FOOTER, PW, FOOTER).fill(C.surface).fillOpacity(1);
-          doc.moveTo(0, PH - FOOTER).lineTo(PW, PH - FOOTER)
-             .lineWidth(0.5).strokeColor(C.border).stroke();
-          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
-             .text(
-               `Talekits  ·  ${story.title}  ·  Page ${i} of ${range.count - 1}`,
-               PAD, PH - FOOTER + 12,
-               { width: PW - PAD * 2, align: 'center' }
-             );
-        }
-
+        drawEndPage(pageTexts.length);
         doc.end();
       } catch (err) {
         reject(err);
@@ -1052,6 +1051,11 @@ function buildTextFromJson(profileJson) {
   const lines = ['TALEKIT STORY PROFILE', '─'.repeat(36)];
   if (childName) lines.push(`Child's name: ${childName}`);
   if (gender)    lines.push(`Child's gender: ${gender}`);
+
+  // Surface child appearance for illustration character anchoring
+  const childAppearance = details["Child's own name as the hero"]?.trim();
+  if (childAppearance) lines.push(`Child's appearance (for illustrations): ${childAppearance}`);
+
   lines.push(`Created: ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}`);
   lines.push('');
 
@@ -1157,30 +1161,36 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
   }
 
   let imageResults = [];
-  if (planConfig.images && story.illustrations?.length) {
-    try {
-      const artStyle   = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
-      const styleTag   = artStyle.toLowerCase().replace(/^painted in /i, '');
-      const coverPrompt = buildFluxCoverPrompt(story.title, styleTag);
+  const hasPageChunks = story.pageChunks?.length > 0;
+  const hasIllustrations = story.illustrations?.length > 0;
 
-      // ── Illustration count cap ──────────────────────────────────────────
-      // Limit page illustrations to the number of paragraphs so every page
-      // has an image. Also cap at 6 to keep generation costs manageable.
-      // (1 cover is always generated on top of this cap.)
-      const paragraphCount = (story.story || '').split(/\n\n+/).filter(p => p.trim()).length;
-      const MAX_ILLUSTRATIONS = 6;
-      const pageIllustrations = story.illustrations.slice(0, Math.min(paragraphCount, MAX_ILLUSTRATIONS));
+  if (planConfig.images && (hasPageChunks || hasIllustrations)) {
+    try {
+      const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
+      const styleTag    = artStyle.toLowerCase().replace(/^painted in /i, '');
+      const coverPrompt = buildFluxCoverPrompt(story.title, styleTag, story.characterAnchor);
+
+      // Extract page illustration prompts — prefer new pageChunks schema
+      let pageIllustrations;
+      if (hasPageChunks) {
+        // New schema: Claude pre-divided into exactly 6 chunks
+        pageIllustrations = story.pageChunks
+          .slice(0, 6)
+          .map(chunk => chunk.illustrationPrompt)
+          .filter(Boolean);
+      } else {
+        // Legacy schema: one prompt per paragraph, capped at 6
+        const paragraphCount = (story.story || '').split(/\n\n+/).filter(p => p.trim()).length;
+        pageIllustrations = story.illustrations.slice(0, Math.min(paragraphCount, 6));
+      }
 
       const allPrompts = [coverPrompt, ...pageIllustrations];
 
-      // Only use LoRA when the subscriber has paid for Character Customisation ($14.99),
-      // uploaded their photos, AND a LoRA has been trained and the URL stored on the profile.
-      // For every other subscriber this is null and Flux 2 [dev] runs in standard mode.
       const loraUrl = (profileJson?.charCustom && profileJson?.charCustomPhotosUploaded && profileJson?.loraUrl)
         ? profileJson.loraUrl
         : null;
 
-      console.log(`[GS-5] Generating ${allPrompts.length} Flux 2 [dev] illustrations (1 cover + ${pageIllustrations.length} pages, capped from ${story.illustrations.length})${loraUrl ? ' [LoRA]' : ''}...`);
+      console.log(`[GS-5] Generating ${allPrompts.length} illustrations (1 cover + ${pageIllustrations.length} pages, schema: ${hasPageChunks ? 'pageChunks' : 'legacy'})${loraUrl ? ' [LoRA]' : ''}...`);
       const allResults = await generateIllustrations(
         allPrompts,
         base,
@@ -1189,9 +1199,8 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
         loraUrl
       );
 
-      const coverResult = allResults[0] ? { ...allResults[0], page: 0 } : null;
-      imageResults      = allResults.slice(1).map((r, i) => ({ ...r, page: i + 1 }));
-      if (coverResult) imageResults = [coverResult, ...imageResults];
+      // generateIllustrations now returns page: 0 for cover, page: 1..N for story pages
+      imageResults = allResults;
 
       const saved  = allResults.filter(i => i.url);
       const failed = allResults.filter(i => !i.url);
