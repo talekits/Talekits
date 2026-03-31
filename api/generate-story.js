@@ -155,17 +155,31 @@ ILLUSTRATION PROMPT RULES — sent to Flux 2 [dev] via fal.ai
 ═══════════════════════════════════════
 Flux 2 [dev] responds best to structured, descriptive prompts. Follow these rules exactly.
 
+ILLUSTRATION COUNT — CRITICAL:
+Generate EXACTLY one illustration prompt per paragraph of the story — no more, no fewer.
+Count your paragraphs first, then write exactly that many prompts in the same order.
+The illustrations array must have the same length as the number of paragraphs.
+
 PROMPT STRUCTURE — write every prompt in this order:
 1. Subject line: what is happening and who is doing it — specific, visual, present-tense action
-2. Character description: consistent physical details for the protagonist in EVERY prompt (species, colours, size, key features, expression). Use the exact same descriptors every time so the character looks identical across all images.
+2. Character description: consistent physical details for the protagonist in EVERY prompt (species, colours, size, key features, expression). Use the EXACT same descriptors every time so the character looks identical across all images — copy-paste the descriptor phrase verbatim from prompt to prompt.
 3. Setting: where this scene takes place — environment, time of day, weather, key background elements
 4. Mood and lighting: the emotional atmosphere expressed through light — warm golden hour, soft morning haze, bright midday sun, cool moonlight, etc.
 5. Composition: framing and camera — close-up portrait, wide establishing shot, medium shot, bird's eye view, low angle, etc.
 6. Art style tag: a short, comma-separated style descriptor — e.g. "children's picture book illustration, soft watercolour, warm pastel palette" or "children's book art, flat vector illustration, bold outlines, bright primary colours"
-7. Quality tags: always end with "high quality, detailed illustration, safe for children, no text, no watermarks"
+7. Quality tags: always end with "high quality, detailed illustration, safe for children, no text, no watermarks, no borders, no red lines, no page dividers, no ruled lines"
 
 PROMPT FORMAT — write as a single dense paragraph of natural language, NOT a bullet list. Pack all seven elements into flowing prose. Example:
-"A young red fox cub with bright amber eyes, a white-tipped tail, and small rounded ears reaches up on tiptoe to place a glowing lantern on a wooden shelf inside a cosy treehouse. Warm golden light spills across the wooden floor and illuminates shelves of tiny jars and maps pinned to the walls. Late afternoon, soft orange glow through a round porthole window. Medium shot, slightly low angle to make the treehouse feel grand. Children's picture book illustration, gouache painterly style, warm earthy tones. High quality, detailed illustration, safe for children, no text, no watermarks."
+"A young red fox cub with bright amber eyes, a white-tipped tail, and small rounded ears reaches up on tiptoe to place a glowing lantern on a wooden shelf inside a cosy treehouse. Warm golden light spills across the wooden floor and illuminates shelves of tiny jars and maps pinned to the walls. Late afternoon, soft orange glow through a round porthole window. Medium shot, slightly low angle to make the treehouse feel grand. Children's picture book illustration, gouache painterly style, warm earthy tones. High quality, detailed illustration, safe for children, no text, no watermarks, no borders, no red lines, no page dividers."
+
+CHARACTER CONSISTENCY — the most important rule:
+Define a short "character anchor" phrase for the protagonist in your first prompt (e.g. "a small girl with curly auburn hair, round brown eyes, and a yellow raincoat"). Then copy that exact phrase into EVERY subsequent illustration prompt. Do not rephrase, summarise, or vary it — identical wording is what produces a consistent character across all images.
+
+ANTI-ARTIFACT RULES — Flux sometimes generates stray lines or borders if prompts are ambiguous:
+- Always explicitly include "no borders, no red lines, no ruled lines, no dividing lines, no page edges" in every prompt's quality tags.
+- Describe the illustration as a standalone scene, not a page layout: "a scene showing...", not "an illustration with a border showing...".
+- Never mention books, pages, frames, panels, or spreads in the prompt — describe only the scene itself.
+- Use "full colour, seamless background" to discourage white/coloured margins.
 
 CONSISTENCY RULES:
 - Describe the protagonist's physical appearance in EVERY prompt using identical wording. Copy the exact descriptor phrase from prompt to prompt — this is critical for visual consistency across the story.
@@ -178,14 +192,14 @@ SAFE CONTENT — Flux has a safety filter. Keep all prompts child-safe and posit
 - No distressed expressions — use "wide-eyed with wonder", "beaming with excitement", "curious and alert"
 - Environments should feel inviting and magical, never threatening
 
-Always end with: "high quality, detailed illustration, safe for children, no text, no watermarks."
+Always end with: "high quality, detailed illustration, safe for children, no text, no watermarks, no borders, no red lines, no page dividers."
 
 Respond with a valid JSON object only. No markdown fences, no preamble, nothing else.
 
 {
   "title": "Story title",
   "story": "Full story text. Use \\n\\n to separate paragraphs.",
-  "illustrations": ["Flux 2 [dev] prompt for page 1 — subject + character + setting + mood + composition + style tags + quality tags", "...one prompt per paragraph"],
+  "illustrations": ["Flux 2 [dev] prompt for page 1 — MUST have exactly one entry per paragraph, no more, no fewer"],
   "parentNote": "One sentence explaining the educational or emotional theme for parents.",
   "selections": {
     "storyLength": "selected value",
@@ -538,13 +552,17 @@ function buildPictureBookPdf(story, childName, imageResults) {
            .text(`${pageIndex}`, PW - PAD - 20, barY + 6, { width: 20, align: 'right' });
 
       } else {
-        const TEXT_COL_W = Math.floor(PW * 0.40);
+        // ── Split layout: illustration fills right ~60%, text panel on left ──
+        // Inspired by real children's picture books — clean white text area,
+        // illustration bleeds to edge, warm and inviting.
+        const TEXT_COL_W = Math.floor(PW * 0.38);
         const IMG_X      = TEXT_COL_W;
         const IMG_W      = PW - TEXT_COL_W;
         const IMG_Y      = 0;
         const IMG_H      = PH - FOOTER;
 
-        doc.rect(0, 0, PW, PH).fill(C.bg);
+        // Cream background for whole page
+        doc.rect(0, 0, PW, PH).fill('#FFFDF8');
 
         if (imgBuf) {
           doc.image(imgBuf, IMG_X, IMG_Y, {
@@ -555,59 +573,67 @@ function buildPictureBookPdf(story, childName, imageResults) {
             valign: 'center',
           });
         } else {
-          doc.rect(IMG_X, IMG_Y, IMG_W, IMG_H).fill(C.surface);
+          doc.rect(IMG_X, IMG_Y, IMG_W, IMG_H).fill(C.surface2);
           doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
              .text(`Illustration ${paraIndex + 1}`, IMG_X, IMG_Y + IMG_H / 2 - 8, { width: IMG_W, align: 'center' });
         }
 
-        for (let sx = 0; sx < 20; sx++) {
-          const opacity = Math.round(((20 - sx) / 20) * 30);
-          const hex = opacity.toString(16).padStart(2, '0');
-          doc.rect(IMG_X + sx, 0, 1, IMG_H).fill(`#1C1B18${hex}`);
+        // Soft feathered edge at the text/image boundary — no hard line
+        for (let sx = 0; sx < 32; sx++) {
+          const alpha = ((32 - sx) / 32) * 0.12;
+          doc.save()
+             .rect(IMG_X + sx, 0, 1, IMG_H)
+             .fillOpacity(alpha).fillColor('#1C1B18').fill()
+             .restore();
         }
 
-        const textX   = PAD;
-        const textW   = TEXT_COL_W - PAD - 16;
-        let   ty      = PAD + 16;
+        const textX = 28;
+        const textW = TEXT_COL_W - 28 - 14;
+        let   ty    = PAD + 12;
 
         if (isFirst) {
-          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
-             .text('Talekits', textX, ty, { width: textW });
+          // First spread: show Talekits label + story title + child name
+          doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
+             .text('TALEKITS', textX, ty, { width: textW, characterSpacing: 1.2 });
           ty += 14;
 
-          doc.font(fonts.italic).fontSize(18).fillColor(C.text).lineGap(3)
+          doc.font(fonts.italic).fontSize(16).fillColor(C.text).lineGap(3)
              .text(story.title, textX, ty, { width: textW });
           ty = doc.y + 8;
 
-          doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 16, ty)
-             .lineWidth(0.5).strokeColor(C.border).stroke();
-          ty += 12;
-
-          doc.font(fonts.sans).fontSize(8).fillColor(C.text2)
-             .text(`A story for ${childName}`, textX, ty, { width: textW });
+          doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 14, ty)
+             .lineWidth(0.4).strokeColor(C.border).stroke();
           ty += 10;
-          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
+
+          doc.font(fonts.sans).fontSize(7.5).fillColor(C.text2)
+             .text(`A story for ${childName}`, textX, ty, { width: textW });
+          ty += 11;
+          doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
              .text(date, textX, ty, { width: textW });
-          ty += 18;
+          ty += 22;
         } else {
-          doc.font(fonts.sans).fontSize(8).fillColor(C.text3)
+          // Page number, small and subtle
+          doc.font(fonts.sans).fontSize(7).fillColor(C.text3)
              .text(`${pageIndex}`, textX, ty, { width: textW });
-          ty += 18;
+          ty += 20;
         }
 
+        // Body text — scale font to word count
         const bodySize   = wordCount <= 20 ? 18 : wordCount <= 35 ? 15 : wordCount <= 55 ? 13 : 11;
-        const lineGapVal = bodySize >= 16 ? 8 : bodySize >= 13 ? 6 : 5;
+        const lineGapVal = bodySize >= 16 ? 9 : bodySize >= 13 ? 7 : 5;
 
+        // Vertically centre text in the available area
         const textAreaH = IMG_H - ty - PAD;
         const textH     = doc.font(fonts.body).fontSize(bodySize).heightOfString(para || '', { width: textW, lineGap: lineGapVal });
-        if (!isFirst && textH < textAreaH * 0.6) {
+        if (!isFirst && textH < textAreaH * 0.65) {
           ty += Math.floor((textAreaH - textH) / 2);
         }
 
         if (isFirst && para) {
+          // Drop cap for the opening paragraph
           const letter  = para.charAt(0);
           const rest    = para.slice(1);
-          const capSize = Math.max(bodySize * 2.4, 36);
+          const capSize = Math.max(bodySize * 2.6, 38);
           doc.font(fonts.bold).fontSize(capSize).fillColor(C.text)
              .text(letter, textX, ty - 4, { lineBreak: false });
           const capW = doc.font(fonts.bold).fontSize(capSize).widthOfString(letter) + 4;
@@ -631,6 +657,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
         : null;
 
       if (coverBuf) {
+        // Full-bleed illustration
         doc.image(coverBuf, 0, 0, {
           width:  PW,
           height: PH,
@@ -639,31 +666,57 @@ function buildPictureBookPdf(story, childName, imageResults) {
           valign: 'center',
         });
 
-        for (let i = 0; i < 100; i++) {
-          const topA = Math.round(((100 - i) / 100) * 160).toString(16).padStart(2, '0');
-          const botA = Math.round((i / 100) * 130).toString(16).padStart(2, '0');
-          doc.rect(0, i, PW, 1).fill(`#1C1B18${topA}`);
-          doc.rect(0, PH - 100 + i, PW, 1).fill(`#1C1B18${botA}`);
+        // Dark gradient at top (for brand label)
+        for (let i = 0; i < 80; i++) {
+          const alpha = ((80 - i) / 80) * 0.65;
+          doc.save().rect(0, i, PW, 1)
+             .fillOpacity(alpha).fillColor('#1C1B18').fill().restore();
         }
 
-        doc.font(fonts.sans).fontSize(10).fillColor('#FAFAF8AA')
-           .text('Talekits  —  Children\'s Storybook', PAD, 22, { width: PW - PAD * 2, align: 'center', opacity: 0.7 });
+        // Dark gradient at bottom (for title + child name)
+        for (let i = 0; i < 180; i++) {
+          const alpha = (i / 180) * 0.82;
+          doc.save().rect(0, PH - 180 + i, PW, 1)
+             .fillOpacity(alpha).fillColor('#1C1B18').fill().restore();
+        }
 
-        doc.font(fonts.italic).fontSize(42).fillColor('#FFFFFF').lineGap(6)
-           .text(story.title, PAD, 42, { width: PW - PAD * 2, align: 'center' });
+        // Brand label — top centre
+        doc.font(fonts.sans).fontSize(9).fillColor('#FFFFFF')
+           .text('T A L E K I T S', PAD, 20, { width: PW - PAD * 2, align: 'center', characterSpacing: 3 });
 
-        doc.font(fonts.sans).fontSize(12).fillColor('#F0EEE8')
-           .text(`A story for ${childName}`, PAD, PH - 52, { width: PW - PAD * 2, align: 'center' });
+        // Story title — large, italic, bottom section
+        const titleFontSize = story.title.length > 28 ? 34 : story.title.length > 18 ? 40 : 48;
+        doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
+           .text(story.title, PAD, PH - 130, { width: PW - PAD * 2, align: 'center' });
+
+        // "A story for [child]" — below title
+        doc.font(fonts.sans).fontSize(11).fillColor('#F0EDE4')
+           .text(`A story for ${childName}`, PAD, PH - 46, { width: PW - PAD * 2, align: 'center' });
 
       } else {
-        doc.rect(0, 0, PW, PH).fill(C.surface);
-        doc.roundedRect(20, 20, PW - 40, PH - 40, 14).lineWidth(1).strokeColor(C.border).stroke();
-        doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
-           .text('Talekits  —  Children\'s Storybook', PAD, PH / 2 - 70, { width: PW - PAD * 2, align: 'center' });
-        doc.font(fonts.italic).fontSize(38).fillColor(C.text).lineGap(6)
-           .text(story.title, PAD, PH / 2 - 50, { width: PW - PAD * 2, align: 'center' });
-        doc.font(fonts.sans).fontSize(12).fillColor(C.text2)
-           .text(`A story for ${childName}`, PAD, doc.y + 20, { width: PW - PAD * 2, align: 'center' });
+        // Fallback cover — no illustration available
+        // Warm illustrated feel using shapes and colour
+        doc.rect(0, 0, PW, PH).fill('#FDF6E3');
+        doc.rect(0, 0, PW, PH * 0.45).fill('#E8830A');
+
+        // Decorative circle
+        doc.save().circle(PW / 2, PH * 0.32, 110)
+           .fillOpacity(0.15).fillColor('#FFFFFF').fill().restore();
+        doc.save().circle(PW / 2, PH * 0.32, 80)
+           .fillOpacity(0.12).fillColor('#FFFFFF').fill().restore();
+
+        doc.font(fonts.sans).fontSize(9).fillColor('#FFFFFF')
+           .text('T A L E K I T S', PAD, 24, { width: PW - PAD * 2, align: 'center', characterSpacing: 3 });
+
+        const titleFontSize = story.title.length > 28 ? 28 : story.title.length > 18 ? 34 : 40;
+        doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
+           .text(story.title, PAD, PH * 0.18, { width: PW - PAD * 2, align: 'center' });
+
+        doc.font(fonts.sans).fontSize(12).fillColor(C.text)
+           .text(`A story for ${childName}`, PAD, PH * 0.56, { width: PW - PAD * 2, align: 'center' });
+
+        doc.font(fonts.body).fontSize(10).fillColor(C.text2)
+           .text(date, PAD, PH * 0.56 + 22, { width: PW - PAD * 2, align: 'center' });
       }
     }
 
@@ -1111,7 +1164,15 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
       const styleTag   = artStyle.toLowerCase().replace(/^painted in /i, '');
       const coverPrompt = buildFluxCoverPrompt(story.title, styleTag);
 
-      const allPrompts = [coverPrompt, ...story.illustrations];
+      // ── Illustration count cap ──────────────────────────────────────────
+      // Limit page illustrations to the number of paragraphs so every page
+      // has an image. Also cap at 6 to keep generation costs manageable.
+      // (1 cover is always generated on top of this cap.)
+      const paragraphCount = (story.story || '').split(/\n\n+/).filter(p => p.trim()).length;
+      const MAX_ILLUSTRATIONS = 6;
+      const pageIllustrations = story.illustrations.slice(0, Math.min(paragraphCount, MAX_ILLUSTRATIONS));
+
+      const allPrompts = [coverPrompt, ...pageIllustrations];
 
       // Only use LoRA when the subscriber has paid for Character Customisation ($14.99),
       // uploaded their photos, AND a LoRA has been trained and the URL stored on the profile.
@@ -1120,7 +1181,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
         ? profileJson.loraUrl
         : null;
 
-      console.log(`[GS-5] Generating ${allPrompts.length} Flux 2 [dev] illustrations (1 cover + ${story.illustrations.length} pages)${loraUrl ? ' [LoRA]' : ''}...`);
+      console.log(`[GS-5] Generating ${allPrompts.length} Flux 2 [dev] illustrations (1 cover + ${pageIllustrations.length} pages, capped from ${story.illustrations.length})${loraUrl ? ' [LoRA]' : ''}...`);
       const allResults = await generateIllustrations(
         allPrompts,
         base,
