@@ -3,7 +3,102 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Talekits — Stories Written Just for Them</title>
+
+<!-- ── Primary SEO ── -->
+<title>Talekits — Personalised Children's Storybooks Delivered Daily</title>
+<meta name="description" content="Talekits delivers personalised children's storybooks to your inbox every day — with illustrations, audio narration, and a print-ready PDF. Try free for 7 days." />
+<meta name="keywords" content="personalised children's books, custom kids stories, children's storybook subscription, personalised bedtime stories, kids story app, illustrated children's books, audio stories for kids" />
+<meta name="author" content="Talekits" />
+<link rel="canonical" href="https://www.talekits.com/" />
+
+<!-- ── Open Graph (Facebook, LinkedIn) ── -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Talekits" />
+<meta property="og:title" content="Talekits — Personalised Children's Storybooks Delivered Daily" />
+<meta property="og:description" content="Kit the fox writes a brand-new personalised storybook for your child every day — complete with illustrations and audio narration. Try free for 7 days." />
+<meta property="og:url" content="https://www.talekits.com/" />
+<meta property="og:image" content="https://www.talekits.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_AU" />
+
+<!-- ── Twitter / X Card ── -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@talekits" />
+<meta name="twitter:title" content="Talekits — Personalised Children's Storybooks Delivered Daily" />
+<meta name="twitter:description" content="Kit the fox writes a brand-new personalised storybook for your child every day — complete with illustrations and audio narration. Try free for 7 days." />
+<meta name="twitter:image" content="https://www.talekits.com/og-image.png" />
+
+<!-- ── Schema.org Structured Data ── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Talekits",
+  "url": "https://www.talekits.com/",
+  "description": "Personalised children's storybooks delivered daily — with illustrations, audio narration, and print-ready PDFs.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Talekits",
+    "url": "https://www.talekits.com/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.talekits.com/logo.png"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://www.talekits.com/?s={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Talekits Storybook Subscription",
+  "description": "A daily personalised children's storybook subscription featuring custom illustrations, audio narration, and print-ready PDFs.",
+  "brand": { "@type": "Brand", "name": "Talekits" },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Kit — Free Trial",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.talekits.com/#pricing"
+    },
+    {
+      "@type": "Offer",
+      "name": "Cub",
+      "price": "9.99",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.talekits.com/#pricing"
+    },
+    {
+      "@type": "Offer",
+      "name": "Scout",
+      "price": "14.99",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.talekits.com/#pricing"
+    }
+  ],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5",
+    "reviewCount": "3"
+  }
+}
+</script>
+
+<!-- ── Favicon ── -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet" />
@@ -1034,7 +1129,7 @@ body {
     <a href="#how-it-works" class="nav-link">How it works</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="/dashboard.html" class="btn" style="margin-left:4px;">Log in</a>
-    <a href="/index.html#signup" class="btn btn-primary">Start free</a>
+    <a href="/start#signup" class="btn btn-primary">Start free</a>
   </nav>
 </header>
 
@@ -1060,7 +1155,7 @@ body {
       </p>
 
       <div class="hero-actions">
-        <a href="/index.html#signup" class="btn btn-orange btn-xl">
+        <a href="/start#signup" class="btn btn-orange btn-xl">
           Start your free trial
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -1325,7 +1420,7 @@ body {
 
     <div class="pricing-grid" style="margin-top: 2.5rem;">
       <!-- Kit -->
-      <a href="/index.html#pricing" class="pricing-card reveal">
+      <a href="/start#pricing" class="pricing-card reveal">
         <div class="pricing-card-name">Kit</div>
         <div class="pricing-card-price">$0 <span class="pricing-card-period">/ 7 days</span></div>
         <div class="pricing-card-trial">Free trial — no card needed</div>
@@ -1339,7 +1434,7 @@ body {
         </ul>
       </a>
       <!-- Cub -->
-      <a href="/index.html#pricing" class="pricing-card reveal reveal-delay-1">
+      <a href="/start#pricing" class="pricing-card reveal reveal-delay-1">
         <div class="pricing-card-name">Cub</div>
         <div class="pricing-card-price">$9.99 <span class="pricing-card-period">/ month</span></div>
         <div class="pricing-card-divider"></div>
@@ -1351,7 +1446,7 @@ body {
         </ul>
       </a>
       <!-- Scout (featured) -->
-      <a href="/index.html#pricing" class="pricing-card pricing-card-featured reveal reveal-delay-2">
+      <a href="/start#pricing" class="pricing-card pricing-card-featured reveal reveal-delay-2">
         <div class="pricing-card-popular">Most Popular</div>
         <div class="pricing-card-name">Scout</div>
         <div class="pricing-card-price">$14.99 <span class="pricing-card-period">/ month</span></div>
@@ -1364,7 +1459,7 @@ body {
         </ul>
       </a>
       <!-- Den -->
-      <a href="/index.html#pricing" class="pricing-card reveal">
+      <a href="/start#pricing" class="pricing-card reveal">
         <div class="pricing-card-name">Den</div>
         <div class="pricing-card-price">$29.99 <span class="pricing-card-period">/ month</span></div>
         <div class="pricing-card-divider"></div>
@@ -1378,7 +1473,7 @@ body {
         </ul>
       </a>
       <!-- Grove -->
-      <a href="/index.html#pricing" class="pricing-card reveal reveal-delay-1">
+      <a href="/start#pricing" class="pricing-card reveal reveal-delay-1">
         <div class="pricing-card-name">Grove</div>
         <div class="pricing-card-price">$44.99 <span class="pricing-card-period">/ month</span></div>
         <div class="pricing-card-divider"></div>
@@ -1392,7 +1487,7 @@ body {
         </ul>
       </a>
       <!-- Pack -->
-      <a href="/index.html#pricing" class="pricing-card reveal reveal-delay-2">
+      <a href="/start#pricing" class="pricing-card reveal reveal-delay-2">
         <div class="pricing-card-name">Pack</div>
         <div class="pricing-card-subtitle">Perfect for the classroom</div>
         <div class="pricing-card-price"><span class="pricing-card-from">from</span> $149.99 <span class="pricing-card-period">/ month</span></div>
@@ -1409,8 +1504,8 @@ body {
     </div>
 
     <div class="pricing-cta-row reveal">
-      <a href="/index.html#signup" class="btn btn-primary btn-lg">Start your free trial</a>
-      <a href="/index.html#pricing" class="pricing-link">See full plan details →</a>
+      <a href="/start#signup" class="btn btn-primary btn-lg">Start your free trial</a>
+      <a href="/start#pricing" class="pricing-link">See full plan details →</a>
     </div>
   </div>
 </section>
@@ -1424,7 +1519,7 @@ body {
     </h2>
     <p class="cta-sub">Start your child's story journey today — try the Kit plan free for 7 days, no credit card required.</p>
     <div class="cta-actions">
-      <a href="/index.html#signup" class="btn btn-orange btn-xl">
+      <a href="/start#signup" class="btn btn-orange btn-xl">
         Start free today
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
@@ -1443,8 +1538,8 @@ body {
     </div>
 
     <nav class="footer-links">
-      <a href="/index.html#how-it-works" class="footer-link">How it works</a>
-      <a href="/index.html#pricing" class="footer-link">Pricing</a>
+      <a href="/start#how-it-works" class="footer-link">How it works</a>
+      <a href="/start#pricing" class="footer-link">Pricing</a>
       <a href="/dashboard.html" class="footer-link">Dashboard</a>
       <a href="/cdn-cgi/l/email-protection#81eae8f5c1f5e0ede4eae8f5f2afe2eeec" class="footer-link">Contact</a>
     </nav>
