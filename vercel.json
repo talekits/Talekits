@@ -1,12 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/landing.html"
-    },
-    {
       "source": "/start",
-      "destination": "/index.html"
+      "destination": "/start.html"
     },
     {
       "source": "/success",
