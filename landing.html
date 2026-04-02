@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Talekits — Stories Written Just for Them</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #FAFAF8;
+  --surface:      #F3F2EE;
+  --surface-2:    #ECEAE4;
+  --border:       rgba(60,56,46,0.10);
+  --border-md:    rgba(60,56,46,0.18);
+  --text:         #1C1B18;
+  --text-2:       #6B6860;
+  --text-3:       #9C9A94;
+  --accent:       #2B5CE6;
+  --brand-orange: #E8830A;
+  --orange-soft:  #FEF3E2;
+
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-pill: 999px;
+  --font:        'Instrument Sans', sans-serif;
+  --font-serif:  'Lora', serif;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:   0 12px 40px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #181816;
+    --surface:   #21201D;
+    --surface-2: #2A2926;
+    --border:    rgba(255,253,245,0.08);
+    --border-md: rgba(255,253,245,0.15);
+    --text:      #F0EEE8;
+    --text-2:    #9C9A94;
+    --text-3:    #6B6860;
+    --accent:    #6B8FF5;
+    --orange-soft: #3A1E02;
+  }
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
+
+/* ── HEADER ── */
+.site-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(250,250,248,0.90);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 0.5px solid var(--border-md);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: box-shadow 0.2s;
+}
+.site-header.scrolled { box-shadow: var(--shadow-sm); }
+
+@media (prefers-color-scheme: dark) {
+  .site-header { background: rgba(24,24,22,0.90); }
+}
+
+.logo {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.logo .tale { color: var(--text-2); }
+.logo .kits { color: var(--brand-orange); }
+
+.header-nav {
+  display: flex; align-items: center; gap: 4px;
+}
+
+.nav-link {
+  font-size: 13.5px; color: var(--text-2);
+  text-decoration: none; padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  transition: all 0.12s; font-weight: 400;
+}
+.nav-link:hover { background: var(--surface); color: var(--text); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font); font-size: 13.5px; font-weight: 500;
+  padding: 7px 18px; border-radius: var(--radius-pill);
+  border: 0.5px solid var(--border-md);
+  background: var(--surface); color: var(--text);
+  cursor: pointer; transition: all 0.14s;
+  text-decoration: none; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn-primary {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+}
+.btn-primary:hover { opacity: 0.82; }
+.btn-orange {
+  background: var(--brand-orange); color: #fff;
+  border-color: var(--brand-orange);
+}
+.btn-orange:hover { opacity: 0.88; }
+
+.btn-lg {
+  font-size: 15px; padding: 10px 24px;
+}
+.btn-xl {
+  font-size: 16px; padding: 13px 30px;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  padding: 6rem 2rem 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88vh;
+  overflow: hidden;
+}
+
+/* Decorative background texture */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 30%, rgba(232,131,10,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 15% 80%, rgba(43,92,230,0.05) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Floating decorative book pages */
+.hero-deco {
+  position: absolute; pointer-events: none; user-select: none;
+}
+.hero-deco-1 {
+  top: 8%; right: 5%;
+  font-family: var(--font-serif);
+  font-style: italic; font-size: 9rem;
+  color: rgba(232,131,10,0.06);
+  line-height: 1; transform: rotate(8deg);
+}
+.hero-deco-2 {
+  bottom: 10%; left: 3%;
+  font-family: var(--font-serif);
+  font-style: italic; font-size: 7rem;
+  color: rgba(43,92,230,0.05);
+  line-height: 1; transform: rotate(-5deg);
+}
+
+.hero-inner {
+  max-width: 1080px; width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+  position: relative; z-index: 1;
+}
+
+.hero-content {}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--orange-soft);
+  border: 0.5px solid rgba(232,131,10,0.25);
+  border-radius: var(--radius-pill);
+  padding: 5px 13px;
+  font-size: 12px; font-weight: 600;
+  color: var(--brand-orange);
+  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s ease both;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand-orange);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+.hero h1 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--brand-orange);
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-2);
+  line-height: 1.65;
+  max-width: 440px;
+  margin-bottom: 2.25rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-actions {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.hero-trust {
+  margin-top: 2.5rem;
+  display: flex; align-items: center; gap: 10px;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.hero-trust-avatars {
+  display: flex;
+}
+.hero-trust-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%; border: 2px solid var(--bg);
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  margin-left: -8px;
+  overflow: hidden;
+}
+.hero-trust-avatar:first-child { margin-left: 0; }
+.hero-trust-text {
+  font-size: 12.5px; color: var(--text-3);
+}
+.hero-trust-text strong { color: var(--text-2); font-weight: 600; }
+
+/* Hero image */
+.hero-visual {
+  position: relative;
+  animation: fadeUp 0.7s 0.15s ease both;
+}
+
+.hero-book-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-book-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-orange), #f5a623, var(--accent));
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.book-page-mockup {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  display: flex; flex-direction: column;
+  border: 0.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+@media (prefers-color-scheme: dark) {
+  .book-page-mockup { background: #2A2926; }
+}
+
+.book-illustration {
+  flex: 1;
+  background: linear-gradient(135deg, #FEF9F0 0%, #FDE7C4 40%, #FCE0B8 70%, #F5D0A0 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+@media (prefers-color-scheme: dark) {
+  .book-illustration { background: linear-gradient(135deg, #2A1F0A 0%, #3A2810 40%, #301E08 100%); }
+}
+
+.book-illustration-scene {
+  text-align: center;
+}
+.illustration-emoji {
+  font-size: 4rem; line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.12));
+}
+.illustration-ground {
+  width: 120px; height: 6px;
+  background: rgba(139,100,60,0.25);
+  border-radius: 50%;
+  margin: 6px auto 0;
+}
+
+/* Floating stars in illustration */
+.star {
+  position: absolute;
+  font-size: 14px;
+  animation: twinkle 3s ease-in-out infinite;
+}
+.star:nth-child(1) { top: 15%; left: 18%; animation-delay: 0s; }
+.star:nth-child(2) { top: 25%; right: 20%; animation-delay: 0.8s; }
+.star:nth-child(3) { top: 60%; right: 12%; animation-delay: 1.5s; font-size: 10px; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.75); }
+}
+
+.book-text-area {
+  padding: 0.75rem 1rem 0.9rem;
+  background: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  .book-text-area { background: #21201D; }
+}
+.book-title-line {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px; font-weight: 500;
+  color: var(--text); margin-bottom: 5px;
+}
+.book-text-lines { display: flex; flex-direction: column; gap: 4px; }
+.book-line {
+  height: 6px; border-radius: 3px;
+  background: var(--surface-2);
+}
+.book-line:nth-child(1) { width: 92%; }
+.book-line:nth-child(2) { width: 85%; }
+.book-line:nth-child(3) { width: 60%; }
+
+/* Floating chips on card */
+.card-chips {
+  display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap;
+}
+.card-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 500;
+  padding: 4px 10px; border-radius: var(--radius-pill);
+  border: 0.5px solid var(--border-md);
+  background: var(--bg); color: var(--text-2);
+}
+.card-chip span { font-size: 13px; }
+
+/* Floating accent badge */
+.hero-float-badge {
+  position: absolute;
+  top: -1rem; right: -1rem;
+  background: var(--bg);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-md);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 500; color: var(--text);
+  white-space: nowrap;
+  animation: float 4s ease-in-out infinite;
+}
+.hero-float-badge-icon { font-size: 18px; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.hero-float-badge-2 {
+  position: absolute;
+  bottom: -1rem; left: -1.5rem;
+  background: var(--bg);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-md);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 500; color: var(--text);
+  animation: float 4s 1.5s ease-in-out infinite;
+}
+
+/* ── SECTION COMMONS ── */
+.section {
+  padding: 6rem 2rem;
+}
+.section-inner {
+  max-width: 1080px; margin: 0 auto;
+}
+.section-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--brand-orange);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  line-height: 1.22;
+  color: var(--text);
+  letter-spacing: -0.015em;
+  margin-bottom: 1rem;
+}
+.section-title em { font-style: italic; color: var(--text-2); }
+.section-sub {
+  font-size: 16px; color: var(--text-2);
+  line-height: 1.65; max-width: 520px;
+}
+
+/* ── LOGO BAND ── */
+.logo-band {
+  border-top: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+  padding: 1.5rem 2rem;
+  background: var(--surface);
+  overflow: hidden;
+}
+.logo-band-inner {
+  display: flex; align-items: center; justify-content: center;
+  gap: 3rem; flex-wrap: wrap;
+}
+.logo-band-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3);
+  white-space: nowrap;
+}
+.logo-band-items {
+  display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap;
+}
+.logo-band-item {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1.1rem; color: var(--text-3); font-weight: 500;
+  opacity: 0.6;
+}
+
+/* ── HOW IT WORKS ── */
+.how-section {
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 3.5rem;
+}
+.how-step {
+  padding: 2.5rem 2rem;
+  border-right: 0.5px solid var(--border-md);
+  position: relative;
+}
+.how-step:last-child { border-right: none; }
+
+.step-number {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 3.5rem;
+  font-weight: 600;
+  color: var(--brand-orange);
+  opacity: 0.18;
+  line-height: 1;
+  margin-bottom: 1rem;
+  user-select: none;
+}
+
+.step-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  border: 0.5px solid var(--border-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem; font-weight: 500;
+  color: var(--text); margin-bottom: 8px;
+}
+.step-desc {
+  font-size: 14px; color: var(--text-2);
+  line-height: 1.65;
+}
+
+/* ── FEATURES ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 3.5rem;
+  background: var(--border-md);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.feature-card {
+  background: var(--bg);
+  padding: 2.25rem 2rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  transition: background 0.15s;
+}
+.feature-card:hover { background: var(--surface); }
+
+.feature-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.feature-title {
+  font-family: var(--font-serif);
+  font-weight: 500; font-style: italic;
+  font-size: 1.05rem; color: var(--text);
+}
+.feature-desc {
+  font-size: 14px; color: var(--text-2);
+  line-height: 1.65;
+}
+
+/* ── STORY PREVIEW ── */
+.preview-section {
+  background: var(--bg);
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  margin-top: 3rem;
+}
+
+.preview-pages {
+  position: relative;
+  display: flex; gap: 12px;
+}
+
+.preview-page {
+  flex: 1;
+  background: var(--surface);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.preview-page:first-child {
+  transform: rotate(-2deg);
+  z-index: 1;
+}
+.preview-page:last-child {
+  transform: rotate(1.5deg);
+  z-index: 2;
+  margin-top: -1rem;
+}
+
+.preview-page-img {
+  height: 140px;
+  background: linear-gradient(140deg, #FDEECE 0%, #FAD9A0 60%, #F5C880 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem;
+}
+@media (prefers-color-scheme: dark) {
+  .preview-page-img { background: linear-gradient(140deg, #2A1C06 0%, #3A2610 60%, #2F1E08 100%); }
+}
+
+.preview-page-body {
+  padding: 0.85rem 1rem 1rem;
+}
+.preview-page-title {
+  font-family: var(--font-serif);
+  font-style: italic; font-size: 12px; font-weight: 500;
+  color: var(--text); margin-bottom: 6px;
+}
+.preview-lines { display: flex; flex-direction: column; gap: 4px; }
+.preview-line {
+  height: 5px; border-radius: 3px;
+  background: var(--surface-2);
+}
+.preview-line:nth-child(1) { width: 95%; }
+.preview-line:nth-child(2) { width: 88%; }
+.preview-line:nth-child(3) { width: 72%; }
+
+.preview-features {
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+.preview-feature {
+  display: flex; align-items: flex-start; gap: 1rem;
+}
+.preview-feature-icon {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 0.5px solid var(--border-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  margin-top: 2px;
+}
+.preview-feature-text {}
+.preview-feature-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin-bottom: 3px;
+}
+.preview-feature-desc {
+  font-size: 13.5px; color: var(--text-2); line-height: 1.55;
+}
+
+/* ── TESTIMONIALS ── */
+.testimonials-section {
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+.testimonial-card {
+  background: var(--bg);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem 1.5rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.testimonial-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.testimonial-stars {
+  display: flex; gap: 3px;
+}
+.star-icon { color: var(--brand-orange); font-size: 14px; }
+
+.testimonial-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px; font-weight: 400;
+  color: var(--text);
+  line-height: 1.65;
+  flex: 1;
+}
+.testimonial-quote::before {
+  content: '"';
+  font-size: 2.5rem;
+  line-height: 0.5;
+  vertical-align: -0.5rem;
+  color: var(--brand-orange);
+  opacity: 0.35;
+  margin-right: 3px;
+}
+
+.testimonial-author {
+  display: flex; align-items: center; gap: 10px;
+  border-top: 0.5px solid var(--border);
+  padding-top: 1rem;
+}
+.testimonial-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface-2);
+  border: 0.5px solid var(--border-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.testimonial-name {
+  font-size: 13px; font-weight: 600; color: var(--text);
+}
+.testimonial-meta {
+  font-size: 12px; color: var(--text-3);
+}
+
+/* ── PRICING GRID ── */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 2.5rem;
+}
+.pricing-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border-md);
+  border-radius: var(--radius-xl);
+  padding: 1.6rem 1.5rem 1.75rem;
+  display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.pricing-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.pricing-card-featured {
+  background: var(--text); border-color: var(--text); color: var(--bg);
+}
+@media (prefers-color-scheme: dark) {
+  .pricing-card-featured { background: #F0EEE8; color: #1C1B18; border-color: #F0EEE8; }
+  .pricing-card-featured .pricing-card-name { color: #1C1B18; }
+  .pricing-card-featured .pricing-card-price { color: #1C1B18; }
+  .pricing-card-featured .pricing-card-period { color: #6B6860; }
+  .pricing-card-featured .pricing-card-label { color: #9C9A94; }
+  .pricing-card-featured .pricing-card-divider { background: rgba(60,56,46,0.18); }
+  .pricing-card-featured .pricing-card-list li { color: #3A3830; }
+  .pricing-card-featured .pricing-card-list li::before { color: #E8830A; }
+}
+.pricing-card-popular {
+  position: absolute; top: -1px; right: 1.5rem;
+  background: var(--brand-orange); color: #fff;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+.pricing-card-name {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1.3rem; font-weight: 500;
+  color: inherit; margin-bottom: 6px;
+}
+.pricing-card-subtitle {
+  font-size: 12px; color: var(--text-3);
+  margin-bottom: 4px; margin-top: -2px;
+}
+.pricing-card-featured .pricing-card-subtitle { color: rgba(250,250,248,0.5); }
+.pricing-card-price {
+  font-family: var(--font-serif); font-size: 1.7rem; font-weight: 600;
+  color: inherit; line-height: 1.15; margin-bottom: 5px;
+  display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap;
+}
+.pricing-card-period {
+  font-family: var(--font); font-size: 13px; font-weight: 400;
+  color: var(--text-3);
+}
+.pricing-card-featured .pricing-card-period { color: rgba(250,250,248,0.7); }
+.pricing-card-featured .pricing-card-from { color: rgba(250,250,248,0.7); }
+.pricing-card-from {
+  font-family: var(--font); font-size: 13px; font-weight: 400;
+  color: var(--text-3);
+}
+.pricing-card-trial {
+  font-size: 12.5px; font-weight: 500; color: var(--brand-orange); margin-bottom: 2px;
+}
+.pricing-card-divider {
+  height: 0.5px; background: var(--border-md); margin: 1rem 0 0.9rem;
+}
+.pricing-card-featured .pricing-card-divider { background: rgba(250,250,248,0.15); }
+.pricing-card-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+}
+.pricing-card-featured .pricing-card-label { color: rgba(250,250,248,0.6); }
+.pricing-card-list {
+  list-style: none; display: flex; flex-direction: column; gap: 7px;
+}
+.pricing-card-list li {
+  font-size: 13.5px; color: var(--text-2);
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;
+}
+.pricing-card-featured .pricing-card-list li { color: #F0EEE8; }
+.pricing-card-list li::before {
+  content: '•'; color: var(--brand-orange);
+  font-size: 14px; flex-shrink: 0; margin-top: 1px;
+}
+.pricing-cta-row {
+  margin-top: 2.5rem; display: flex; align-items: center; gap: 16px;
+}
+.pricing-link {
+  font-size: 14px; color: var(--text-2);
+  text-decoration: none; border-bottom: 1px solid var(--border-md);
+  transition: color 0.12s, border-color 0.12s;
+}
+.pricing-link:hover { color: var(--text); border-color: var(--text); }
+@media (max-width: 900px) {
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+
+/* ── FINAL CTA ── */
+.cta-section {
+  background: var(--text);
+  padding: 6rem 2rem;
+  position: relative; overflow: hidden;
+}
+@media (prefers-color-scheme: dark) {
+  .cta-section { background: #F0EEE8; }
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 80% at 80% 50%, rgba(232,131,10,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 10% 30%, rgba(43,92,230,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.cta-inner {
+  max-width: 660px; margin: 0 auto;
+  text-align: center; position: relative; z-index: 1;
+}
+.cta-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(250,250,248,0.45);
+  margin-bottom: 1rem;
+}
+@media (prefers-color-scheme: dark) {
+  .cta-eyebrow { color: rgba(28,27,24,0.45); }
+}
+
+.cta-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.2;
+  color: var(--bg);
+  letter-spacing: -0.02em;
+  margin-bottom: 1.1rem;
+}
+@media (prefers-color-scheme: dark) {
+  .cta-title { color: var(--text); }
+}
+.cta-title em { font-style: italic; color: var(--brand-orange); }
+
+.cta-sub {
+  font-size: 16px;
+  color: rgba(250,250,248,0.6);
+  line-height: 1.65;
+  margin-bottom: 2.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  .cta-sub { color: rgba(28,27,24,0.6); }
+}
+.cta-actions {
+  display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+}
+.btn-ghost-light {
+  background: rgba(250,250,248,0.1); color: rgba(250,250,248,0.8);
+  border-color: rgba(250,250,248,0.2);
+}
+.btn-ghost-light:hover { background: rgba(250,250,248,0.18); }
+@media (prefers-color-scheme: dark) {
+  .btn-ghost-light {
+    background: rgba(28,27,24,0.1); color: rgba(28,27,24,0.8);
+    border-color: rgba(28,27,24,0.2);
+  }
+}
+
+.cta-fine {
+  margin-top: 1.5rem;
+  font-size: 12px; color: rgba(250,250,248,0.35);
+}
+@media (prefers-color-scheme: dark) {
+  .cta-fine { color: rgba(28,27,24,0.35); }
+}
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--surface);
+  border-top: 0.5px solid var(--border-md);
+  padding: 3rem 2rem;
+}
+.footer-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5rem; flex-wrap: wrap;
+}
+.footer-brand {
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.footer-logo {
+  font-family: var(--font-serif); font-style: italic;
+  font-size: 1.2rem; font-weight: 500; color: var(--text);
+  text-decoration: none; letter-spacing: -0.01em;
+}
+.footer-logo .kits { color: var(--brand-orange); }
+.footer-copy {
+  font-size: 12.5px; color: var(--text-3);
+}
+.footer-links {
+  display: flex; align-items: center; gap: 1.75rem;
+}
+.footer-link {
+  font-size: 13px; color: var(--text-3); text-decoration: none;
+  transition: color 0.12s;
+}
+.footer-link:hover { color: var(--text-2); }
+.footer-social {
+  display: flex; align-items: center; gap: 10px;
+}
+.social-btn {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-md);
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-2);
+  text-decoration: none; transition: all 0.12s;
+}
+.social-btn:hover { background: var(--surface-2); color: var(--text); }
+.social-btn svg { width: 15px; height: 15px; }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.js-loaded .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.js-loaded .reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── Dividers ── */
+.divider {
+  height: 0.5px;
+  background: var(--border-md);
+  max-width: 1080px; margin: 0 auto;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .hero { min-height: auto; padding: 4rem 1.5rem 3.5rem; }
+  .hero-visual { max-width: 440px; margin: 0 auto; }
+  .hero h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); }
+
+  .how-grid {
+    grid-template-columns: 1fr;
+  }
+  .how-step {
+    border-right: none;
+    border-bottom: 0.5px solid var(--border-md);
+    padding: 2rem 1.5rem;
+  }
+  .how-step:last-child { border-bottom: none; }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+
+  .preview-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .pricing-pills {
+    flex-direction: column;
+  }
+  .pricing-pill { flex: none; }
+}
+
+@media (max-width: 600px) {
+  .section { padding: 4rem 1.25rem; }
+  .site-header { padding: 0 1.25rem; }
+  .nav-link { display: none; }
+  .hero-float-badge, .hero-float-badge-2 { display: none; }
+  .hero-deco-1, .hero-deco-2 { display: none; }
+  .cta-section { padding: 4.5rem 1.25rem; }
+  .footer-links { display: none; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="site-header" id="site-header">
+  <a href="/" class="logo">
+    <span class="tale">Tale</span><span class="kits">kits</span>
+  </a>
+  <nav class="header-nav">
+    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="/dashboard.html" class="btn" style="margin-left:4px;">Log in</a>
+    <a href="/index.html#signup" class="btn btn-primary">Start free</a>
+  </nav>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-deco hero-deco-1">✦</div>
+  <div class="hero-deco hero-deco-2">✦</div>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        Fresh stories delivered every day
+      </div>
+
+      <h1>
+        Stories crafted<br>
+        <em>just for your child</em>
+      </h1>
+
+      <p class="hero-sub">
+        Kit the fox writes a brand-new personalised storybook — with illustrations and audio narration — delivered fresh to your inbox every day. Tailored to <em>their</em> world.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/index.html#signup" class="btn btn-orange btn-xl">
+          Start your free trial
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#how-it-works" class="btn btn-lg">See how it works</a>
+      </div>
+
+      <div class="hero-trust">
+        <div class="hero-trust-avatars">
+          <div class="hero-trust-avatar">👧</div>
+          <div class="hero-trust-avatar">👦</div>
+          <div class="hero-trust-avatar">🧒</div>
+          <div class="hero-trust-avatar">👧</div>
+        </div>
+        <p class="hero-trust-text"><strong>Loved by families</strong> — try the Kit tier free for 7 days</p>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-book-card">
+        <div class="book-page-mockup">
+          <div class="book-illustration">
+            <span class="star">✦</span>
+            <span class="star">✦</span>
+            <span class="star">✦</span>
+            <div class="book-illustration-scene">
+              <div class="illustration-emoji">🦊</div>
+              <div class="illustration-ground"></div>
+            </div>
+          </div>
+          <div class="book-text-area">
+            <div class="book-title-line">Mia and the Enchanted Forest</div>
+            <div class="book-text-lines">
+              <div class="book-line"></div>
+              <div class="book-line"></div>
+              <div class="book-line"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-chips">
+          <span class="card-chip"><span>🎧</span> Audio narration</span>
+          <span class="card-chip"><span>📄</span> PDF storybook</span>
+          <span class="card-chip"><span>🖼️</span> Illustrations</span>
+        </div>
+      </div>
+
+      <div class="hero-float-badge">
+        <span class="hero-float-badge-icon">✉️</span>
+        <span>Delivered to your inbox</span>
+      </div>
+      <div class="hero-float-badge-2">
+        <span class="hero-float-badge-icon">⭐</span>
+        <span>Personalised daily</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section how-section" id="how-it-works">
+  <div class="section-inner">
+    <p class="section-label reveal">How it works</p>
+    <h2 class="section-title reveal reveal-delay-1">Three steps to a <em>story ritual</em></h2>
+  </div>
+
+  <div class="section-inner" style="margin-top:0; max-width:1080px;">
+    <div class="how-grid">
+      <div class="how-step reveal">
+        <div class="step-number">01</div>
+        <div class="step-icon">🧒</div>
+        <h3 class="step-title">Build your child's profile</h3>
+        <p class="step-desc">Tell us about your child — their name, age, interests, and appearance — then browse the Imagination Library to pick their favourite themes, story types, and worlds to explore.</p>
+      </div>
+      <div class="how-step reveal reveal-delay-1">
+        <div class="step-number">02</div>
+        <div class="step-icon">✨</div>
+        <h3 class="step-title">Kit writes their story</h3>
+        <p class="step-desc">Every day Kit the fox crafts a brand-new adventure — complete with illustrations and optional audio narration — drawn from your child's profile and chosen themes.</p>
+      </div>
+      <div class="how-step reveal reveal-delay-2">
+        <div class="step-number">03</div>
+        <div class="step-icon">📬</div>
+        <h3 class="step-title">It lands in your inbox</h3>
+        <p class="step-desc">A beautifully designed PDF storybook and narrated audio file arrive each day, ready to read together whenever the moment is right. Every story is saved forever in your archive.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section" id="features" style="background: var(--bg);">
+  <div class="section-inner">
+    <p class="section-label reveal">Everything included</p>
+    <h2 class="section-title reveal reveal-delay-1">Not just stories — <em>experiences</em></h2>
+    <p class="section-sub reveal reveal-delay-2">Every Talekit is crafted with care, packed with everything you need to make story time truly special.</p>
+
+    <div class="features-grid" style="margin-top: 3rem;">
+      <div class="feature-card reveal">
+        <div class="feature-icon">🎭</div>
+        <h3 class="feature-title">Deep personalisation</h3>
+        <p class="feature-desc">Your child's name, appearance, pets, friends, and favourite things woven naturally into every story — alongside themes hand-picked from the Imagination Library.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon">🖼️</div>
+        <h3 class="feature-title">Vivid illustrations</h3>
+        <p class="feature-desc">Full-colour illustrations generated fresh each day with a consistent art style that brings the world of every story to life, page after page.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon">🎧</div>
+        <h3 class="feature-title">Professional narration</h3>
+        <p class="feature-desc">Choose from warm, expressive narrator voices. Audio files are generated with ElevenLabs — available on Scout and Den plans.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📚</div>
+        <h3 class="feature-title">Story archive</h3>
+        <p class="feature-desc">Every story ever written for your child is saved in your personal archive. Browse, re-read, re-listen, and relive favourite adventures.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon">📄</div>
+        <h3 class="feature-title">Print-ready PDFs</h3>
+        <p class="feature-desc">Each story is formatted into a beautifully designed PDF storybook — ready to download, print, and even bind as a keepsake.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon">🌱</div>
+        <h3 class="feature-title">Age-appropriate themes</h3>
+        <p class="feature-desc">Stories are carefully crafted to match your child's reading level, age bracket, and developmental stage — with educational threads woven throughout.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── STORY PREVIEW ── -->
+<section class="section preview-section" style="background: var(--surface); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border);">
+  <div class="section-inner">
+    <div class="preview-grid">
+      <div>
+        <p class="section-label reveal">What you receive</p>
+        <h2 class="section-title reveal reveal-delay-1">A complete storybook, <em>every day</em></h2>
+        <div class="preview-features" style="margin-top: 2rem;">
+          <div class="preview-feature reveal reveal-delay-1">
+            <div class="preview-feature-icon">📖</div>
+            <div class="preview-feature-text">
+              <div class="preview-feature-title">A full narrative arc</div>
+              <div class="preview-feature-desc">A complete story with a beginning, middle, and a warm, satisfying ending — written fresh by Kit every single day.</div>
+            </div>
+          </div>
+          <div class="preview-feature reveal reveal-delay-2">
+            <div class="preview-feature-icon">🎨</div>
+            <div class="preview-feature-text">
+              <div class="preview-feature-title">Matching illustrations</div>
+              <div class="preview-feature-desc">One illustration per page, generated in a consistent art style that stays true to the story's world throughout.</div>
+            </div>
+          </div>
+          <div class="preview-feature reveal reveal-delay-3">
+            <div class="preview-feature-icon">🔊</div>
+            <div class="preview-feature-text">
+              <div class="preview-feature-title">Audio narration</div>
+              <div class="preview-feature-desc">Let the story play while your child follows along — perfect for car rides, winding down at bedtime, or any quiet moment together.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="preview-pages reveal" style="padding: 1rem;">
+        <div class="preview-page">
+          <div class="preview-page-img">🌲</div>
+          <div class="preview-page-body">
+            <div class="preview-page-title">Chapter One: Into the Woods</div>
+            <div class="preview-lines">
+              <div class="preview-line"></div>
+              <div class="preview-line"></div>
+              <div class="preview-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-page">
+          <div class="preview-page-img">🦊</div>
+          <div class="preview-page-body">
+            <div class="preview-page-title">A Peculiar New Friend</div>
+            <div class="preview-lines">
+              <div class="preview-line"></div>
+              <div class="preview-line"></div>
+              <div class="preview-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="section testimonials-section" id="testimonials">
+  <div class="section-inner">
+    <p class="section-label reveal">What families say</p>
+    <h2 class="section-title reveal reveal-delay-1">Kids who can't wait for <em>tomorrow's story</em></h2>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+        </div>
+        <p class="testimonial-quote">Luca literally runs to find me every day when his story arrives. The themes change so much — dragons, space, friendship — and he never knows what to expect. He loves the surprise.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👩</div>
+          <div>
+            <div class="testimonial-name">Sarah M.</div>
+            <div class="testimonial-meta">Mum of Luca, age 5 · Scout plan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-stars">
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+        </div>
+        <p class="testimonial-quote">The illustrations are gorgeous and Amara loves that her dog Biscuit shows up in half the stories. The audio narration is our nightly wind-down now.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👨</div>
+          <div>
+            <div class="testimonial-name">David K.</div>
+            <div class="testimonial-meta">Dad of Amara, age 7 · Den plan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-stars">
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+          <span class="star-icon">★</span>
+        </div>
+        <p class="testimonial-quote">We've been printing them out and keeping them in a binder. Oscar already has a whole shelf of stories — knights, astronauts, talking animals — and he treasures every single one.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👩</div>
+          <div>
+            <div class="testimonial-name">Rachel T.</div>
+            <div class="testimonial-meta">Mum of Oscar, age 6 · Cub plan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING TEASER ── -->
+<section class="section" id="pricing">
+  <div class="section-inner">
+    <p class="section-label reveal">Simple pricing</p>
+    <h2 class="section-title reveal reveal-delay-1">Try free. <em>Grow with them.</em></h2>
+    <p class="section-sub reveal reveal-delay-2">Start with a free 7-day trial on the Kit plan. Upgrade whenever you're ready for illustrations, audio, and more.</p>
+
+    <div class="pricing-grid" style="margin-top: 2.5rem;">
+      <!-- Kit -->
+      <a href="/index.html#pricing" class="pricing-card reveal">
+        <div class="pricing-card-name">Kit</div>
+        <div class="pricing-card-price">$0 <span class="pricing-card-period">/ 7 days</span></div>
+        <div class="pricing-card-trial">Free trial — no card needed</div>
+        <div class="pricing-card-divider"></div>
+        <div class="pricing-card-label">INCLUDES</div>
+        <ul class="pricing-card-list">
+          <li>1 story per day</li>
+          <li>Text only</li>
+          <li>No illustrations</li>
+          <li>No audio</li>
+        </ul>
+      </a>
+      <!-- Cub -->
+      <a href="/index.html#pricing" class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-card-name">Cub</div>
+        <div class="pricing-card-price">$9.99 <span class="pricing-card-period">/ month</span></div>
+        <div class="pricing-card-divider"></div>
+        <div class="pricing-card-label">INCLUDES</div>
+        <ul class="pricing-card-list">
+          <li>1 story per day</li>
+          <li>Text story + audiobook (MP3)</li>
+          <li>1 child profile</li>
+        </ul>
+      </a>
+      <!-- Scout (featured) -->
+      <a href="/index.html#pricing" class="pricing-card pricing-card-featured reveal reveal-delay-2">
+        <div class="pricing-card-popular">Most Popular</div>
+        <div class="pricing-card-name">Scout</div>
+        <div class="pricing-card-price">$14.99 <span class="pricing-card-period">/ month</span></div>
+        <div class="pricing-card-divider"></div>
+        <div class="pricing-card-label">INCLUDES</div>
+        <ul class="pricing-card-list">
+          <li>1 story per day</li>
+          <li>Text + picture book (PDF) + audiobook (MP3)</li>
+          <li>1 child profile</li>
+        </ul>
+      </a>
+      <!-- Den -->
+      <a href="/index.html#pricing" class="pricing-card reveal">
+        <div class="pricing-card-name">Den</div>
+        <div class="pricing-card-price">$29.99 <span class="pricing-card-period">/ month</span></div>
+        <div class="pricing-card-divider"></div>
+        <div class="pricing-card-label">INCLUDES</div>
+        <ul class="pricing-card-list">
+          <li>Up to 3 stories per day</li>
+          <li>All formats</li>
+          <li>Up to 3 child profiles</li>
+          <li>Print-on-demand credits</li>
+          <li>Story archive</li>
+        </ul>
+      </a>
+      <!-- Grove -->
+      <a href="/index.html#pricing" class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-card-name">Grove</div>
+        <div class="pricing-card-price">$44.99 <span class="pricing-card-period">/ month</span></div>
+        <div class="pricing-card-divider"></div>
+        <div class="pricing-card-label">INCLUDES</div>
+        <ul class="pricing-card-list">
+          <li>Up to 5 stories per day</li>
+          <li>All formats</li>
+          <li>Up to 5 child profiles</li>
+          <li>Print-on-demand credits</li>
+          <li>Story archive</li>
+        </ul>
+      </a>
+      <!-- Pack -->
+      <a href="/index.html#pricing" class="pricing-card reveal reveal-delay-2">
+        <div class="pricing-card-name">Pack</div>
+        <div class="pricing-card-subtitle">Perfect for the classroom</div>
+        <div class="pricing-card-price"><span class="pricing-card-from">from</span> $149.99 <span class="pricing-card-period">/ month</span></div>
+        <div class="pricing-card-divider"></div>
+        <div class="pricing-card-label">INCLUDES</div>
+        <ul class="pricing-card-list">
+          <li>Educator dashboard</li>
+          <li>30 student profiles</li>
+          <li>Tailored to curriculum themes</li>
+          <li>Progress tracking</li>
+          <li>Bulk pricing available</li>
+        </ul>
+      </a>
+    </div>
+
+    <div class="pricing-cta-row reveal">
+      <a href="/index.html#signup" class="btn btn-primary btn-lg">Start your free trial</a>
+      <a href="/index.html#pricing" class="pricing-link">See full plan details →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FINAL CTA ── -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <p class="cta-eyebrow">Ready to begin?</p>
+    <h2 class="cta-title">
+      Give them a story<br><em>they'll never forget</em>
+    </h2>
+    <p class="cta-sub">Start your child's story journey today — try the Kit plan free for 7 days, no credit card required.</p>
+    <div class="cta-actions">
+      <a href="/index.html#signup" class="btn btn-orange btn-xl">
+        Start free today
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#how-it-works" class="btn btn-ghost-light btn-xl">How it works</a>
+    </div>
+    <p class="cta-fine">No credit card required · 7-day free trial · Cancel any time</p>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">Tale<span class="kits">kits</span></a>
+      <span class="footer-copy">© 2026 Talekits. All rights reserved.</span>
+    </div>
+
+    <nav class="footer-links">
+      <a href="/index.html#how-it-works" class="footer-link">How it works</a>
+      <a href="/index.html#pricing" class="footer-link">Pricing</a>
+      <a href="/dashboard.html" class="footer-link">Dashboard</a>
+      <a href="/cdn-cgi/l/email-protection#81eae8f5c1f5e0ede4eae8f5f2afe2eeec" class="footer-link">Contact</a>
+    </nav>
+
+    <div class="footer-social">
+      <!-- Instagram -->
+      <a href="#" class="social-btn" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+        </svg>
+      </a>
+      <!-- Facebook -->
+      <a href="#" class="social-btn" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+      </a>
+      <!-- TikTok / X placeholder -->
+      <a href="#" class="social-btn" aria-label="X / Twitter">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// Sticky header shadow on scroll
+const header = document.getElementById('site-header');
+window.addEventListener('scroll', () => {
+  header.classList.toggle('scrolled', window.scrollY > 10);
+}, { passive: true });
+
+// Enable reveal animations only when JS is available
+document.body.classList.add('js-loaded');
+
+// Scroll reveal
+const revealEls = document.querySelectorAll('.reveal');
+
+if ('IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+
+  revealEls.forEach(el => observer.observe(el));
+} else {
+  revealEls.forEach(el => el.classList.add('visible'));
+}
+
+// Smooth anchor scrolling with offset for sticky header
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href').slice(1);
+    const target = document.getElementById(id);
+    if (target) {
+      e.preventDefault();
+      const offset = 70;
+      const top = target.ge
