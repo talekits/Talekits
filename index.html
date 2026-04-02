@@ -1174,7 +1174,8 @@ const LIBRARY = {
         "Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words",
         "Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words",
         "Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words",
-        "Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words"
+        "Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words",
+        "Ages 10–12 (independent reader: literary narrative, complex themes, mature vocabulary) — 800–1100 words"
       ],
       // RADIO GROUP — only 1 selectable at a time
       "Reading level": ["Pre-reader (read-aloud only, adult required)","Emergent reader (guided with adult)","Independent early reader","Fluent independent reader"],
@@ -1454,10 +1455,11 @@ function escHtml(str) {
 
 /* Word count ranges per age bracket — mapped to the hard rails in generate-story.js */
 const AGE_WORD_COUNTS = {
-  '2': { short: '~100 words', medium: '~150 words', long: '~200 words' },
-  '4': { short: '~200 words', medium: '~275 words', long: '~350 words' },
-  '6': { short: '~400 words', medium: '~475 words', long: '~550 words' },
-  '8': { short: '~550 words', medium: '~675 words', long: '~800 words' },
+  '2':  { short: '~100 words', medium: '~150 words', long: '~200 words' },
+  '4':  { short: '~200 words', medium: '~275 words', long: '~350 words' },
+  '6':  { short: '~400 words', medium: '~475 words', long: '~550 words' },
+  '8':  { short: '~550 words', medium: '~675 words', long: '~800 words' },
+  '10': { short: '~800 words', medium: '~950 words', long: '~1100 words' },
 };
 
 function getSelectedAgeBracketKey() {
@@ -1468,6 +1470,7 @@ function getSelectedAgeBracketKey() {
   if (text.startsWith('Ages 4')) return '4';
   if (text.startsWith('Ages 6')) return '6';
   if (text.startsWith('Ages 8')) return '8';
+  if (text.startsWith('Ages 10')) return '10';
   return null;
 }
 

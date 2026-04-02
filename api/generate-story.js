@@ -108,6 +108,18 @@ AGES 8–10 (CONFIDENT READER)
 - Tone: Full range including mystery, suspense, humour, melancholy. Tension can be sustained. Endings can be bittersweet though generally warm.
 - Illustrations: One per paragraph. Cinematic, detailed scenes with mood, lighting, and atmosphere.
 
+AGES 10–12 (INDEPENDENT READER)
+- Word count: 800–1100 words.
+- Sentences: Full expressive range — punchy short sentences for impact, longer flowing sentences for world-building and inner thought. Sophisticated rhythm. Multiple embedded clauses allowed.
+- Vocabulary: Rich, precise, and confident. Use vivid, unexpected verbs and specific nouns. Introduce specialised or elevated vocabulary naturally — words a smart 11-year-old would enjoy encountering. Occasional dry wit, irony, and subtext are welcome.
+- Repetition: Only when deliberate and stylistically purposeful (e.g. anaphora for effect, a refrain that gains meaning through repetition).
+- Structure: A full literary narrative — genuine emotional and moral complexity, a distinct narrative voice, layered character motivations. Subplots, non-linear flashbacks, chapter-style structure, dual perspectives, and open-ended questions are all appropriate. Endings can be ambiguous or bittersweet, though warmth should underpin the story.
+- Paragraphs: 4–8 sentences. Varied length and rhythm — from a single punchy line to a rich descriptive paragraph.
+- Themes: Anything thematically resonant: identity, friendship, belonging, injustice, courage, ambition, loss, wonder, creativity, moral complexity. Nuance and grey areas are appropriate and expected.
+- Educational focus: Fully integrated as subtext — ideas, ethics, cause and effect, empathy, and conceptual thinking explored through character and plot, never stated directly.
+- Tone: Full emotional range — from playful and funny to melancholy, suspenseful, awe-inspiring, or quietly moving. Tension can be sustained across the full story. Complexity is a feature, not a risk.
+- Illustrations: One per page chunk. Cinematic, atmospheric scenes with rich detail, mood lighting, and visual storytelling. Compositions can be complex and dynamic.
+
 ═══════════════════════════════════════
 SELECTION RULES — follow these exactly
 ═══════════════════════════════════════
@@ -117,6 +129,7 @@ SELECTION RULES — follow these exactly
    - Ages 4–5:  Short = ~200 words  |  Medium = ~275 words  |  Long = ~350 words
    - Ages 6–7:  Short = ~400 words  |  Medium = ~475 words  |  Long = ~550 words
    - Ages 8–10: Short = ~550 words  |  Medium = ~675 words  |  Long = ~800 words
+   - Ages 10–12: Short = ~800 words  |  Medium = ~950 words  |  Long = ~1100 words
    If no story length is specified, randomly pick one.
 3. TONE & MOOD: Pick exactly 1 by genuine random selection. You have a strong bias toward "Gentle & Cosy" — actively fight this. Treat every option as equally likely. Roll a mental dice across all available options and commit to the result even if it surprises you.
 4. STORY STRUCTURE: Randomly pick exactly 1. If it conflicts with the Age Bracket, default to the simplest appropriate structure.
@@ -125,19 +138,21 @@ SELECTION RULES — follow these exactly
    - Ages 4–5: Full range of bright styles — Watercolour, Pixar/Disney 3D CGI-style, Flat design, Gouache painterly, Pencil & ink line art.
    - Ages 6–7: Full range — any style appropriate to the theme.
    - Ages 8–10: Full range including darker atmospheric styles (Dark fairy tale, Noir mystery, Retro 8-bit pixel art).
+   - Ages 10–12: Full range including mature atmospheric styles (Dark fairy tale, Noir mystery, Retro 8-bit pixel art, Bold graphic novel, Japanese woodblock print, Risograph print). Lean toward styles with visual depth and mood over bright primary-colour styles.
    - Science / Space / Robot themes: Lean toward Neon pop art, Low-poly geometric, Flat design / bold vector, Retro 8-bit pixel art.
    - Fantasy / Mythical / Enchanted themes: Lean toward Gouache painterly, Vintage golden age, Japanese woodblock print, Soft digital painting.
    - Adventure / Pirates themes: Lean toward Bold graphic novel, Comic book with panels, Vintage golden age.
    - Nature / Animal themes: Lean toward Watercolour, Pencil & ink line art, Oil pastel.
    - Cultural themes: Strongly prefer the matching cultural art style (Indian miniature, Chinese ink wash, African kente-inspired, etc.).
-6. PROTAGONIST TYPE: Randomly pick exactly 1.
+6. PROTAGONIST TYPE: Randomly pick exactly 1. You have a strong bias toward picking "Child's own name as hero" — actively fight this. Imagine rolling a fair die across ALL available protagonist types (animal companion, mythical creature, robot, explorer, etc.) and commit to the result. "Child's own name as hero" is just one option among many equals. For a child receiving daily stories, variety in protagonist type is essential — they should encounter brave animals, wise creatures, clever robots, and intrepid explorers just as often as themselves.
 7. THEMES: Pick 1–3. When picking more than one, strongly prefer thematically correlated combinations (e.g. Mythical Creatures + Enchanted Kingdoms). For Ages 2–3 pick only 1 theme maximum.
 8. EDUCATIONAL FOCUS: Pick 1–3 and weave them naturally — never as a lesson. For Ages 2–3 pick only 1.
 9. PROTAGONIST PERSONALISATION: Follow these rules strictly:
-   - "Child's own name as the hero" should only be selected approximately 1 in every 4 stories (25% chance). The child does not need to be the protagonist every day — variety is the point.
+   - CRITICAL: "Child's own name as the hero" must only be selected approximately 1 in every 5 stories (20% chance). Enforce this strictly — if you feel pulled toward choosing it, actively choose something else instead. The child does not need to be the protagonist every day; variety is the entire point.
+   - Simulate this explicitly: mentally generate a random number 1–10. Only if the result is 1 or 2 do you select "Child's own name as the hero". For all other results (3–10) you must pick a different protagonist type.
    - When the child's name IS the protagonist: pick exactly 1 personalisation tied to the protagonist. Then roll a 33% chance — if it triggers, also pick 1 tied to other characters (pet/friend/family details from the profile if provided).
    - When the child's name is NOT the protagonist: the protagonist is the selected Protagonist Type (animal, robot, mythical creature, etc.). The child can still appear as a supporting character or observer if it feels natural, but is not the hero.
-   - Never default to the child's name just because it feels safe or personalised. An 8-year-old receiving a story about a brave fox, a robot inventor, or a dragon explorer is just as engaged as one where they are the hero — and the variety keeps every story feeling fresh.
+   - Never default to the child's name just because it feels safe or personalised. A child receiving a story about a brave fox, a robot inventor, or a dragon explorer is just as engaged as one where they are the hero — and the variety keeps every story feeling fresh and surprising.
 10. CULTURAL REPRESENTATION: Roll a 30% chance. If triggered, pick 1 and weave naturally.
 11. RECURRING ELEMENT: Roll a 33% chance. If triggered, pick 1 and note it in selections — this element must persist across the next 3 stories for this child.
 
@@ -196,6 +211,7 @@ CONSISTENCY RULES:
 - If clothing changes during the story (swimwear, costume, etc.), note the change explicitly but keep all other anchor details identical.
 - For Ages 2–3: always add "close-up composition, bold simple shapes, large expressive character, minimal background detail".
 - For Ages 8–10: you may add "cinematic framing, rich atmospheric detail, dramatic lighting".
+- For Ages 10–12: you may add "cinematic framing, rich atmospheric detail, dramatic lighting, complex compositions".
 
 SAFE CONTENT — Flux has a safety filter. Keep all prompts child-safe and positive:
 - No violence, threat, or peril — reframe as adventure and curiosity
@@ -625,10 +641,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
       const CONTENT_Y  = HEADER;                  // below header
       const CONTENT_H  = PH - HEADER - FOOTER;   // between header and footer
 
-      // Text panel background — clean cream, no image behind it
-      doc.rect(0, CONTENT_Y, TEXT_COL_W, CONTENT_H).fill('#FFFDF8');
-
-      // Image panel
+      // ── Draw image FIRST so header/text panel can paint over it ──
       if (imgBuf) {
         doc.image(imgBuf, IMG_X, CONTENT_Y, {
           width:  IMG_W,
@@ -642,6 +655,12 @@ function buildPictureBookPdf(story, childName, imageResults) {
         doc.font(fonts.sans).fontSize(10).fillColor(C.text3)
            .text('Illustration loading…', IMG_X, CONTENT_Y + CONTENT_H / 2 - 8, { width: IMG_W, align: 'center' });
       }
+
+      // ── Redraw header on top of image so it is never obscured ──
+      drawHeader(PW);
+
+      // ── Text panel background — solid cream, painted after image so it fully covers ──
+      doc.rect(0, CONTENT_Y, TEXT_COL_W, CONTENT_H).fill('#FFFDF8');
 
       // Thin separator line between text and image panels
       doc.moveTo(TEXT_COL_W, CONTENT_Y).lineTo(TEXT_COL_W, CONTENT_Y + CONTENT_H)
@@ -807,7 +826,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
         // Story spreads
         for (let i = 0; i < pageTexts.length; i++) {
           doc.addPage();
-          drawHeader(PW);
+          // drawHeader is called inside drawSpread (after image) to prevent overlap
           drawFooter(i + 1, pageTexts.length, story.title);
 
           const imgUrl = imageMap[i + 1];
@@ -828,14 +847,83 @@ function buildPictureBookPdf(story, childName, imageResults) {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Kit email copy variations — rotated per delivery for freshness
+───────────────────────────────────────────────────────────── */
+function pickKitVariation(childName, storyTitle, isPaid) {
+  const paidVariations = [
+    {
+      heading: `I wrote ${childName} a story`,
+      intro: `Hi! Kit here — the fox behind every Talekits story. I've been busy this morning, and I've just finished today's story for <strong>${childName}</strong>. I think this one turned out rather well.`,
+      sign: `Same time tomorrow, same fox — but a completely different story.<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `${childName}'s story is ready`,
+      intro: `Hello! It's Kit. I got up early this morning and wrote something new for <strong>${childName}</strong>. Every story I write is a one-of-a-kind — this one will never be written again.`,
+      sign: `Until tomorrow,<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `A brand-new story from Kit`,
+      intro: `Kit the fox here. I've just put the finishing touches on today's story for <strong>${childName}</strong> — the illustrations came out beautifully, if I do say so myself.`,
+      sign: `I'll have something new for ${childName} again tomorrow. I'm already plotting.<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `Fresh from Kit's desk`,
+      intro: `Good news! I'm Kit, and I've just written <strong>${childName}</strong> today's story. I chose something a little different this time — I hope it surprises them.`,
+      sign: `More adventures await tomorrow.<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `Today's story is here`,
+      intro: `Hi there, it's Kit! I write a new story for <strong>${childName}</strong> every single day, and today's is ready. No two stories are ever the same — that's my promise.`,
+      sign: `See you tomorrow with something new,<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `Kit just finished writing`,
+      intro: `Hello! I'm Kit — a small fox with a very large imagination. I've just finished today's story for <strong>${childName}</strong>, and I'm rather excited about how it turned out.`,
+      sign: `Tomorrow is another story. Literally.<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `${childName}'s daily story from Kit`,
+      intro: `It's Kit! I write original stories for children every day, and today's one for <strong>${childName}</strong> is ready. I picked the themes, the characters, and the art style myself — hope they love it.`,
+      sign: `Back again tomorrow with another,<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `Story time with Kit 🦊`,
+      intro: `Hi, it's Kit! Every morning I write a new story, and this morning's was made especially for <strong>${childName}</strong>. I never recycle — every story is written fresh from scratch.`,
+      sign: `I'll be back at this time tomorrow with a new one,<br/><br/><em>— Kit 🦊</em>`,
+    },
+  ];
+
+  const trialVariations = [
+    {
+      heading: `${childName}'s first Talekits story`,
+      intro: `Hi! I'm Kit — the fox who writes every Talekits story. I've just finished <strong>${childName}'s</strong> very first story, and I'm so excited to share it with them.`,
+      sign: `I hope ${childName} loves it.<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `A story just for ${childName}`,
+      intro: `Hello! I'm Kit, and I've just written <strong>${childName}</strong> their very first personalised story. I wrote it just for them — there's no other story like it anywhere in the world.`,
+      sign: `Enjoy — and I hope to write many more for ${childName}.<br/><br/><em>— Kit 🦊</em>`,
+    },
+    {
+      heading: `Kit wrote ${childName} a story`,
+      intro: `Hi there! Kit the fox here. I've just finished writing <strong>${childName}'s</strong> first Talekits story. Every detail — the characters, the setting, the art style — was chosen just for them.`,
+      sign: `I hope it sparks their imagination.<br/><br/><em>— Kit 🦊</em>`,
+    },
+  ];
+
+  const pool = isPaid ? paidVariations : trialVariations;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+/* ─────────────────────────────────────────────────────────────
    Email builders
 ───────────────────────────────────────────────────────────── */
 function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLabel = 'free trial', hasAudio = false, storyPdfUrl = null, pictureBookUrl = null, audioUrl = null) {
   const isPaid    = plan !== 'kit';
-  const heading   = `I wrote ${childName} a story`;
-  const intro     = isPaid
-    ? `Hi! I'm Kit — the fox behind every Talekits story. I've just finished writing and illustrating today's story for <strong>${childName}</strong>, and I'm so excited to share it.`
-    : `Hi! I'm Kit — the fox behind every Talekits story. I've just finished writing <strong>${childName}'s</strong> very first story, and I can't wait for them to read it.`;
+  const variation = pickKitVariation(childName, storyTitle, isPaid);
+  const heading   = variation.heading;
+  const intro     = variation.intro;
+  const sign      = variation.sign;
 
   let attachMsg;
   if (isPaid && hasAudio) {
@@ -871,9 +959,6 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
               </tr>
             </table>`;
 
-  const sign      = isPaid
-    ? `I'll have another story ready for ${childName} tomorrow.<br/><br/><em>— Kit 🦊</em>`
-    : `I hope ${childName} loves it.<br/><br/><em>— Kit 🦊</em>`;
   const footerNote = isPaid
     ? `Kit writes a new story for ${childName} every day on the Talekits ${planLabel} plan.`
     : `You received this because you signed up for a Talekits free trial.`;
