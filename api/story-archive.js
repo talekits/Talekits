@@ -1,10 +1,12 @@
-const { list, get } = require('@vercel/blob');
+const { list }        = require('@vercel/blob');
+const { getSupabase } = require('./_supabase');
 
 /* ─────────────────────────────────────────────────────────────
    /api/story-archive
-   GET  ?email=xxx&page=1&limit=20   — list archive entries for an email
-   No auth token needed here — the dashboard-api.js proxies this
-   with the user's verified email from Supabase.
+   GET ?page=1&limit=20
+   Authenticated via Bearer token (same as dashboard-api).
+   Looks up the user's email from Supabase, then lists their
+   archive blobs from Vercel Blob storage.
 ─────────────────────────────────────────────────────────────── */
 
 module.exports = async function handler(req, res) {
@@ -12,11 +14,25 @@ module.exports = async function handler(req, res) {
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
 
-  const { email, page = '1', limit = '20' } = req.query;
-  if (!email) return res.status(400).json({ error: 'email required' });
+  // ── Auth ──────────────────────────────────────────────────
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'Not authenticated' });
+
+  const supabase = getSupabase();
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+  if (authErr || !user) return res.status(401).json({ error: 'Invalid or expired token' });
+
+  // Get the subscriber email (auth email is the canonical one)
+  const email = user.email;
+  if (!email) return res.status(400).json({ error: 'No email on account' });
+
+  // ── Pagination params ─────────────────────────────────────
+  const { page = '1', limit = '20' } = req.query;
+  const pageNum  = Math.max(1, parseInt(page)  || 1);
+  const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 20));
 
   try {
-    // List all index files for this email — stored as archive/index/{emailHash}/{storyId}.json
+    // List all index files for this email
     const safeEmail = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
     const prefix    = `archive/index/${safeEmail}/`;
 
@@ -26,8 +42,6 @@ module.exports = async function handler(req, res) {
     blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
 
     // Paginate
-    const pageNum   = Math.max(1, parseInt(page));
-    const limitNum  = Math.min(50, Math.max(1, parseInt(limit)));
     const start     = (pageNum - 1) * limitNum;
     const paginated = blobs.slice(start, start + limitNum);
 
@@ -36,8 +50,8 @@ module.exports = async function handler(req, res) {
       paginated.map(async blob => {
         try {
           const r    = await fetch(blob.url);
-          const data = await r.json();
-          return data;
+          if (!r.ok) return null;
+          return await r.json();
         } catch {
           return null;
         }
@@ -61,6 +75,7 @@ module.exports = async function handler(req, res) {
       page:       pageNum,
       totalPages: Math.ceil(blobs.length / limitNum),
     });
+
   } catch (err) {
     console.error('[story-archive] Error:', err.message);
     return res.status(500).json({ error: err.message });
