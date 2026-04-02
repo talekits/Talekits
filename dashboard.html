@@ -1193,11 +1193,14 @@ async function saveDeliverySettings() {
 /* ─────────────────────────────────────────────
    Narrator voice
 ─────────────────────────────────────────────── */
+const FLAG_AU = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:28px;height:14px;border-radius:2px;display:block;"><rect width="60" height="30" fill="#00008B"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#fff" stroke-width="6" fill="none"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#CC0000" stroke-width="4" fill="none"/><rect x="25" width="10" height="30" fill="#fff"/><rect width="60" height="10" y="10" fill="#fff"/><rect x="27" width="6" height="30" fill="#CC0000"/><rect width="60" height="6" y="12" fill="#CC0000"/></svg>`;
+const FLAG_US = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:28px;height:14px;border-radius:2px;display:block;"><rect width="60" height="30" fill="#B22234"/><rect y="2.3" width="60" height="2.3" fill="#fff"/><rect y="6.9" width="60" height="2.3" fill="#fff"/><rect y="11.5" width="60" height="2.3" fill="#fff"/><rect y="16.2" width="60" height="2.3" fill="#fff"/><rect y="20.8" width="60" height="2.3" fill="#fff"/><rect y="25.4" width="60" height="2.3" fill="#fff"/><rect width="24" height="16.2" fill="#3C3B6E"/></svg>`;
+
 const VOICE_OPTIONS = [
-  { id: 'au_female', label: 'Charlotte', sub: 'Australian Female', desc: 'Warm and expressive — a great choice for bedtime stories', flag: '🇦🇺', gender: 'female' },
-  { id: 'au_male',   label: 'Neil',      sub: 'Australian Male',   desc: 'Friendly and natural — works beautifully for adventure stories', flag: '🇦🇺', gender: 'male' },
-  { id: 'us_female', label: 'Jessa',     sub: 'American Female',   desc: 'Clear and engaging — ideal for educational and exciting stories', flag: '🇺🇸', gender: 'female' },
-  { id: 'us_male',   label: 'Ryan',      sub: 'American Male',     desc: 'Confident and warm — a steady, reassuring narrator', flag: '🇺🇸', gender: 'male' },
+  { id: 'au_female', label: 'Charlotte', sub: 'Australian Female', desc: 'Warm and expressive — a great choice for bedtime stories',          flag: FLAG_AU, gender: 'female' },
+  { id: 'au_male',   label: 'Tom',       sub: 'Australian Male',   desc: 'Friendly and natural — works beautifully for adventure stories',     flag: FLAG_AU, gender: 'male'   },
+  { id: 'us_female', label: 'Jessa',     sub: 'American Female',   desc: 'Clear and engaging — ideal for educational and exciting stories',    flag: FLAG_US, gender: 'female' },
+  { id: 'us_male',   label: 'Ryan',      sub: 'American Male',     desc: 'Confident and warm — a steady, reassuring narrator',                flag: FLAG_US, gender: 'male'   },
 ];
 
 function renderNarrator(area, actions) {
@@ -1237,7 +1240,7 @@ function voiceCardHtml(voice, selectedId) {
     <div id="voice-card-${voice.id}" onclick="selectVoice('${voice.id}')"
       style="display:flex;align-items:center;gap:1rem;padding:1.125rem 1.5rem;background:var(--surface);border:${isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)'};border-radius:var(--radius-lg);cursor:pointer;transition:border-color 0.12s;">
       <div style="flex-shrink:0;text-align:center;width:44px;">
-        <div style="font-size:1.75rem;line-height:1;">${voice.flag}</div>
+        <div style="display:flex;justify-content:center;align-items:center;height:22px;">${voice.flag}</div>
         <span style="display:inline-block;margin-top:5px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:999px;border:0.5px solid ${genderBorder};background:${genderBg};color:${genderColour};text-transform:capitalize;">${voice.gender}</span>
       </div>
       <div style="flex:1;">
@@ -1359,7 +1362,7 @@ async function changePassword() {
 ─────────────────────────────────────────────── */
 const LIBRARY = {
   age: { label: "Age & format", cls: "age", groups: {
-    "Age brackets": ["Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words","Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words","Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words","Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words"],
+    "Age brackets": ["Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words","Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words","Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words","Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words","Ages 10–12 (independent reader: literary narrative, complex themes, mature vocabulary) — 800–1100 words"],
     "Reading level": ["Pre-reader (read-aloud only, adult required)","Emergent reader (guided with adult)","Independent early reader","Fluent independent reader"],
     "Story length": ["Short — lower end of age range","Medium — middle of age range","Long — upper end of age range"],
     "Tone & mood": ["Funny & silly","Gentle & cosy","Exciting & adventurous","Spooky (mild)","Heartwarming","Educational & informative","Mysterious"],

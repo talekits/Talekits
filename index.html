@@ -636,62 +636,6 @@
     .modal { padding: 1.5rem 1.25rem 1.25rem; }
   }
 
-  /* ── Character customisation upsell ── */
-  .char-custom-box {
-    background: var(--purple-bg);
-    border: 1px solid var(--purple-border);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    user-select: none;
-  }
-  .char-custom-box:hover { border-color: var(--purple-text); }
-  .char-custom-box.selected {
-    border: 2px solid var(--purple-text);
-    box-shadow: 0 0 0 3px rgba(60,52,137,0.1);
-  }
-  .char-custom-header {
-    display: flex; align-items: flex-start; gap: 10px;
-  }
-  .char-custom-checkbox {
-    width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-    border: 1.5px solid var(--purple-border);
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-  }
-  .char-custom-box.selected .char-custom-checkbox {
-    background: var(--purple-text); border-color: var(--purple-text);
-  }
-  .char-custom-checkbox svg { display: none; width: 11px; height: 11px; }
-  .char-custom-box.selected .char-custom-checkbox svg { display: block; }
-  .char-custom-body { flex: 1; }
-  .char-custom-title {
-    font-size: 13px; font-weight: 600; color: var(--purple-text);
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-  .char-custom-price {
-    font-size: 11px; font-weight: 600;
-    background: var(--purple-text); color: var(--purple-bg);
-    border-radius: var(--radius-pill); padding: 2px 8px;
-    white-space: nowrap;
-  }
-  .char-custom-desc {
-    font-size: 12px; color: var(--purple-text); opacity: 0.8;
-    margin-top: 3px; line-height: 1.5;
-  }
-  .char-custom-notice {
-    margin-top: 10px; padding-top: 10px;
-    border-top: 1px solid var(--purple-border);
-    font-size: 12px; color: var(--purple-text); opacity: 0.75;
-    line-height: 1.55; display: none;
-  }
-  .char-custom-box.selected .char-custom-notice { display: block; }
-  @media (max-width: 400px) {
-    .pricing-grid { grid-template-columns: 1fr; }
-  }
-
   /* ── Modal voice cards ── */
   .modal-voice-card {
     display: flex; flex-direction: column; align-items: center;
@@ -707,6 +651,7 @@
   .modal-voice-flag { font-size: 1.25rem; line-height: 1; }
   .modal-voice-name { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 2px; }
   .modal-voice-sub  { font-size: 10px; color: var(--text-3); font-weight: 400; }
+  .footer {
     margin-top: 4rem;
     padding-top: 1.5rem;
     border-top: 0.5px solid var(--border);
@@ -1017,30 +962,6 @@
     </div>
 
     <div class="modal-footer-row">
-      <!-- Character customisation upsell — shown for Scout, Den, Grove, Pack -->
-      <div id="char-custom-row" style="display:none;width:100%;margin-bottom:1rem;">
-        <div class="char-custom-box" id="char-custom-toggle" onclick="toggleCharCustom()">
-          <div class="char-custom-header">
-            <div class="char-custom-checkbox">
-              <svg viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="1.5,6 4,8.5 9.5,2.5"/>
-              </svg>
-            </div>
-            <div class="char-custom-body">
-              <p class="char-custom-title">
-                Character Customisation
-                <span class="char-custom-price">+ $14.99 one-off per child</span>
-              </p>
-              <p class="char-custom-desc">Make the protagonist look like your child — Kit will illustrate the hero to match their appearance across every story.</p>
-              <div class="char-custom-notice">
-                <strong style="display:block;margin-bottom:3px;font-size:12px;">What happens after you subscribe</strong>
-                After signing up you&rsquo;ll be able to upload a few photos of your child in your dashboard. Character Customisation won&rsquo;t appear in the very first story, but will be woven into every story from then on.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Pack enquiry box — shown only when Pack plan is selected -->
       <div id="pack-enquiry-row" style="display:none;width:100%;margin-bottom:1rem;">
         <div style="background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:14px 16px;">
@@ -1120,22 +1041,22 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="modal-voice-grid">
 
             <div class="modal-voice-card selected" data-voice="au_female" onclick="selectModalVoice('au_female', this)">
-              <span class="modal-voice-flag">🇦🇺</span>
+              <span class="modal-voice-flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:24px;height:12px;border-radius:2px;"><rect width="60" height="30" fill="#00008B"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#fff" stroke-width="6" fill="none"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#CC0000" stroke-width="4" fill="none"/><rect x="25" width="10" height="30" fill="#fff"/><rect width="60" height="10" y="10" fill="#fff"/><rect x="27" width="6" height="30" fill="#CC0000"/><rect width="60" height="6" y="12" fill="#CC0000"/></svg></span>
               <span class="modal-voice-name">Charlotte</span>
               <span class="modal-voice-sub">Australian Female</span>
             </div>
             <div class="modal-voice-card" data-voice="au_male" onclick="selectModalVoice('au_male', this)">
-              <span class="modal-voice-flag">🇦🇺</span>
-              <span class="modal-voice-name">Neil</span>
+              <span class="modal-voice-flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:24px;height:12px;border-radius:2px;"><rect width="60" height="30" fill="#00008B"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#fff" stroke-width="6" fill="none"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#CC0000" stroke-width="4" fill="none"/><rect x="25" width="10" height="30" fill="#fff"/><rect width="60" height="10" y="10" fill="#fff"/><rect x="27" width="6" height="30" fill="#CC0000"/><rect width="60" height="6" y="12" fill="#CC0000"/></svg></span>
+              <span class="modal-voice-name">Tom</span>
               <span class="modal-voice-sub">Australian Male</span>
             </div>
             <div class="modal-voice-card" data-voice="us_female" onclick="selectModalVoice('us_female', this)">
-              <span class="modal-voice-flag">🇺🇸</span>
+              <span class="modal-voice-flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:24px;height:12px;border-radius:2px;"><rect width="60" height="30" fill="#B22234"/><rect y="2.3" width="60" height="2.3" fill="#fff"/><rect y="6.9" width="60" height="2.3" fill="#fff"/><rect y="11.5" width="60" height="2.3" fill="#fff"/><rect y="16.2" width="60" height="2.3" fill="#fff"/><rect y="20.8" width="60" height="2.3" fill="#fff"/><rect y="25.4" width="60" height="2.3" fill="#fff"/><rect width="24" height="16.2" fill="#3C3B6E"/></svg></span>
               <span class="modal-voice-name">Jessa</span>
               <span class="modal-voice-sub">American Female</span>
             </div>
             <div class="modal-voice-card" data-voice="us_male" onclick="selectModalVoice('us_male', this)">
-              <span class="modal-voice-flag">🇺🇸</span>
+              <span class="modal-voice-flag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:24px;height:12px;border-radius:2px;"><rect width="60" height="30" fill="#B22234"/><rect y="2.3" width="60" height="2.3" fill="#fff"/><rect y="6.9" width="60" height="2.3" fill="#fff"/><rect y="11.5" width="60" height="2.3" fill="#fff"/><rect y="16.2" width="60" height="2.3" fill="#fff"/><rect y="20.8" width="60" height="2.3" fill="#fff"/><rect y="25.4" width="60" height="2.3" fill="#fff"/><rect width="24" height="16.2" fill="#3C3B6E"/></svg></span>
               <span class="modal-voice-name">Ryan</span>
               <span class="modal-voice-sub">American Male</span>
             </div>
@@ -1631,13 +1552,6 @@ function buildProfileJson() {
 }
 
 let selectedPlan = null;
-let charCustomSelected = false;
-
-function toggleCharCustom() {
-  charCustomSelected = !charCustomSelected;
-  const toggle = document.getElementById('char-custom-toggle');
-  if (toggle) toggle.classList.toggle('selected', charCustomSelected);
-}
 
 // Capture the original pricing modal HTML so it can be restored after the success state
 const MODAL_ORIGINAL_HTML = document.querySelector('.modal').innerHTML;
@@ -1671,18 +1585,6 @@ function selectPlan(planId) {
   // Show Pack enquiry box when pack is selected, hide for all others
   const packEnquiry = document.getElementById('pack-enquiry-row');
   if (packEnquiry) packEnquiry.style.display = planId === 'pack' ? 'block' : 'none';
-
-  // Show character customisation upsell for Scout and above (not kit or cub)
-  const UPSELL_PLANS = new Set(['scout', 'den', 'grove', 'pack']);
-  const charCustomRow = document.getElementById('char-custom-row');
-  if (charCustomRow) charCustomRow.style.display = UPSELL_PLANS.has(planId) ? 'block' : 'none';
-
-  // Reset char custom selection when switching plans
-  if (!UPSELL_PLANS.has(planId)) {
-    const toggle = document.getElementById('char-custom-toggle');
-    if (toggle) toggle.classList.remove('selected');
-    charCustomSelected = false;
-  }
 
   // Clear any previous password values when switching plans
   const pw  = document.getElementById('modal-password');
@@ -1851,7 +1753,7 @@ async function confirmImagine() {
     const res  = await fetch('/api/create-checkout', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson, narratorVoice: selectedNarratorVoice, charCustom: charCustomSelected }),
+      body:    JSON.stringify({ planId: selectedPlan, childName: name, email, gender, password, filename, content: text, profileJson, narratorVoice: selectedNarratorVoice }),
     });
     const data = await res.json();
     if (data.url) {

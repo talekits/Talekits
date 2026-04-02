@@ -1,18 +1,53 @@
 const { getSupabase }    = require('./_supabase');
 const { generateStory }  = require('./generate-story');
-const { list }           = require('@vercel/blob');
 
 module.exports.maxDuration = 300;
 
 /* ─────────────────────────────────────────────────────────────
    GET /api/schedule-stories
-   Called daily by a cron job (Vercel Cron or external service)
-   Protected by CRON_SECRET header
+   Called hourly by Vercel Cron.
+   Protected by CRON_SECRET header or query param.
+
+   Delivery time logic:
+   - Subscribers store delivery_time as a local time (e.g. "21:00")
+     and delivery_timezone as an IANA timezone (e.g. "Australia/Melbourne").
+   - Each hour we compute what local time it currently is in each
+     subscriber's timezone, then match against their stored delivery_time.
+   - This means delivery always fires at the correct local time regardless
+     of DST changes or UTC offset differences.
 ─────────────────────────────────────────────────────────────── */
+
+/**
+ * Get the current local HH:MM in an IANA timezone.
+ * Falls back to UTC if the timezone is invalid.
+ */
+function localHourMinute(timezone) {
+  try {
+    const fmt = new Intl.DateTimeFormat('en-AU', {
+      timeZone: timezone,
+      hour:     '2-digit',
+      minute:   '2-digit',
+      hour12:   false,
+    });
+    // Returns e.g. "21:00" or "09:00"
+    const parts = fmt.formatToParts(new Date());
+    const h = parts.find(p => p.type === 'hour')?.value   || '00';
+    const m = parts.find(p => p.type === 'minute')?.value || '00';
+    return `${h}:${m}`;
+  } catch {
+    // Fallback to UTC
+    const now = new Date();
+    return `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')}`;
+  }
+}
+
 module.exports = async function handler(req, res) {
-  // Security — only allow requests with the correct secret
-  const secret = req.headers['x-cron-secret'] || req.query.secret;
-  if (secret !== process.env.CRON_SECRET) {
+  // Security — accept CRON_SECRET via header/query param, OR Vercel's internal cron invocation
+  const secret       = req.headers['x-cron-secret'] || req.query.secret;
+  const isVercelCron = req.headers['x-vercel-cron-signature'] !== undefined
+                    || req.headers['x-vercel-id'] !== undefined;
+
+  if (secret !== process.env.CRON_SECRET && !isVercelCron) {
     return res.status(401).json({ error: 'Unauthorised' });
   }
 
@@ -23,24 +58,36 @@ module.exports = async function handler(req, res) {
   console.log(`[CRON] Daily story scheduler started at ${now.toISOString()}`);
 
   try {
-    // Fetch all active subscribers due for a story right now
-    // We check delivery_time against current UTC hour (simplified — timezone support can be added later)
-    const currentHour = now.getUTCHours().toString().padStart(2, '0') + ':00';
-
+    // Fetch ALL active subscribers — we filter by local time below
     const { data: subscribers, error } = await supabase
       .from('subscribers')
       .select(`
         id, email, plan, status, delivery_time, delivery_timezone, narrator_voice,
         child_profiles (id, child_name, gender, profile_content, profile_json, profile_blob_url, is_active)
       `)
-      .in('status', ['active', 'trial'])
-      .eq('delivery_time', currentHour);
+      .in('status', ['active', 'trial']);
 
     if (error) throw new Error(`Failed to fetch subscribers: ${error.message}`);
 
-    console.log(`[CRON] Found ${subscribers?.length || 0} subscribers due for delivery at ${currentHour} UTC`);
+    console.log(`[CRON] Checking ${subscribers?.length || 0} active subscribers for delivery`);
 
     for (const subscriber of (subscribers || [])) {
+      // Determine the subscriber's current local time
+      const tz            = subscriber.delivery_timezone || 'Australia/Melbourne';
+      const localNow      = localHourMinute(tz);
+      const deliveryTime  = subscriber.delivery_time || '07:00';
+
+      // Match on HH:00 — cron runs on the hour so we only need to match the hour
+      const deliveryHour = deliveryTime.slice(0, 5); // "21:00"
+      const localHour    = localNow.slice(0, 2) + ':00'; // "21:00"
+
+      if (deliveryHour !== localHour) {
+        // Not their delivery hour — skip silently
+        continue;
+      }
+
+      console.log(`[CRON] Delivery due for ${subscriber.email} | local time ${localNow} in ${tz}`);
+
       const activeProfiles = (subscriber.child_profiles || []).filter(p => p.is_active);
 
       if (!activeProfiles.length) {
@@ -77,11 +124,14 @@ module.exports = async function handler(req, res) {
           const filename = `talekits-profile-${safeName}-${dateStr}.txt`;
 
           // Check we haven't already sent a story today for this profile
+          // Use the subscriber's local date (not UTC) to avoid double-sending across midnight
+          const localDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(now); // "YYYY-MM-DD"
           const { data: todayDelivery } = await supabase
             .from('story_deliveries')
             .select('id')
             .eq('child_profile_id', profile.id)
-            .gte('created_at', `${dateStr}T00:00:00Z`)
+            .gte('scheduled_for', `${localDateStr}T00:00:00Z`)
+            .not('status', 'eq', 'failed')
             .maybeSingle();
 
           if (todayDelivery) {

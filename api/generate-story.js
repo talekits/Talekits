@@ -183,10 +183,21 @@ ILLUSTRATION PROMPT RULES — Flux 2 [dev] via fal.ai
 
 CHARACTER ANCHOR — generate this FIRST before writing any illustration prompt:
 1. Identify the story protagonist (the main character who drives the plot).
-2. Write a single compact descriptor phrase of 15–25 words covering: species/age/build, hair/fur/skin colour, eye colour, key distinguishing features, and default outfit for this story. Example: "a small girl aged about six with long black hair in two plaits, warm brown eyes, light olive skin, wearing a bright red coat and yellow boots".
-3. If the profile includes "Child's appearance (for illustrations)", incorporate those physical details into the descriptor — they override your invented ones for that character.
-4. If the protagonist has a companion who appears in most scenes (sidekick, pet, friend), create a second short anchor phrase for them too.
-5. Output these anchors in the "characterAnchor" field of the JSON. Copy the protagonist anchor word-for-word into EVERY illustration prompt. Never rephrase it.
+2. Write a single compact descriptor phrase of 20–30 words covering ALL of the following — every field is mandatory:
+   - Species and approximate age/build (e.g. "a small girl aged about six")
+   - Hair: colour, length, and exact style (e.g. "long straight black hair in two neat plaits tied with red ribbons" — never just "black hair")
+   - Skin tone (e.g. "warm brown skin", "light olive skin", "pale freckled skin")
+   - Eye colour (e.g. "wide dark brown eyes")
+   - Top/jacket (e.g. "wearing a bright red hooded coat", "a yellow striped t-shirt")
+   - Bottom (e.g. "navy blue shorts", "a green skirt with white polka dots")
+   - Footwear: shoes/boots AND socks if visible (e.g. "white ankle socks and red wellington boots", "bare feet", "brown leather sandals") — never leave footwear unspecified
+   - One distinguishing feature if relevant (e.g. "a small scar on her chin", "round glasses with tortoiseshell frames")
+   Example: "a small girl aged about six with long straight black hair in two neat plaits tied with red ribbons, warm brown skin, wide dark brown eyes, wearing a bright red hooded coat, navy blue shorts, white ankle socks and red wellington boots"
+3. If the profile includes "Child's appearance (for illustrations)", use those physical details exactly — they override your invented ones.
+4. If the protagonist has a companion who appears in most scenes (sidekick, pet, friend), write a second equally detailed anchor phrase for them, including their species, colouring, and any consistent markings.
+5. Output these anchors in the "characterAnchor" field of the JSON.
+6. CHARACTER ANCHOR LOCK — this is the most important consistency rule: copy the protagonist anchor phrase verbatim, word-for-word, into EVERY illustration prompt. Never rephrase, abbreviate, or omit any part of it. If a detail changes in the scene (e.g. she removes her coat), explicitly note the change (e.g. "…now without her red coat, showing her yellow striped top underneath") but keep all other anchor details unchanged.
+7. FOOTWEAR RULE — always include the protagonist's feet/footwear explicitly in every prompt where the character's lower body is visible. If shoes or socks have been specified in the anchor, repeat them. Never leave feet or legs visible without describing what is on them.
 
 ART STYLE — use a rich, precise formulation. Do not just say "watercolour". Instead describe the medium, line treatment, palette, texture, and reference feel. Examples:
 - "children's picture book illustration in the style of classic British picture books — confident ink outlines with flat watercolour wash, warm cream paper texture, slightly imperfect hand-drawn lines, limited palette of 5–6 harmonious colours, characters with large expressive eyes and rounded proportions"
@@ -206,9 +217,11 @@ PROMPT STRUCTURE — write each prompt as one dense prose paragraph covering:
 8. Quality tags: "high quality, detailed illustration, safe for children, full bleed, seamless background, no text, no speech bubbles, no watermarks, no borders, no frames, no ruled lines, no dividing lines, no page edges"
 
 CONSISTENCY RULES:
-- The protagonist anchor phrase must appear verbatim in every single prompt. Never shorten, rephrase, or vary it.
-- The art style descriptor must be identical in every prompt.
-- If clothing changes during the story (swimwear, costume, etc.), note the change explicitly but keep all other anchor details identical.
+- CHARACTER ANCHOR VERBATIM: The protagonist anchor phrase must appear verbatim — every word, every detail — in every single prompt. Never shorten, paraphrase, reorder, or omit any part of it. Treat it as a locked string.
+- ART STYLE LOCK: The art style descriptor must be character-for-character identical in every prompt.
+- CLOTHING CHANGES: If a scene requires a clothing change (swimwear, costume, pyjamas, etc.), explicitly state the change ("now wearing…") while keeping hair, skin, eyes, and all other anchor details unchanged and verbatim.
+- FOOTWEAR IN EVERY SCENE: Whenever the character's lower body or feet appear in frame, include explicit footwear description matching the anchor (e.g. "white ankle socks and red wellington boots"). Never show feet/legs without specifying what is on them.
+- HAIR FIDELITY: Hair style, length, and any accessories (ribbons, clips, bands) must be specified identically in every prompt. If the character's hair would naturally be loose in a scene, state this explicitly rather than omitting.
 - For Ages 2–3: always add "close-up composition, bold simple shapes, large expressive character, minimal background detail".
 - For Ages 8–10: you may add "cinematic framing, rich atmospheric detail, dramatic lighting".
 - For Ages 10–12: you may add "cinematic framing, rich atmospheric detail, dramatic lighting, complex compositions".
@@ -227,8 +240,8 @@ Respond with a valid JSON object only. No markdown fences, no preamble, nothing 
   "title": "Story title",
   "story": "Full story text. Use \\n\\n to separate paragraphs.",
   "characterAnchor": {
-    "protagonist": "The exact 15–25 word physical descriptor for the protagonist — copied verbatim into every illustration prompt",
-    "companion": "Optional: compact descriptor for a sidekick/pet/friend who appears frequently, or null"
+    "protagonist": "The exact 20–30 word physical descriptor — hair/length/style, skin, eyes, top, bottom, footwear/socks — copied verbatim into every illustration prompt",
+    "companion": "Optional: equally detailed descriptor for a sidekick/pet/friend who appears frequently, or null"
   },
   "pageChunks": [
     {

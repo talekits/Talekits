@@ -11,7 +11,7 @@
   ],
   "crons": [
     {
-      "path": "/api/schedule-stories?secret=REPLACE_WITH_CRON_SECRET",
+      "path": "/api/schedule-stories",
       "schedule": "0 * * * *"
     }
   ],
