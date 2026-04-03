@@ -3,37 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<!-- ── SEO — private dashboard, exclude from search index ── -->
 <title>My Dashboard — Talekits</title>
-<meta name="description" content="View your personalised story archive, manage your child's profile, and access your daily Talekits storybooks." />
-<meta name="robots" content="noindex, nofollow" />
-<link rel="canonical" href="https://www.talekits.com/dashboard.html" />
-
-<!-- ── Open Graph (for direct link sharing) ── -->
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Talekits" />
-<meta property="og:title" content="My Dashboard — Talekits" />
-<meta property="og:description" content="Access your personalised story archive and manage your Talekits subscription." />
-<meta property="og:url" content="https://www.talekits.com/dashboard.html" />
-<meta property="og:image" content="https://www.talekits.com/og-image.png" />
-
-<!-- ── Schema.org ── -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "My Dashboard — Talekits",
-  "url": "https://www.talekits.com/dashboard.html",
-  "description": "Subscriber dashboard for managing personalised children's storybook subscriptions.",
-  "isPartOf": { "@type": "WebSite", "name": "Talekits", "url": "https://www.talekits.com/" }
-}
-</script>
-
-<!-- ── Favicon ── -->
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link rel="icon" type="image/png" href="/favicon.png" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,500;1,400;1,500&display=swap" rel="stylesheet" />
@@ -452,6 +422,10 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5a6.5 6.5 0 1 0 0 13A6.5 6.5 0 0 0 8 1.5z"/><path d="M8 6v4M8 11.5v.5"/></svg>
           Account settings
         </button>
+        <button class="nav-item" data-section="admin" id="nav-admin" style="display:none;" onclick="showSection('admin', this)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.6z"/></svg>
+          Admin
+        </button>
       </nav>
       <div class="sidebar-footer">
         <div class="subscriber-info">
@@ -638,6 +612,11 @@ async function loadDashboard() {
     const charBadge = document.getElementById('char-pending-badge');
     if (charBadge) charBadge.style.display = needsUpload ? 'inline-flex' : 'none';
 
+    // Show admin nav for admin accounts
+    const ADMIN_EMAILS = new Set(['test@talekits.com', 'james.loo.229@gmail.com']);
+    const adminNav = document.getElementById('nav-admin');
+    if (adminNav) adminNav.style.display = ADMIN_EMAILS.has(data.user.email) ? 'flex' : 'none';
+
     renderSection(currentSection);
     return true;
   } catch { return false; }
@@ -651,6 +630,7 @@ const SECTION_TITLES = {
   profiles: 'Child profiles', delivery: 'Delivery time',
   narrator: 'Narrator voice', character: 'Character Customisation',
   subscription: 'Subscription', account: 'Account settings',
+  admin: '⚡ Admin',
 };
 
 function showSection(name, el) {
@@ -675,6 +655,7 @@ function renderSection(name) {
     case 'character':    renderCharacter(area, actions);   break;
     case 'subscription': renderSubscription(area);         break;
     case 'account':      renderAccount(area);              break;
+    case 'admin':        renderAdmin(area);                break;
     default:             area.innerHTML = '<p>Coming soon.</p>';
   }
 }
@@ -895,6 +876,72 @@ async function loadRecentStories() {
 /* ─────────────────────────────────────────────
    Child profiles
 ─────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   Curriculum alignment — state/year data
+─────────────────────────────────────────────── */
+const STATE_YEAR_OPTIONS_DASH = [
+  { value: 'nsw', label: 'NSW' },
+  { value: 'vic', label: 'VIC' },
+  { value: 'qld', label: 'QLD' },
+  { value: 'sa',  label: 'SA'  },
+  { value: 'wa',  label: 'WA'  },
+  { value: 'tas', label: 'TAS' },
+  { value: 'act', label: 'ACT' },
+  { value: 'nt',  label: 'NT'  },
+];
+
+const DASH_YEAR_OPTIONS = {
+  nsw: [{ value:'F',label:'Kindergarten'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  vic: [{ value:'F',label:'Foundation (Prep)'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  qld: [{ value:'F',label:'Prep'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  sa:  [{ value:'F',label:'Reception'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  wa:  [{ value:'F',label:'Pre-primary'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  tas: [{ value:'F',label:'Prep'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  act: [{ value:'F',label:'Kindergarten'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+  nt:  [{ value:'F',label:'Transition'},{ value:'1',label:'Year 1'},{ value:'2',label:'Year 2'},{ value:'3',label:'Year 3'},{ value:'4',label:'Year 4'},{ value:'5',label:'Year 5'},{ value:'6',label:'Year 6'}],
+};
+
+/** Returns a short display label like "VIC · Foundation (Prep)" or null */
+function buildCurriculumLabel(state, yearLevel) {
+  if (!state || !yearLevel) return null;
+  const stateOpt = STATE_YEAR_OPTIONS_DASH.find(s => s.value === state);
+  const yearOpts = DASH_YEAR_OPTIONS[state] || [];
+  const yearOpt  = yearOpts.find(y => y.value === yearLevel);
+  if (!stateOpt || !yearOpt) return null;
+  return `${stateOpt.label} · ${yearOpt.label}`;
+}
+
+/** Repopulate year dropdown when state changes on the Add form */
+function onNewProfileStateChange() {
+  const state   = document.getElementById('np-state')?.value;
+  const yearSel = document.getElementById('np-year-level');
+  if (!yearSel) return;
+  yearSel.innerHTML = '<option value="">Select year…</option>';
+  if (state && DASH_YEAR_OPTIONS[state]) {
+    DASH_YEAR_OPTIONS[state].forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.value; o.textContent = opt.label;
+      yearSel.appendChild(o);
+    });
+  }
+}
+
+/** Repopulate year dropdown when state changes on an Edit panel */
+function onEditProfileStateChange(id) {
+  const state   = document.getElementById(`pedit-state-${id}`)?.value;
+  const yearSel = document.getElementById(`pedit-year-${id}`);
+  if (!yearSel) return;
+  yearSel.innerHTML = '<option value="">Select year…</option>';
+  if (state && DASH_YEAR_OPTIONS[state]) {
+    DASH_YEAR_OPTIONS[state].forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.value; o.textContent = opt.label;
+      yearSel.appendChild(o);
+    });
+  }
+  markProfileDirty(id);
+}
+
 const PROFILE_LIMITS = { kit: 1, cub: 1, scout: 1, den: 3, grove: 5, pack: 30 };
 
 function renderProfiles(area, actions) {
@@ -945,6 +992,26 @@ function renderProfiles(area, actions) {
               </div>
               <input type="hidden" id="np-gender" value="" />
             </div>
+            <div class="form-group">
+              <label class="form-label">State / Territory</label>
+              <select class="form-select" id="np-state" onchange="onNewProfileStateChange()">
+                <option value="">Select state…</option>
+                <option value="nsw">NSW</option>
+                <option value="vic">VIC</option>
+                <option value="qld">QLD</option>
+                <option value="sa">SA</option>
+                <option value="wa">WA</option>
+                <option value="tas">TAS</option>
+                <option value="act">ACT</option>
+                <option value="nt">NT</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">School year</label>
+              <select class="form-select" id="np-year-level">
+                <option value="">Select year…</option>
+              </select>
+            </div>
           </div>
           <p id="np-error" style="font-size:12px;color:#E05050;min-height:14px;margin-bottom:8px;"></p>
           <button class="btn-primary" onclick="saveNewProfile()">Save profile</button>
@@ -959,6 +1026,23 @@ function profileCardHtml(profile, limit) {
   const genderColour = { boy: 'var(--blue-text)', girl: 'var(--pink-text)', other: 'var(--green-text)', neutral: 'var(--green-text)' }[profile.gender] || 'var(--text-3)';
   const added = profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
+  const pState     = profile.profile_json?.state || '';
+  const pYearLevel = profile.profile_json?.yearLevel || '';
+  const currLabel  = buildCurriculumLabel(pState, pYearLevel);
+  const currMeta   = currLabel
+    ? `&nbsp;·&nbsp;<span style="color:var(--teal-text);font-weight:500;">${esc(currLabel)}</span>`
+    : '';
+
+  const editStateOpts = STATE_YEAR_OPTIONS_DASH.map(s =>
+    `<option value="${s.value}"${pState === s.value ? ' selected' : ''}>${esc(s.label)}</option>`
+  ).join('');
+
+  const editYearOpts = pState
+    ? DASH_YEAR_OPTIONS[pState].map(y =>
+        `<option value="${y.value}"${pYearLevel === y.value ? ' selected' : ''}>${esc(y.label)}</option>`
+      ).join('')
+    : '';
+
   return `
     <div class="profile-card" id="profile-card-${profile.id}" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;">
@@ -967,7 +1051,7 @@ function profileCardHtml(profile, limit) {
         </div>
         <div class="profile-info" style="flex:1;">
           <p class="profile-name" id="pname-display-${profile.id}">${esc(profile.child_name)}</p>
-          <p class="profile-meta"><span style="color:${genderColour};font-weight:500;">${genderLabel}</span>&nbsp;·&nbsp; Added ${added}</p>
+          <p class="profile-meta"><span style="color:${genderColour};font-weight:500;">${genderLabel}</span>&nbsp;·&nbsp; Added ${added}${currMeta}</p>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <button class="btn-secondary" style="font-size:12px;padding:5px 12px;" onclick="toggleProfileEdit('${profile.id}')">
@@ -981,7 +1065,7 @@ function profileCardHtml(profile, limit) {
       </div>
       <div id="profile-edit-${profile.id}" style="display:none;border-top:0.5px solid var(--border);background:var(--bg);">
         <div style="padding:1.25rem 1.5rem;border-bottom:0.5px solid var(--border);">
-          <div class="form-grid" style="margin-bottom:0;">
+          <div class="form-grid" style="margin-bottom:1rem;">
             <div class="form-group">
               <label class="form-label">Child's name</label>
               <input class="form-input" id="pedit-name-${profile.id}" type="text" value="${esc(profile.child_name)}" oninput="markProfileDirty('${profile.id}')" />
@@ -994,6 +1078,20 @@ function profileCardHtml(profile, limit) {
                 <span class="gender-pill gender-pill-other${(profile.gender === 'other' || profile.gender === 'neutral') ? ' selected' : ''}" onclick="selectEditGender('${profile.id}', 'other', this)">Other</span>
               </div>
               <input type="hidden" id="pedit-gender-${profile.id}" value="${profile.gender || ''}" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">State / Territory</label>
+              <select class="form-select" id="pedit-state-${profile.id}" onchange="onEditProfileStateChange('${profile.id}')" oninput="markProfileDirty('${profile.id}')">
+                <option value="">Select state…</option>
+                ${editStateOpts}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">School year</label>
+              <select class="form-select" id="pedit-year-${profile.id}" oninput="markProfileDirty('${profile.id}')">
+                <option value="">Select year…</option>
+                ${editYearOpts}
+              </select>
             </div>
           </div>
         </div>
@@ -1043,18 +1141,20 @@ function selectNewProfileGender(value, el) {
 }
 
 async function saveProfileEdit(id) {
-  const name   = document.getElementById(`pedit-name-${id}`)?.value.trim();
-  const gender = document.getElementById(`pedit-gender-${id}`)?.value;
-  const btn    = document.getElementById(`pedit-save-${id}`);
-  const status = document.getElementById(`pedit-status-${id}`);
+  const name      = document.getElementById(`pedit-name-${id}`)?.value.trim();
+  const gender    = document.getElementById(`pedit-gender-${id}`)?.value;
+  const state     = document.getElementById(`pedit-state-${id}`)?.value || '';
+  const yearLevel = document.getElementById(`pedit-year-${id}`)?.value || '';
+  const btn       = document.getElementById(`pedit-save-${id}`);
+  const status    = document.getElementById(`pedit-status-${id}`);
 
   if (!name) { if (status) { status.textContent = 'Name cannot be empty.'; status.style.color = '#E05050'; } return; }
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;vertical-align:middle;display:inline-block;"></span> Saving…'; }
 
-  const sel          = profileSelections[id] || new Set();
+  const sel             = profileSelections[id] || new Set();
   const existingProfile = subscriberData?.child_profiles?.find(p => p.id === id);
   const existingDetails = existingProfile?.profile_json?.details || {};
-  const profile_json    = buildProfileJsonFromSelections(name, gender, sel, existingDetails);
+  const profile_json    = buildProfileJsonFromSelections(name, gender, sel, existingDetails, state, yearLevel);
   const profile_content = buildProfileContent(name, gender, sel, existingDetails);
 
   try {
@@ -1112,9 +1212,11 @@ function hideAddProfile() {
 }
 
 async function saveNewProfile() {
-  const name   = document.getElementById('np-name')?.value.trim();
-  const gender = document.getElementById('np-gender')?.value;
-  const errEl  = document.getElementById('np-error');
+  const name      = document.getElementById('np-name')?.value.trim();
+  const gender    = document.getElementById('np-gender')?.value;
+  const state     = document.getElementById('np-state')?.value || '';
+  const yearLevel = document.getElementById('np-year-level')?.value || '';
+  const errEl     = document.getElementById('np-error');
 
   if (!name) { if (errEl) errEl.textContent = 'Please enter the child\'s name.'; return; }
   if (errEl) errEl.textContent = '';
@@ -1125,7 +1227,7 @@ async function saveNewProfile() {
     body:    JSON.stringify({
       child_name:   name,
       gender,
-      profile_json: { childName: name, gender, selections: {}, details: {}, updatedAt: new Date().toISOString() },
+      profile_json: { childName: name, gender, state, yearLevel, selections: {}, details: {}, updatedAt: new Date().toISOString() },
     }),
   });
   const data = await res.json();
@@ -1137,7 +1239,7 @@ async function saveNewProfile() {
       id:           data.profile.id,
       child_name:   data.profile.child_name,
       gender:       data.profile.gender,
-      profile_json: { childName: name, gender, selections: {}, details: {}, updatedAt: new Date().toISOString() },
+      profile_json: { childName: name, gender, state, yearLevel, selections: {}, details: {}, updatedAt: new Date().toISOString() },
       is_active:    true,
       created_at:   new Date().toISOString(),
     });
@@ -1212,11 +1314,14 @@ async function saveDeliverySettings() {
 /* ─────────────────────────────────────────────
    Narrator voice
 ─────────────────────────────────────────────── */
+const FLAG_AU = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:28px;height:14px;border-radius:2px;display:block;"><rect width="60" height="30" fill="#00008B"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#fff" stroke-width="6" fill="none"/><path d="M0,0 L30,15 L0,30 M0,0 L30,15 L60,0 M60,0 L30,15 L60,30 M0,30 L30,15 L60,30" stroke="#CC0000" stroke-width="4" fill="none"/><rect x="25" width="10" height="30" fill="#fff"/><rect width="60" height="10" y="10" fill="#fff"/><rect x="27" width="6" height="30" fill="#CC0000"/><rect width="60" height="6" y="12" fill="#CC0000"/></svg>`;
+const FLAG_US = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:28px;height:14px;border-radius:2px;display:block;"><rect width="60" height="30" fill="#B22234"/><rect y="2.3" width="60" height="2.3" fill="#fff"/><rect y="6.9" width="60" height="2.3" fill="#fff"/><rect y="11.5" width="60" height="2.3" fill="#fff"/><rect y="16.2" width="60" height="2.3" fill="#fff"/><rect y="20.8" width="60" height="2.3" fill="#fff"/><rect y="25.4" width="60" height="2.3" fill="#fff"/><rect width="24" height="16.2" fill="#3C3B6E"/></svg>`;
+
 const VOICE_OPTIONS = [
-  { id: 'au_female', label: 'Charlotte', sub: 'Australian Female', desc: 'Warm and expressive — a great choice for bedtime stories', flag: '🇦🇺', gender: 'female' },
-  { id: 'au_male',   label: 'Neil',      sub: 'Australian Male',   desc: 'Friendly and natural — works beautifully for adventure stories', flag: '🇦🇺', gender: 'male' },
-  { id: 'us_female', label: 'Jessa',     sub: 'American Female',   desc: 'Clear and engaging — ideal for educational and exciting stories', flag: '🇺🇸', gender: 'female' },
-  { id: 'us_male',   label: 'Ryan',      sub: 'American Male',     desc: 'Confident and warm — a steady, reassuring narrator', flag: '🇺🇸', gender: 'male' },
+  { id: 'au_female', label: 'Charlotte', sub: 'Australian Female', desc: 'Warm and expressive — a great choice for bedtime stories',          flag: FLAG_AU, gender: 'female' },
+  { id: 'au_male',   label: 'Tom',       sub: 'Australian Male',   desc: 'Friendly and natural — works beautifully for adventure stories',     flag: FLAG_AU, gender: 'male'   },
+  { id: 'us_female', label: 'Jessa',     sub: 'American Female',   desc: 'Clear and engaging — ideal for educational and exciting stories',    flag: FLAG_US, gender: 'female' },
+  { id: 'us_male',   label: 'Ryan',      sub: 'American Male',     desc: 'Confident and warm — a steady, reassuring narrator',                flag: FLAG_US, gender: 'male'   },
 ];
 
 function renderNarrator(area, actions) {
@@ -1256,7 +1361,7 @@ function voiceCardHtml(voice, selectedId) {
     <div id="voice-card-${voice.id}" onclick="selectVoice('${voice.id}')"
       style="display:flex;align-items:center;gap:1rem;padding:1.125rem 1.5rem;background:var(--surface);border:${isSelected ? '2px solid var(--text)' : '0.5px solid var(--border-md)'};border-radius:var(--radius-lg);cursor:pointer;transition:border-color 0.12s;">
       <div style="flex-shrink:0;text-align:center;width:44px;">
-        <div style="font-size:1.75rem;line-height:1;">${voice.flag}</div>
+        <div style="display:flex;justify-content:center;align-items:center;height:22px;">${voice.flag}</div>
         <span style="display:inline-block;margin-top:5px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:999px;border:0.5px solid ${genderBorder};background:${genderBg};color:${genderColour};text-transform:capitalize;">${voice.gender}</span>
       </div>
       <div style="flex:1;">
@@ -1378,7 +1483,7 @@ async function changePassword() {
 ─────────────────────────────────────────────── */
 const LIBRARY = {
   age: { label: "Age & format", cls: "age", groups: {
-    "Age brackets": ["Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words","Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words","Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words","Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words"],
+    "Age brackets": ["Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words","Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words","Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words","Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words","Ages 10–12 (independent reader: literary narrative, complex themes, mature vocabulary) — 800–1100 words"],
     "Reading level": ["Pre-reader (read-aloud only, adult required)","Emergent reader (guided with adult)","Independent early reader","Fluent independent reader"],
     "Story length": ["Short — lower end of age range","Medium — middle of age range","Long — upper end of age range"],
     "Tone & mood": ["Funny & silly","Gentle & cosy","Exciting & adventurous","Spooky (mild)","Heartwarming","Educational & informative","Mysterious"],
@@ -1434,18 +1539,26 @@ function loadSelectionsFromJson(profileJson) {
   return sel;
 }
 
-function buildProfileJsonFromSelections(name, gender, sel, existingDetails) {
+function buildProfileJsonFromSelections(name, gender, sel, existingDetails, state, yearLevel) {
   const selections = {};
   [...sel].forEach(k => {
-    const parts   = k.split('|');
-    const catKey  = parts[0];
+    const parts     = k.split('|');
+    const catKey    = parts[0];
     const groupName = parts[1];
-    const tag     = parts.slice(2).join('|');
-    const key     = `${catKey}|${groupName}`;
+    const tag       = parts.slice(2).join('|');
+    const key       = `${catKey}|${groupName}`;
     if (!selections[key]) selections[key] = [];
     selections[key].push(tag);
   });
-  return { childName: name, gender: gender || '', selections, details: existingDetails || {}, updatedAt: new Date().toISOString() };
+  return {
+    childName:  name,
+    gender:     gender || '',
+    state:      state || '',
+    yearLevel:  yearLevel || '',
+    selections,
+    details:    existingDetails || {},
+    updatedAt:  new Date().toISOString(),
+  };
 }
 
 function buildProfileContent(name, gender, sel, details) {
@@ -1769,6 +1882,158 @@ async function submitCharPhotos(pid) {
   } catch (err) {
     if (errEl) errEl.textContent = err.message;
     if (btn) { btn.disabled = false; btn.innerHTML = 'Upload photos'; }
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Admin panel
+─────────────────────────────────────────────── */
+function renderAdmin(area) {
+  const profiles = (subscriberData?.child_profiles || []).filter(p => p.is_active);
+
+  const profileOptions = profiles.map(p =>
+    `<option value="${esc(p.id)}">${esc(p.child_name)}</option>`
+  ).join('');
+
+  area.innerHTML = `
+    <div class="banner" style="background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber-border);margin-bottom:1.5rem;">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.6z"/></svg>
+      <div><strong>Admin panel.</strong> Actions here trigger real story generation and send real emails. Use carefully.</div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Test generation</p>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header-title">Run a story generation</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;color:var(--text-2);margin-bottom:1.25rem;line-height:1.6;">
+            Trigger a full story generation for any active profile — bypasses the daily cron and delivery time check. The story will be generated, emailed, and saved to the archive exactly as it would be in production.
+          </p>
+
+          <div class="form-grid" style="margin-bottom:1.25rem;">
+            <div class="form-group">
+              <label class="form-label">Email address</label>
+              <input class="form-input" id="admin-email" type="email" value="test@talekits.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Child profile</label>
+              <select class="form-input" id="admin-profile-id" style="appearance:auto;">
+                ${profileOptions || '<option value="">— no active profiles —</option>'}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Admin secret</label>
+              <input class="form-input" id="admin-secret" type="password" placeholder="ADMIN_SECRET env var" />
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-primary" id="admin-gen-btn" onclick="runAdminGenerate()">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3,2 13,8 3,14"/></svg>
+              Run generation
+            </button>
+            <p id="admin-gen-status" style="font-size:13px;color:var(--text-3);"></p>
+          </div>
+
+          <div id="admin-gen-result" style="display:none;margin-top:1.25rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">System info</p>
+      <div class="card">
+        <div class="card-body">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <tr><td style="padding:8px 0;color:var(--text-2);border-bottom:0.5px solid var(--border);width:160px;">Account email</td><td style="padding:8px 0;border-bottom:0.5px solid var(--border);">${esc(subscriberData?.email || '—')}</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text-2);border-bottom:0.5px solid var(--border);">Plan</td><td style="padding:8px 0;border-bottom:0.5px solid var(--border);">${esc(subscriberData?.plan || '—')}</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text-2);border-bottom:0.5px solid var(--border);">Status</td><td style="padding:8px 0;border-bottom:0.5px solid var(--border);">${esc(subscriberData?.status || '—')}</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text-2);border-bottom:0.5px solid var(--border);">Active profiles</td><td style="padding:8px 0;border-bottom:0.5px solid var(--border);">${profiles.length} (${profiles.map(p => p.child_name).join(', ') || 'none'})</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text-2);">Delivery time</td><td style="padding:8px 0;">${esc(subscriberData?.delivery_time || '—')} ${esc(subscriberData?.delivery_timezone || '')}</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function runAdminGenerate() {
+  const email     = document.getElementById('admin-email')?.value?.trim();
+  const profileId = document.getElementById('admin-profile-id')?.value?.trim();
+  const secret    = document.getElementById('admin-secret')?.value?.trim();
+  const btn       = document.getElementById('admin-gen-btn');
+  const status    = document.getElementById('admin-gen-status');
+  const result    = document.getElementById('admin-gen-result');
+
+  if (!email || !secret) {
+    if (status) status.textContent = 'Email and admin secret are required.';
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…'; }
+  if (status) status.textContent = 'Running — this takes 2–4 minutes…';
+  if (result) result.style.display = 'none';
+
+  const startTime = Date.now();
+
+  try {
+    const res  = await fetch('/api/admin-generate', {
+      method:  'POST',
+      headers: {
+        'Content-Type':    'application/json',
+        'x-admin-secret':  secret,
+      },
+      body: JSON.stringify({ email, profileId: profileId || undefined }),
+    });
+    const data = await res.json();
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+    if (!res.ok) {
+      if (status) status.textContent = '';
+      if (result) {
+        result.style.display = 'block';
+        result.innerHTML = `
+          <div class="banner" style="background:var(--red-bg);color:var(--red-text);border-color:var(--red-border);">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 11v.5"/></svg>
+            <div><strong>Error:</strong> ${esc(data.error || 'Unknown error')}</div>
+          </div>`;
+      }
+      return;
+    }
+
+    const outputs = data.outputs || [];
+    const links = outputs
+      .filter(o => o.url)
+      .map(o => {
+        const labels = { 'story-txt': '📄 Story text', 'story-pdf': '📖 Story PDF', 'picturebook-pdf': '🎨 Picture book', 'audio-mp3': '🎧 Narration', 'illustrations-txt': '🖼 Illustration prompts' };
+        return `<a href="${o.url}" target="_blank" style="display:inline-block;padding:8px 18px;border-radius:999px;background:var(--surface-2);border:0.5px solid var(--border-md);font-size:13px;text-decoration:none;color:var(--text);margin:3px;">${labels[o.type] || o.type}</a>`;
+      }).join('');
+
+    if (status) status.textContent = '';
+    if (result) {
+      result.style.display = 'block';
+      result.innerHTML = `
+        <div class="banner" style="background:var(--green-bg);color:var(--green-text);border-color:var(--green-border);margin-bottom:1rem;">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,8.5 6,12 13.5,4"/></svg>
+          <div><strong>Generation complete</strong> in ${elapsed}s — email sent to <strong>${esc(data.email)}</strong> for <strong>${esc(data.childName)}</strong> on the <strong>${esc(data.plan)}</strong> plan.</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${links || '<span style="font-size:13px;color:var(--text-3);">No output URLs returned.</span>'}</div>`;
+    }
+
+  } catch (err) {
+    if (status) status.textContent = '';
+    if (result) {
+      result.style.display = 'block';
+      result.innerHTML = `
+        <div class="banner" style="background:var(--red-bg);color:var(--red-text);border-color:var(--red-border);">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 11v.5"/></svg>
+          <div><strong>Request failed:</strong> ${esc(err.message)}</div>
+        </div>`;
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3,2 13,8 3,14"/></svg> Run generation'; }
   }
 }
 

@@ -1130,11 +1130,141 @@ async function saveArchiveIndex({ email, storyId, title, childName, plan, date, 
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Australian Curriculum v9 alignment data
+   Maps state + year level → literacy expectations for story rails
+───────────────────────────────────────────────────────────── */
+
+// Canonical year-level display name per state (for parent-facing labels)
+const STATE_YEAR_LABELS = {
+  nsw: { F: 'Kindergarten', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  vic: { F: 'Foundation (Prep)', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  qld: { F: 'Prep', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  sa:  { F: 'Reception', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  wa:  { F: 'Pre-primary', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  tas: { F: 'Prep', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  act: { F: 'Kindergarten', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+  nt:  { F: 'Transition', 1: 'Year 1', 2: 'Year 2', 3: 'Year 3', 4: 'Year 4', 5: 'Year 5', 6: 'Year 6' },
+};
+
+// AC v9 literacy expectations per year level, shaped for story generation
+const CURRICULUM_BY_YEAR = {
+  F: {
+    acLevel: 'Foundation (AC v9)',
+    vocabTarget: 'Simple high-frequency words; 1-syllable words; basic colour, size and action words only; no figurative language',
+    sentenceTarget: 'Short sentences of 3–7 words; one idea per sentence; simple subject-verb-object only',
+    structureNote: 'Single clear event; familiar beginning–middle–end; one character, one simple problem resolved warmly',
+    themes: 'family, friendship, animals, bedtime, food, everyday routines, belonging',
+    phonicsNote: 'Reinforce regular CVC words and common sight words (AC v9 phonics emphasis from Foundation)',
+  },
+  1: {
+    acLevel: 'Year 1 (AC v9)',
+    vocabTarget: '1–2 syllable words; common digraphs and blends; topic-specific nouns; simple adjectives',
+    sentenceTarget: 'Simple sentences of 5–10 words; basic compound sentences with "and" or "but"',
+    structureNote: 'Beginning–middle–end with character, setting and key events; simple cause and effect',
+    themes: 'adventure, nature, curiosity, helping others, simple problems and solutions',
+    phonicsNote: 'Support phonics application — use words with regular patterns students are decoding at Year 1',
+  },
+  2: {
+    acLevel: 'Year 2 (AC v9)',
+    vocabTarget: '2–3 syllable words; expanding range of adjectives and verbs; simple figurative language introduced',
+    sentenceTarget: 'Mix of simple and compound sentences; some complex sentences with "because" or "when"',
+    structureNote: 'Multi-paragraph narratives; clear cause and effect; character motivation beginning to emerge',
+    themes: 'discovery, community, environment, fairness, growing up, helping others',
+    phonicsNote: 'Students are transitioning to fluency; vocabulary can stretch slightly beyond strict decodability',
+  },
+  3: {
+    acLevel: 'Year 3 (AC v9)',
+    vocabTarget: 'Topic-specific vocabulary; rich verbs and adjectives; simple metaphor and simile; paragraphs with topic sentences',
+    sentenceTarget: 'Varied sentence types; compound and complex sentences; inference expected from reader',
+    structureNote: 'Rising action and satisfying resolution; character development; 2–3 paragraphs per scene',
+    themes: 'courage, identity, teamwork, cultural diversity, nature and science, friendship challenges',
+    phonicsNote: 'Phonics largely mastered; vocabulary and comprehension are the key curriculum focus',
+  },
+  4: {
+    acLevel: 'Year 4 (AC v9)',
+    vocabTarget: 'Morphemic vocabulary (prefixes and suffixes); idiomatic language; figurative devices; topic-specific language',
+    sentenceTarget: 'Full range of sentence structures; varied rhythm; multiple clauses; descriptive writing within narrative',
+    structureNote: 'Multi-scene episodic structure; subplots; descriptive writing; character perspective',
+    themes: 'moral dilemmas, history and heritage, STEM curiosity, empathy, responsibility, problem-solving',
+    phonicsNote: 'Focus shifts to vocabulary breadth and reading for meaning across text types',
+  },
+  5: {
+    acLevel: 'Year 5 (AC v9)',
+    vocabTarget: 'Elevated academic vocabulary; specialist terminology; vivid descriptive language; irony introduced',
+    sentenceTarget: 'Complex multi-clause sentences; sophisticated rhythm; varied paragraph length for effect',
+    structureNote: 'Complex narrative arc with character development; non-linear elements possible; nuanced resolution',
+    themes: 'justice, social issues, cultural heritage, environmental ethics, creativity, identity',
+    phonicsNote: 'Vocabulary and comprehension dominant; critical reading and inference expected',
+  },
+  6: {
+    acLevel: 'Year 6 (AC v9)',
+    vocabTarget: 'Rich literary vocabulary; abstract concepts; inferred meaning; subtext; irony and dry wit welcome',
+    sentenceTarget: 'Full expressive range; punchy short sentences for impact alongside long flowing sentences; sophisticated rhythm',
+    structureNote: 'Full literary narrative; dual perspectives possible; ambiguous or bittersweet endings appropriate; moral complexity',
+    themes: 'identity, belonging, courage, complex emotions, civics, global perspectives, ethical questions',
+    phonicsNote: 'Critical reading and literary analysis are curriculum focus; students evaluate authors\' choices',
+  },
+};
+
+// State-specific curriculum notes to append when relevant
+const STATE_CURRICULUM_NOTES = {
+  nsw:  'NSW NESA syllabus uses Stage groupings (Stage 1 = Years 1–2, Stage 2 = Years 3–4, Stage 3 = Years 5–6). Incorporate Aboriginal and Torres Strait Islander perspectives where appropriate.',
+  vic:  'Victorian Curriculum v2.0 (mandatory 2025). Foundation–Year 2 has a systematic phonics mandate (25 min/day). Weave culturally inclusive language and First Nations references where fitting.',
+  qld:  'Queensland uses AC v9 directly (QCAA ACIQ v9). Year-level expectations align closely with national standards. Cross-curriculum priority: Asia and Australia\'s engagement with Asia.',
+  sa:   'South Australia uses \'Reception\' for the Foundation year. Little Learners Love Literacy phonics program in use from Reception. Strong emphasis on cultural diversity including Kaurna language heritage.',
+  wa:   'Western Australia adopted AC v9 English from 2025. Year is called \'Pre-primary\' (Foundation equivalent). Notable emphasis on First Nations language and remote education contexts.',
+  tas:  'Tasmania uses \'Prep\' for the Foundation year. Outdoor and environmental learning is a common cross-curriculum context in TAS schools.',
+  act:  'ACT uses \'Kindergarten\' for the Foundation year. High parental engagement with education — curriculum alignment is a strong value signal for ACT families.',
+  nt:   'NT has the highest proportion of First Nations students in Australia. Cultural inclusivity and diversity in characters and settings is especially important. Bilingual contexts are common.',
+};
+
+/**
+ * Builds a CURRICULUM ALIGNMENT block to inject into the story prompt.
+ * Returns null if state/yearLevel not provided.
+ */
+function buildCurriculumBlock(state, yearLevel) {
+  if (!state || yearLevel === undefined || yearLevel === null) return null;
+
+  const stateKey = String(state).toLowerCase().replace(/\s+/g, '');
+  const yearKey  = yearLevel === 'F' || yearLevel === 'foundation' || yearLevel === 'kindergarten' || yearLevel === 'prep' || yearLevel === 'reception' || yearLevel === 'pre-primary' || yearLevel === 'transition'
+    ? 'F'
+    : String(yearLevel).replace(/[^0-9]/g, '') || null;
+
+  if (!yearKey) return null;
+
+  const curr       = CURRICULUM_BY_YEAR[yearKey];
+  if (!curr) return null;
+
+  const stateLabels = STATE_YEAR_LABELS[stateKey] || STATE_YEAR_LABELS.qld;
+  const displayYear = stateLabels[yearKey] || `Year ${yearKey}`;
+  const stateNote   = STATE_CURRICULUM_NOTES[stateKey] || '';
+  const stateDisplay = { nsw: 'NSW', vic: 'VIC', qld: 'QLD', sa: 'SA', wa: 'WA', tas: 'TAS', act: 'ACT', nt: 'NT' }[stateKey] || state.toUpperCase();
+
+  const lines = [
+    'CURRICULUM ALIGNMENT',
+    '─'.repeat(36),
+    `  State: ${stateDisplay}`,
+    `  School year: ${displayYear}`,
+    `  AC equivalent: ${curr.acLevel}`,
+    `  Vocabulary target: ${curr.vocabTarget}`,
+    `  Sentence target: ${curr.sentenceTarget}`,
+    `  Structure note: ${curr.structureNote}`,
+    `  Classroom themes this year: ${curr.themes}`,
+    `  Phonics/literacy note: ${curr.phonicsNote}`,
+  ];
+  if (stateNote) lines.push(`  State context: ${stateNote}`);
+  lines.push('');
+  lines.push('Apply the above as calibration guidance: vocabulary complexity ceiling, sentence structure range, and theme resonance. Do NOT mention the curriculum, school year, or AC standards anywhere in the story itself — weave these naturally.');
+
+  return lines.join('\n');
+}
+
+/* ─────────────────────────────────────────────────────────────
    Build Claude text prompt from structured profile_json
 ───────────────────────────────────────────────────────────── */
 function buildTextFromJson(profileJson) {
   if (!profileJson) return null;
-  const { childName, gender, selections = {}, details = {} } = profileJson;
+  const { childName, gender, selections = {}, details = {}, state, yearLevel } = profileJson;
   const CAT_LABELS = { age: 'AGE & FORMAT', themes: 'THEMES', art: 'ART STYLES', edu: 'EDUCATIONAL FOCUS', char: 'CHARACTERS' };
 
   const grouped = {};
@@ -1168,6 +1298,13 @@ function buildTextFromJson(profileJson) {
     });
     lines.push('');
   });
+
+  // Append curriculum alignment block if state + yearLevel are set
+  const currBlock = buildCurriculumBlock(state, yearLevel);
+  if (currBlock) {
+    lines.push('');
+    lines.push(currBlock);
+  }
 
   return lines.join('\n').trimEnd();
 }
