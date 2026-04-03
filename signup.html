@@ -864,7 +864,7 @@
           </div>
         </div>
       </div>
-      <p class="name-preview empty" id="name-preview"></p>
+      <p class="name-preview empty" id="name-preview" style="display:none;"></p>
     </div>
   </div>
 
@@ -1334,17 +1334,7 @@ const selected = new Set();
 
 
 /* ── Name ── */
-function onNameInput() {
-  const val = document.getElementById('child-name').value.trim();
-  const preview = document.getElementById('name-preview');
-  if (val) {
-    preview.textContent = `Personalising stories for ${val}`;
-    preview.classList.remove('empty');
-  } else {
-    preview.textContent = '\u00A0';
-    preview.classList.add('empty');
-  }
-}
+function onNameInput() {}
 
 /* ── Gender pills ── */
 function selectGender(value, el) {
