@@ -1,11 +1,10 @@
 {
-  "outputDirectory": ".",
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/", "destination": "/landing.html" },
-    { "source": "/start", "destination": "/signup.html" },
-    { "source": "/success", "destination": "/success.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" }
+  "routes": [
+    { "src": "^/$", "dest": "/landing.html" },
+    { "src": "^/start$", "dest": "/signup.html" },
+    { "src": "^/success$", "dest": "/success.html" },
+    { "src": "^/dashboard$", "dest": "/dashboard.html" },
+    { "src": "^/api/(.*)", "dest": "/api/$1" }
   ],
   "crons": [
     {
