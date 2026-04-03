@@ -34,14 +34,14 @@
   "@context": "https://schema.org",
   "@type": "WebPage",
   "name": "Get Started — Talekits",
-  "url": "https://www.talekits.com/index.html",
+  "url": "https://www.talekits.com/start",
   "description": "Create your child's personalised story profile and browse the Imagination Library to begin your Talekits subscription.",
   "isPartOf": { "@type": "WebSite", "name": "Talekits", "url": "https://www.talekits.com/" },
   "breadcrumb": {
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.talekits.com/" },
-      { "@type": "ListItem", "position": 2, "name": "Get Started", "item": "https://www.talekits.com/index.html" }
+      { "@type": "ListItem", "position": 2, "name": "Get Started", "item": "https://www.talekits.com/start" }
     ]
   }
 }
@@ -210,19 +210,33 @@
     flex-shrink: 0; margin-top: 2px;
   }
   .name-card-icon svg { width: 18px; height: 18px; color: var(--purple-text); }
-  .name-card-body { flex: 1; min-width: 200px; }
-  .name-card-fields {
+  .name-card-body { flex: 1; min-width: 0; }
+
+  /* Row 1: name · gender · email — equal thirds */
+  .name-card-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1.4fr 1fr 1.4fr;
     gap: 0 2rem;
+    margin-bottom: 1.25rem;
+  }
+  /* Row 2: state · year level — narrower, left-aligned */
+  .name-card-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 0 2rem;
+    padding-top: 1.1rem;
+    border-top: 0.5px solid var(--border);
   }
   .name-card-field { min-width: 0; }
+
   @media (max-width: 700px) {
-    .name-card-fields { grid-template-columns: 1fr 1fr; gap: 1rem 2rem; }
+    .name-card-row   { grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; margin-bottom: 1rem; }
+    .name-card-row-2 { grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; padding-top: 1rem; }
   }
-  @media (max-width: 560px) {
-    .name-card-fields { grid-template-columns: 1fr; gap: 1rem 0; }
+  @media (max-width: 480px) {
+    .name-card-row, .name-card-row-2 { grid-template-columns: 1fr; gap: 1rem 0; }
   }
+
   .name-card-label {
     font-size: 11px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
@@ -246,6 +260,41 @@
   }
   .name-input::placeholder { color: var(--text-3); font-style: italic; }
   .name-input:focus { border-bottom-color: var(--accent); }
+
+  /* State / year-level selects — consistent with name-input underline style */
+  .name-select {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 400;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-md);
+    border-radius: 0;
+    color: var(--text);
+    outline: none;
+    padding: 4px 0 6px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239C9A94' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    padding-right: 20px;
+  }
+  .name-select:focus { border-bottom-color: var(--accent); }
+  .name-select option { color: var(--text); background: #fff; }
+
+  /* Curriculum badge shown when state+year are both set */
+  .curriculum-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 3px 10px; border-radius: var(--radius-pill);
+    background: var(--teal-bg); color: var(--teal-text); border: 0.5px solid var(--teal-border);
+    margin-top: 10px; transition: opacity 0.2s;
+  }
+  .curriculum-badge.hidden { display: none; }
 
   /* Gender pills — match tag pill behaviour exactly */
   .gender-pills { display: flex; gap: 6px; padding-top: 5px; flex-wrap: wrap; }
@@ -751,7 +800,8 @@
       </svg>
     </div>
     <div class="name-card-body">
-      <div class="name-card-fields">
+      <!-- Row 1: Identity fields -->
+      <div class="name-card-row">
         <div class="name-card-field">
           <p class="name-card-label">Child&rsquo;s name</p>
           <input
@@ -783,6 +833,35 @@
             maxlength="120"
             autocomplete="email"
           />
+        </div>
+      </div>
+      <!-- Row 2: Curriculum fields -->
+      <div class="name-card-row-2">
+        <div class="name-card-field">
+          <p class="name-card-label">State / Territory</p>
+          <select class="name-select" id="child-state" onchange="onStateChange()">
+            <option value="">Select state…</option>
+            <option value="nsw">NSW</option>
+            <option value="vic">VIC</option>
+            <option value="qld">QLD</option>
+            <option value="sa">SA</option>
+            <option value="wa">WA</option>
+            <option value="tas">TAS</option>
+            <option value="act">ACT</option>
+            <option value="nt">NT</option>
+          </select>
+        </div>
+        <div class="name-card-field">
+          <p class="name-card-label">School year</p>
+          <select class="name-select" id="child-year-level" onchange="onYearLevelChange()">
+            <option value="">Select year…</option>
+          </select>
+        </div>
+        <div class="name-card-field" style="display:flex;align-items:flex-end;padding-bottom:2px;">
+          <div class="curriculum-badge hidden" id="curriculum-badge" style="margin-top:0;">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1L7.5 4.5H11L8.5 6.5L9.5 10L6 8L2.5 10L3.5 6.5L1 4.5H4.5L6 1Z"/></svg>
+            <span id="curriculum-badge-text">Curriculum aligned</span>
+          </div>
         </div>
       </div>
       <p class="name-preview empty" id="name-preview"></p>
@@ -1140,10 +1219,10 @@ const LIBRARY = {
       // RADIO GROUP — only 1 selectable at a time
       "Age brackets": [
         "Ages 2–3 (toddler: simple words, heavy repetition, large illustrations) — 100–200 words",
-        "Ages 4–5 (preschool: short sentences, single moral lesson, bright art) — 200–350 words",
-        "Ages 6–7 (early reader: longer sentences, basic chapter structure) — 400–550 words",
-        "Ages 8–10 (confident reader: plot complexity, subtext, humour) — 550–800 words",
-        "Ages 10–12 (independent reader: literary narrative, complex themes, mature vocabulary) — 800–1100 words"
+        "Ages 4–5 (preschool/Foundation: short sentences, single moral lesson, bright art) — 200–350 words",
+        "Ages 6–7 (Years 1–2: early reader, longer sentences, basic chapter structure) — 400–550 words",
+        "Ages 8–10 (Years 3–5: confident reader, plot complexity, subtext, humour) — 550–800 words",
+        "Ages 10–12 (Years 5–6: independent reader, literary narrative, complex themes, mature vocabulary) — 800–1100 words"
       ],
       // RADIO GROUP — only 1 selectable at a time
       "Reading level": ["Pre-reader (read-aloud only, adult required)","Emergent reader (guided with adult)","Independent early reader","Fluent independent reader"],
@@ -1274,6 +1353,98 @@ function selectGender(value, el) {
   document.querySelectorAll('.gender-pill').forEach(p => p.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('child-gender').value = value;
+}
+
+/* ── State / year-level curriculum dropdowns ── */
+const YEAR_OPTIONS = {
+  nsw: [
+    { value: 'F', label: 'Kindergarten' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  vic: [
+    { value: 'F', label: 'Foundation (Prep)' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  qld: [
+    { value: 'F', label: 'Prep' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  sa: [
+    { value: 'F', label: 'Reception' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  wa: [
+    { value: 'F', label: 'Pre-primary' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  tas: [
+    { value: 'F', label: 'Prep' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  act: [
+    { value: 'F', label: 'Kindergarten' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+  nt: [
+    { value: 'F', label: 'Transition' },
+    { value: '1', label: 'Year 1' }, { value: '2', label: 'Year 2' },
+    { value: '3', label: 'Year 3' }, { value: '4', label: 'Year 4' },
+    { value: '5', label: 'Year 5' }, { value: '6', label: 'Year 6' },
+  ],
+};
+
+function onStateChange() {
+  const state   = document.getElementById('child-state')?.value;
+  const yearSel = document.getElementById('child-year-level');
+  if (!yearSel) return;
+
+  yearSel.innerHTML = '<option value="">Select year…</option>';
+  if (state && YEAR_OPTIONS[state]) {
+    YEAR_OPTIONS[state].forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      yearSel.appendChild(o);
+    });
+  }
+  updateCurriculumBadge();
+}
+
+function onYearLevelChange() {
+  updateCurriculumBadge();
+}
+
+function updateCurriculumBadge() {
+  const state     = document.getElementById('child-state')?.value;
+  const yearLevel = document.getElementById('child-year-level')?.value;
+  const badge     = document.getElementById('curriculum-badge');
+  const badgeText = document.getElementById('curriculum-badge-text');
+  if (!badge) return;
+
+  if (state && yearLevel) {
+    const opts    = YEAR_OPTIONS[state] || [];
+    const opt     = opts.find(o => o.value === yearLevel);
+    const stateUC = state.toUpperCase();
+    const label   = opt ? opt.label : `Year ${yearLevel}`;
+    badgeText.textContent = `${stateUC} · ${label} · Curriculum aligned`;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
 }
 
 /* ── Tags ── */
@@ -1568,8 +1739,10 @@ function buildProfileText() {
 
 /* ── Build structured JSON profile (source of truth for dashboard) ── */
 function buildProfileJson() {
-  const name   = document.getElementById('child-name').value.trim();
-  const gender = document.getElementById('child-gender')?.value || '';
+  const name      = document.getElementById('child-name').value.trim();
+  const gender    = document.getElementById('child-gender')?.value || '';
+  const state     = document.getElementById('child-state')?.value || '';
+  const yearLevel = document.getElementById('child-year-level')?.value || '';
 
   // Group selections by catKey|groupName → array of tag texts
   const selections = {};
@@ -1590,11 +1763,13 @@ function buildProfileJson() {
   });
 
   return {
-    childName:  name,
+    childName: name,
     gender,
+    state,
+    yearLevel,
     selections,
     details,
-    updatedAt:  new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 }
 

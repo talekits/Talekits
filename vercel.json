@@ -1,9 +1,12 @@
 {
-  "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/landing.html"
+    },
+    {
       "source": "/start",
-      "destination": "/start.html"
+      "destination": "/signup.html"
     },
     {
       "source": "/success",
