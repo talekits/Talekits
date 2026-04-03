@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /success.html
+Disallow: /api/
+
+Sitemap: https://www.talekits.com/sitemap.xml
