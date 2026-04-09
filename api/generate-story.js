@@ -763,14 +763,15 @@ function buildPictureBookPdf(story, childName, imageResults) {
 
     // ── Cover page ──
     async function drawCover(coverBuf) {
-      // Slim cream footer — just enough for title + byline, maximises image area
-      const COVER_FOOTER_H = 56;
-      const IMG_H          = PH - HEADER - COVER_FOOTER_H;
+      // Image fills the full page between cream header and page bottom.
+      // No footer bar — title floats over the illustration using the
+      // shadow-duplicate technique: dark offset layer first, white layer on top.
+      const IMG_H = PH - HEADER;
 
       // ── Cream header — identical to interior spread pages ──
       drawHeader(PW);
 
-      // ── Illustration fills between header and footer, no bleed under bars ──
+      // ── Illustration: full bleed from below header to page bottom ──
       if (coverBuf) {
         doc.image(coverBuf, 0, HEADER, {
           width:  PW,
@@ -780,27 +781,63 @@ function buildPictureBookPdf(story, childName, imageResults) {
           valign: 'center',
         });
       } else {
-        // Solid fallback
         doc.rect(0, HEADER, PW, IMG_H).fill('#E8830A');
         doc.save().fillOpacity(0.15)
            .circle(PW / 2, HEADER + IMG_H * 0.45, 130).fillColor('#FFFFFF').fill()
            .restore();
       }
 
-      // ── Cream footer bar ──
-      const FOOTER_Y = PH - COVER_FOOTER_H;
-      doc.rect(0, FOOTER_Y, PW, COVER_FOOTER_H).fill('#FAFAF8');
-      doc.moveTo(0, FOOTER_Y).lineTo(PW, FOOTER_Y)
-         .lineWidth(0.5).strokeColor(C.border).stroke();
+      // ── Auto-fit title font size ──
+      // Start large and step down until the title fits on at most 2 lines
+      // within the safe text width (page width minus generous padding).
+      const TEXT_W    = PW - PAD * 3;   // generous side padding for visual comfort
+      const MAX_SIZE  = 52;
+      const MIN_SIZE  = 22;
+      const LINE_GAP  = 5;
 
-      // Story title — sized to fit, dark brand text, centred
-      const titleFontSize = story.title.length > 36 ? 17 : story.title.length > 24 ? 20 : story.title.length > 16 ? 23 : 26;
-      doc.font(fonts.italic).fontSize(titleFontSize).fillColor(C.text).lineGap(2)
-         .text(story.title, PAD, FOOTER_Y + 8, { width: PW - PAD * 2, align: 'center' });
+      let titleSize = MAX_SIZE;
+      // Step down until the title fits within 2 lines
+      while (titleSize > MIN_SIZE) {
+        const lineH  = titleSize * 1.25;          // approximate line height
+        const textH  = doc.font(fonts.italic).fontSize(titleSize)
+                          .heightOfString(story.title, { width: TEXT_W, lineGap: LINE_GAP });
+        if (textH <= lineH * 2.1) break;          // fits in 2 lines — stop
+        titleSize -= 2;
+      }
 
-      // "A story for [child]" — muted subtitle beneath title
-      doc.font(fonts.sans).fontSize(8.5).fillColor(C.text3)
-         .text(`A story for ${childName}`, PAD, doc.y + 3, { width: PW - PAD * 2, align: 'center' });
+      // ── Title block position — lower quarter of image area ──
+      // Measure actual height so we can anchor the block cleanly above the bottom.
+      const titleH    = doc.font(fonts.italic).fontSize(titleSize)
+                           .heightOfString(story.title, { width: TEXT_W, lineGap: LINE_GAP });
+      const subSize   = 11;
+      const subH      = subSize * 1.4;
+      const BLOCK_H   = titleH + 8 + subH;         // title + gap + subtitle
+      const BOTTOM_PAD = 28;                        // breathing room from page bottom
+      const BLOCK_Y   = PH - BOTTOM_PAD - BLOCK_H; // anchor block above bottom edge
+
+      // ── Shadow duplicate pass (offset dark layer) ──
+      // Renders the title 2pt right and 2.5pt down in near-black.
+      // No transparency — pure solid fill, fully reliable in PDF.
+      const SX = 2;    // shadow x offset
+      const SY = 2.5;  // shadow y offset
+      const titleX = PAD + (PW - PAD * 2 - TEXT_W) / 2; // centred origin
+
+      doc.font(fonts.italic).fontSize(titleSize).fillColor('#0E0D0B').lineGap(LINE_GAP)
+         .text(story.title, titleX + SX, BLOCK_Y + SY, { width: TEXT_W, align: 'center' });
+
+      // ── White title pass — rendered over the shadow ──
+      doc.font(fonts.italic).fontSize(titleSize).fillColor('#FFFFFF').lineGap(LINE_GAP)
+         .text(story.title, titleX, BLOCK_Y, { width: TEXT_W, align: 'center' });
+
+      // ── Subtitle: "A story for [child]" ──
+      // Shadow pass first, then white on top — same technique.
+      const subY = BLOCK_Y + titleH + 8;
+      doc.font(fonts.sans).fontSize(subSize).fillColor('#0E0D0B')
+         .text(`A story for ${childName}`, titleX + SX, subY + SY,
+               { width: TEXT_W, align: 'center' });
+      doc.font(fonts.sans).fontSize(subSize).fillColor('rgba(255,255,255,0.88)')
+         .text(`A story for ${childName}`, titleX, subY,
+               { width: TEXT_W, align: 'center' });
     }
 
 
