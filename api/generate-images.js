@@ -27,6 +27,15 @@ const NEGATIVE_PROMPT = [
   'adult themes', 'violence', 'scary', 'dark atmosphere', 'horror',
 ].join(', ');
 
+// Cover gets extra negative terms — we want richness, depth, drama on the cover,
+// not the clean minimal look that works well for interior page illustrations.
+const COVER_NEGATIVE_PROMPT = [
+  ...NEGATIVE_PROMPT.split(', '),
+  'empty background', 'minimalist', 'simple background', 'plain background',
+  'flat composition', 'low detail', 'sparse scene', 'cropped', 'closeup only',
+  'symmetrical composition',
+].join(', ');
+
 /* ─────────────────────────────────────────────────────────────
    GPT Image 1 Mini — emergency fallback only.
 ───────────────────────────────────────────────────────────── */
@@ -79,6 +88,7 @@ async function generateWithFlux(prompt, {
   loraScale    = 0.6,
   referenceUrl = null,
   isFallback   = false,
+  isCover      = false,
 } = {}) {
   if (!process.env.FAL_API_KEY) {
     throw new Error('FAL_API_KEY not set — cannot use Flux provider');
@@ -88,10 +98,12 @@ async function generateWithFlux(prompt, {
 
   const body = {
     prompt,
-    negative_prompt:       NEGATIVE_PROMPT,
+    negative_prompt:       isCover ? COVER_NEGATIVE_PROMPT : NEGATIVE_PROMPT,
     image_size:            'landscape_4_3',
-    num_inference_steps:   28,
-    guidance_scale:        3.5,
+    // Cover gets more inference steps and higher guidance for richer detail and
+    // stricter prompt adherence — worth the extra ~10s latency for the hero image.
+    num_inference_steps:   isCover ? 38 : 28,
+    guidance_scale:        isCover ? 4.5 : 3.5,
     num_images:            1,
     output_format:         'jpeg',
     enable_safety_checker: true,
@@ -116,7 +128,7 @@ async function generateWithFlux(prompt, {
     if (isSafetyBlock && !isFallback) {
       console.warn(`Flux safety filter hit — using safe fallback prompt`);
       const safe = `Cheerful fox cub with bright amber eyes and fluffy orange tail in a sunny meadow. Children's picture book illustration, soft watercolour, warm pastel palette. High quality, safe for children, no text, no watermarks, no borders, no frames.`;
-      return generateWithFlux(safe, { seed, loraUrl, loraScale, isFallback: true });
+      return generateWithFlux(safe, { seed, loraUrl, loraScale, isFallback: true, isCover });
     }
     throw new Error(`Flux generation failed: ${msg}`);
   }
@@ -172,8 +184,8 @@ async function generateIllustrations(illustrations, storyBase, artStyle, quality
   if (illustrations.length > 0) {
     const coverPrompt = illustrations[0];
     try {
-      console.log(`[IMG] Pass 1 — cover`);
-      const { buffer: coverBuffer, hostedUrl } = await generateWithFlux(coverPrompt, { seed: storySeed, loraUrl });
+      console.log(`[IMG] Pass 1 — cover (steps:38, guidance:4.5)`);
+      const { buffer: coverBuffer, hostedUrl } = await generateWithFlux(coverPrompt, { seed: storySeed, loraUrl, isCover: true });
       coverHostedUrl = hostedUrl;
       const blobPath = `stories/${storyBase}/page-00.jpg`;
       const savedUrl = await saveBufferToBlob(coverBuffer, blobPath, 'image/jpeg');

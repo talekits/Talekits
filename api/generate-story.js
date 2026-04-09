@@ -239,6 +239,7 @@ Respond with a valid JSON object only. No markdown fences, no preamble, nothing 
 {
   "title": "Story title",
   "story": "Full story text. Use \\n\\n to separate paragraphs.",
+  "coverMoment": "One vivid sentence describing the single most visually dramatic or emotionally warm moment in the story — the scene that would make a child desperate to open the book. Focus on action, character expression, and setting. This will be used as the cover illustration hook.",
   "characterAnchor": {
     "protagonist": "The exact 20–30 word physical descriptor — hair/length/style, skin, eyes, top, bottom, footwear/socks — copied verbatim into every illustration prompt",
     "companion": "Optional: equally detailed descriptor for a sidekick/pet/friend who appears frequently, or null"
@@ -288,22 +289,33 @@ function buildStoryTxt(story, childName) {
    Flux 2 [dev] cover prompt builder
    Injects the characterAnchor so the cover and page images share
    the same character descriptor — enabling two-pass consistency.
+   coverMoment is a story-specific scene hook that makes each
+   cover unique to its narrative, not a generic character portrait.
 ───────────────────────────────────────────────────────────── */
-function buildFluxCoverPrompt(title, styleTag, characterAnchor) {
+function buildFluxCoverPrompt(title, styleTag, characterAnchor, coverMoment) {
   const style = styleTag || 'children\'s picture book illustration with confident ink outlines, flat watercolour wash, warm cream paper texture, limited harmonious palette';
-  const protagonistDesc = characterAnchor?.protagonist
-    ? `The story's protagonist — ${characterAnchor.protagonist} — stands centre-frame as the hero of the scene. `
-    : 'The story\'s main character stands centre-frame as the hero of the scene. ';
-  const companionDesc = characterAnchor?.companion
-    ? `Their companion — ${characterAnchor.companion} — appears close by. `
+
+  // Story-specific scene hook — grounds the cover in the actual narrative
+  const momentDesc = coverMoment
+    ? `The cover depicts this key story moment: ${coverMoment} `
     : '';
-  return `A children's picture book cover illustration for a story called "${title}". ${protagonistDesc}${companionDesc}A single iconic, inviting scene that captures the heart of the story — wide landscape composition designed to make a child want to open the book immediately. Warm golden light, cheerful and magical atmosphere, rich background detail. ${style}. High quality, detailed illustration, safe for children, full bleed, seamless background, no text, no title lettering, no speech bubbles, no watermarks, no borders, no frames, no ruled lines.`;
+
+  // Protagonist with cover-specific pose and expression direction
+  const protagonistDesc = characterAnchor?.protagonist
+    ? `The story's protagonist — ${characterAnchor.protagonist} — is the undeniable hero of the scene, posed dynamically and turned slightly toward the viewer with a warm, inviting expression as if beckoning the child to join the adventure. `
+    : 'The story\'s main character stands centre-frame as the hero of the scene, turned slightly toward the viewer with a warm, inviting expression. ';
+
+  const companionDesc = characterAnchor?.companion
+    ? `Their companion — ${characterAnchor.companion} — appears prominently nearby. `
+    : '';
+
+  return `A children's picture book cover illustration for a story called "${title}". ${momentDesc}${protagonistDesc}${companionDesc}A single iconic, cinematic scene with strong visual storytelling — wide landscape composition with layered foreground, midground, and background detail, designed to make a child reach for the book immediately. The protagonist is sharp and detailed in the foreground; the background is painted with soft atmospheric depth-of-field haze so the character pops. Warm golden-hour light with rich colour contrast, dynamic composition with natural energy. ${style}. High quality, detailed illustration, safe for children, full bleed, seamless background, no text, no title lettering, no speech bubbles, no watermarks, no borders, no frames, no ruled lines.`;
 }
 
 function buildIllustrationsTxt(story, childName) {
   const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
   const styleTag    = artStyle.toLowerCase().replace(/^painted in /i, '');
-  const coverPrompt = buildFluxCoverPrompt(story.title, styleTag, story.characterAnchor);
+  const coverPrompt = buildFluxCoverPrompt(story.title, styleTag, story.characterAnchor, story.coverMoment);
 
   const lines = [
     `ILLUSTRATION PROMPTS — ${story.title.toUpperCase()}`,
@@ -643,18 +655,22 @@ function buildPictureBookPdf(story, childName, imageResults) {
          .text(`${title}  ·  Page ${pageIndex} of ${totalPages}`, PAD, fy + 9, { width: PW - PAD * 2, align: 'center' });
     }
 
-    // ── Draw a spread page: text left, image right, no overlap ──
+    // ── Draw a spread page: text one side, image the other.
+    //    Image alternates left/right every spread for visual rhythm.
+    //    Text panel has an accent stripe and page number pill.
+    //    No overlap between text and image — strict two-column layout.
     async function drawSpread(pageText, pageNum, isFirst, imgBuf) {
-      // True non-overlapping two-column layout
-      // Left column: cream background, text only
-      // Right column: illustration only, bleeds to edges (top/bottom/right)
-      const TEXT_COL_W = Math.floor(PW * 0.36);  // ~303px text panel
-      const IMG_X      = TEXT_COL_W;
-      const IMG_W      = PW - TEXT_COL_W;
-      const CONTENT_Y  = HEADER;                  // below header
-      const CONTENT_H  = PH - HEADER - FOOTER;   // between header and footer
+      // Alternate image side: odd pages → image right, even pages → image left
+      // (pageNum is 1-indexed, so page 1 = image right, page 2 = image left, etc.)
+      const imageOnRight  = (pageNum % 2 === 1);
+      const TEXT_COL_W    = Math.floor(PW * 0.36);  // ~303px text panel
+      const IMG_W         = PW - TEXT_COL_W;
+      const IMG_X         = imageOnRight ? TEXT_COL_W : 0;
+      const TEXT_X_ORIGIN = imageOnRight ? 0 : IMG_W;
+      const CONTENT_Y     = HEADER;
+      const CONTENT_H     = PH - HEADER - FOOTER;
 
-      // ── Draw image FIRST so header/text panel can paint over it ──
+      // ── Draw image FIRST so panels paint over it cleanly ──
       if (imgBuf) {
         doc.image(imgBuf, IMG_X, CONTENT_Y, {
           width:  IMG_W,
@@ -669,27 +685,32 @@ function buildPictureBookPdf(story, childName, imageResults) {
            .text('Illustration loading…', IMG_X, CONTENT_Y + CONTENT_H / 2 - 8, { width: IMG_W, align: 'center' });
       }
 
-      // ── Redraw header on top of image so it is never obscured ──
+      // ── Header on top of everything ──
       drawHeader(PW);
 
-      // ── Text panel background — solid cream, painted after image so it fully covers ──
-      doc.rect(0, CONTENT_Y, TEXT_COL_W, CONTENT_H).fill('#FFFDF8');
+      // ── Text panel background — solid cream ──
+      doc.rect(TEXT_X_ORIGIN, CONTENT_Y, TEXT_COL_W, CONTENT_H).fill('#FFFDF8');
 
-      // Thin separator line between text and image panels
-      doc.moveTo(TEXT_COL_W, CONTENT_Y).lineTo(TEXT_COL_W, CONTENT_Y + CONTENT_H)
-         .lineWidth(0.5).strokeColor(C.border).stroke();
+      // ── Accent stripe: 3px brand-orange line on the image-facing edge ──
+      const stripeX = imageOnRight ? TEXT_COL_W - 3 : TEXT_X_ORIGIN;
+      doc.rect(stripeX, CONTENT_Y, 3, CONTENT_H).fill('#E8830A');
 
-      // Text content inside the left panel
-      const textX = PAD;
+      // Thin separator between text panel and image (on the far side of the stripe)
+      const sepX = imageOnRight ? TEXT_COL_W : TEXT_X_ORIGIN + TEXT_COL_W;
+      doc.moveTo(sepX, CONTENT_Y).lineTo(sepX, CONTENT_Y + CONTENT_H)
+         .lineWidth(0.3).strokeColor(C.border).stroke();
+
+      // ── Text content ──
+      const textX = TEXT_X_ORIGIN + PAD;
       const textW = TEXT_COL_W - PAD - 20;
       let ty = CONTENT_Y + PAD;
 
       if (isFirst) {
-        // First spread: show title + child byline above text
+        // First spread: title + byline header
         doc.font(fonts.italic).fontSize(15).fillColor(C.text).lineGap(3)
            .text(story.title, textX, ty, { width: textW });
         ty = doc.y + 6;
-        doc.moveTo(textX, ty).lineTo(TEXT_COL_W - 20, ty)
+        doc.moveTo(textX, ty).lineTo(TEXT_X_ORIGIN + TEXT_COL_W - 20, ty)
            .lineWidth(0.4).strokeColor(C.border).stroke();
         ty += 10;
         doc.font(fonts.sans).fontSize(7.5).fillColor(C.text2)
@@ -727,37 +748,80 @@ function buildPictureBookPdf(story, childName, imageResults) {
         doc.font(fonts.body).fontSize(bodySize).fillColor(C.text).lineGap(lgap)
            .text(pageText, textX, ty, { width: textW });
       }
+
+      // ── Page number pill — bottom of text panel ──
+      const pillLabel = `${pageNum}`;
+      const pillFontSize = 8;
+      const pillW     = doc.font(fonts.sansBold).fontSize(pillFontSize).widthOfString(pillLabel) + 16;
+      const pillH     = 16;
+      const pillX     = TEXT_X_ORIGIN + (TEXT_COL_W - pillW) / 2;
+      const pillY     = CONTENT_Y + CONTENT_H - FOOTER / 2 - pillH / 2 - 4;
+      doc.roundedRect(pillX, pillY, pillW, pillH, pillH / 2).fill(C.surface2);
+      doc.font(fonts.sansBold).fontSize(pillFontSize).fillColor(C.text3)
+         .text(pillLabel, pillX, pillY + 3, { width: pillW, align: 'center', lineBreak: false });
     }
 
     // ── Cover page ──
     async function drawCover(coverBuf) {
       if (coverBuf) {
-        // Full-bleed illustration
+        // Full-bleed illustration — fills the entire page
         doc.image(coverBuf, 0, 0, { width: PW, height: PH, cover: [PW, PH], align: 'center', valign: 'center' });
       } else {
-        // Solid fallback
+        // Solid fallback — brand orange with a soft circle motif
         doc.rect(0, 0, PW, PH).fill('#E8830A');
         doc.save().fillOpacity(0.15).circle(PW / 2, PH * 0.38, 150).fillColor('#FFFFFF').fill().restore();
       }
 
-      // Header bar — solid, no gradient
-      doc.rect(0, 0, PW, HEADER).fill('#FAFAF8');
-      doc.moveTo(0, HEADER).lineTo(PW, HEADER).lineWidth(0.5).strokeColor(C.border).stroke();
-      drawTalekitsWordmark(0, 10, 14, 'center', PW);
+      // ── Gradient scrim at bottom — layered semi-transparent rects simulate a gradient ──
+      // PDFKit has no native gradient opacity, so we stack increasingly opaque fills.
+      // This creates a natural fade from image → dark title area.
+      const SCRIM_TOP   = PH * 0.48;   // scrim starts ~halfway down
+      const SCRIM_H     = PH - SCRIM_TOP;
+      const SCRIM_STEPS = 8;
+      for (let s = 0; s < SCRIM_STEPS; s++) {
+        const frac     = s / SCRIM_STEPS;
+        const opacity  = frac * frac * 0.88;  // quadratic ramp, max ~0.88
+        const stepY    = SCRIM_TOP + (frac * SCRIM_H);
+        const stepH    = (SCRIM_H / SCRIM_STEPS) + 1; // +1 prevents hairline gaps
+        doc.save().fillOpacity(opacity).rect(0, stepY, PW, stepH).fillColor('#0E0D0B').fill().restore();
+      }
+      // Final solid bottom strip to anchor text clearly
+      const SOLID_Y = PH * 0.76;
+      doc.rect(0, SOLID_Y, PW, PH - SOLID_Y).fill('#0E0D0B');
 
-      // Bottom title area — solid dark band, no gradient
-      const TITLE_BAR_H = 100;
-      const TITLE_BAR_Y = PH - TITLE_BAR_H;
-      doc.rect(0, TITLE_BAR_Y, PW, TITLE_BAR_H).fill('#1C1B18');
-
-      // Story title
-      const titleFontSize = story.title.length > 30 ? 28 : story.title.length > 20 ? 34 : 40;
+      // ── Story title — large, centred, white ──
+      const titleFontSize = story.title.length > 36 ? 26 : story.title.length > 24 ? 32 : story.title.length > 16 ? 38 : 44;
+      const titleY        = SOLID_Y + 16;
       doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
-         .text(story.title, PAD, TITLE_BAR_Y + 14, { width: PW - PAD * 2, align: 'center' });
+         .text(story.title, PAD, titleY, { width: PW - PAD * 2, align: 'center' });
 
-      // "A story for [child]"
-      doc.font(fonts.sans).fontSize(10).fillColor('#9C9A94')
-         .text(`A story for ${childName}`, PAD, TITLE_BAR_Y + TITLE_BAR_H - 22, { width: PW - PAD * 2, align: 'center' });
+      // ── "A story for [child]" subtitle ──
+      const subtitleY = doc.y + 8;
+      doc.font(fonts.sans).fontSize(10).fillColor('rgba(255,255,255,0.65)')
+         .text(`A story for ${childName}`, PAD, subtitleY, { width: PW - PAD * 2, align: 'center' });
+
+      // ── Talekits wordmark — bottom right corner, small, orange accent ──
+      const wmY   = PH - 22;
+      const kitsW = doc.font(fonts.italic).fontSize(11).widthOfString('kits');
+      const taleW = doc.font(fonts.italic).fontSize(11).widthOfString('Tale');
+      const wmX   = PW - PAD - taleW - kitsW;
+      doc.font(fonts.italic).fontSize(11).fillColor('rgba(255,255,255,0.5)')
+         .text('Tale', wmX, wmY, { lineBreak: false });
+      doc.font(fonts.italic).fontSize(11).fillColor('#E8830A')
+         .text('kits', wmX + taleW, wmY, { lineBreak: false });
+
+      // ── Slim top bar — keeps Talekits brand visible at top ──
+      // Semi-transparent so the illustration shows through
+      doc.save().fillOpacity(0.72).rect(0, 0, PW, HEADER).fillColor('#0E0D0B').fill().restore();
+      doc.moveTo(0, HEADER).lineTo(PW, HEADER).lineWidth(0.3).strokeColor('rgba(255,255,255,0.15)').stroke();
+      // Wordmark in white on dark bar
+      const topTaleW = doc.font(fonts.italic).fontSize(13).widthOfString('Tale');
+      const topKitsW = doc.font(fonts.italic).fontSize(13).widthOfString('kits');
+      const topWmX   = (PW - topTaleW - topKitsW) / 2;
+      doc.font(fonts.italic).fontSize(13).fillColor('rgba(255,255,255,0.75)')
+         .text('Tale', topWmX, 10, { lineBreak: false });
+      doc.font(fonts.italic).fontSize(13).fillColor('#E8830A')
+         .text('kits', topWmX + topTaleW, 10, { lineBreak: false });
     }
 
     // ── End page ──
@@ -1403,7 +1467,7 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
     try {
       const artStyle    = story.selections?.artStyle || 'soft watercolour with warm pastel tones';
       const styleTag    = artStyle.toLowerCase().replace(/^painted in /i, '');
-      const coverPrompt = buildFluxCoverPrompt(story.title, styleTag, story.characterAnchor);
+      const coverPrompt = buildFluxCoverPrompt(story.title, styleTag, story.characterAnchor, story.coverMoment);
 
       // Extract page illustration prompts — prefer new pageChunks schema
       let pageIllustrations;
