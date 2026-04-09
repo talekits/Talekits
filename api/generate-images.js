@@ -7,11 +7,18 @@ const { put } = require('@vercel/blob');
    Flux with LoRA is used for Character Customisation subscribers.
    GPT Image Mini is the emergency fallback only.
 
-   TWO-PASS GENERATION:
-   Pass 1 — Generate the cover image (index 0 in allPrompts).
-   Pass 2 — For each page image, use fal-ai/flux/dev with the
-             cover image injected as image_prompt (IP-Adapter).
-             This locks in the art style and character design.
+   THREE-PASS GENERATION:
+   Pass 0 — Style portrait: a clean, composition-neutral character
+            portrait in the chosen art style. Never saved as a
+            deliverable. Its fal.ai-hosted URL becomes the reference
+            for all page images, decoupling style/character locking
+            from the cover's scene composition.
+   Pass 1 — Cover image: independent, no IP reference. Uses higher
+            steps + guidance for richer detail on the hero image.
+   Pass 2 — Page images: each uses the style portrait URL as
+            image_prompt at low strength (0.17). The shared seed
+            + portrait reference gives both style and character
+            consistency without composition conflict.
 ───────────────────────────────────────────────────────────── */
 
 const GPT_IMAGE_MINI_QUALITY = 'low';
@@ -27,14 +34,37 @@ const NEGATIVE_PROMPT = [
   'adult themes', 'violence', 'scary', 'dark atmosphere', 'horror',
 ].join(', ');
 
-// Cover gets extra negative terms — we want richness, depth, drama on the cover,
-// not the clean minimal look that works well for interior page illustrations.
+// Cover gets extra negative terms — we want richness and depth on the cover,
+// not the clean minimal look that works for interior page illustrations.
 const COVER_NEGATIVE_PROMPT = [
   ...NEGATIVE_PROMPT.split(', '),
   'empty background', 'minimalist', 'simple background', 'plain background',
   'flat composition', 'low detail', 'sparse scene', 'cropped', 'closeup only',
   'symmetrical composition',
 ].join(', ');
+
+/* ─────────────────────────────────────────────────────────────
+   Build the style-portrait prompt.
+
+   A deliberately simple, composition-neutral image: the protagonist
+   centred against a plain background in the chosen art style.
+   No narrative action, no setting detail — pure character + style.
+   This is what the IP-Adapter reads from, so keeping it uncluttered
+   maximises how cleanly both signals transfer to page images.
+───────────────────────────────────────────────────────────── */
+function buildStylePortraitPrompt(characterAnchor, artStyle) {
+  const style = artStyle || "children's picture book illustration, soft watercolour, warm pastel palette";
+
+  const protagonistDesc = characterAnchor && characterAnchor.protagonist
+    ? characterAnchor.protagonist
+    : 'a cheerful storybook character with bright expressive eyes';
+
+  const companionLine = characterAnchor && characterAnchor.companion
+    ? ` Their companion — ${characterAnchor.companion} — stands close beside them.`
+    : '';
+
+  return `A character portrait of ${protagonistDesc}, facing the viewer with a warm friendly expression, standing upright in a natural relaxed pose.${companionLine} Plain soft neutral background with subtle texture, no setting detail, no props, no action. The character is centred and fully visible from head to toe. ${style}. High quality, detailed illustration, safe for children, no text, no watermarks, no borders, no frames.`;
+}
 
 /* ─────────────────────────────────────────────────────────────
    GPT Image 1 Mini — emergency fallback only.
@@ -58,12 +88,12 @@ async function generateWithGptImageMini(prompt, quality = GPT_IMAGE_MINI_QUALITY
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    const msg = err?.error?.message || `GPT Image Mini API error ${response.status}`;
+    const msg = err.error && err.error.message ? err.error.message : ('GPT Image Mini API error ' + response.status);
     const isContentBlock = response.status === 400 &&
       (msg.toLowerCase().includes('safety') || msg.toLowerCase().includes('content') ||
        msg.toLowerCase().includes('policy') || msg.toLowerCase().includes('blocked'));
     if (isContentBlock && !isFallback) {
-      const safe = `Cheerful fox cub with bright amber eyes and fluffy orange tail in a sunny meadow. Children's picture book illustration, soft watercolour. High quality, safe for children, no text, no borders.`;
+      const safe = "Cheerful fox cub with bright amber eyes and fluffy orange tail in a sunny meadow. Children's picture book illustration, soft watercolour. High quality, safe for children, no text, no borders.";
       return generateWithGptImageMini(safe, quality, true);
     }
     throw new Error(msg);
@@ -78,18 +108,20 @@ async function generateWithGptImageMini(prompt, quality = GPT_IMAGE_MINI_QUALITY
    Options:
      seed          — shared integer seed for style coherence
      loraUrl       — LoRA weights for Character Customisation
-     loraScale     — LoRA influence weight (0.5–0.7 sweet spot)
-     referenceUrl  — fal.ai-hosted cover URL for two-pass style lock
+     loraScale     — LoRA influence weight (0.5-0.7 sweet spot)
+     referenceUrl  — style portrait URL for IP-Adapter consistency
      isFallback    — prevents recursive safety retries
+     isCover       — applies cover-specific steps/guidance/negatives
 ───────────────────────────────────────────────────────────── */
-async function generateWithFlux(prompt, {
-  seed         = null,
-  loraUrl      = null,
-  loraScale    = 0.6,
-  referenceUrl = null,
-  isFallback   = false,
-  isCover      = false,
-} = {}) {
+async function generateWithFlux(prompt, opts) {
+  if (!opts) opts = {};
+  const seed         = opts.seed         !== undefined ? opts.seed         : null;
+  const loraUrl      = opts.loraUrl      !== undefined ? opts.loraUrl      : null;
+  const loraScale    = opts.loraScale    !== undefined ? opts.loraScale    : 0.6;
+  const referenceUrl = opts.referenceUrl !== undefined ? opts.referenceUrl : null;
+  const isFallback   = opts.isFallback   !== undefined ? opts.isFallback   : false;
+  const isCover      = opts.isCover      !== undefined ? opts.isCover      : false;
+
   if (!process.env.FAL_API_KEY) {
     throw new Error('FAL_API_KEY not set — cannot use Flux provider');
   }
@@ -110,43 +142,48 @@ async function generateWithFlux(prompt, {
     sync_mode:             true,
   };
 
-  if (seed !== null)      body.seed = seed;
-  if (referenceUrl)       { body.image_prompt = referenceUrl; body.image_prompt_strength = 0.22; }
-  if (loraUrl)            body.loras = [{ path: loraUrl, scale: loraScale }];
+  if (seed !== null) body.seed = seed;
+  if (referenceUrl) {
+    body.image_prompt          = referenceUrl;
+    // 0.17 — enough for the IP-Adapter to read style and character appearance
+    // clearly, but low enough that the page prompt drives composition freely.
+    body.image_prompt_strength = 0.17;
+  }
+  if (loraUrl) body.loras = [{ path: loraUrl, scale: loraScale }];
 
-  const response = await fetch(`https://fal.run/${endpoint}`, {
+  const response = await fetch('https://fal.run/' + endpoint, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Key ${process.env.FAL_API_KEY}` },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Key ' + process.env.FAL_API_KEY },
     body:    JSON.stringify(body),
   });
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    const msg = err?.detail || err?.message || `fal.ai error ${response.status}`;
+    const err = await response.json().catch(function() { return {}; });
+    const msg = err.detail || err.message || ('fal.ai error ' + response.status);
     const isSafetyBlock = response.status === 400 &&
       (msg.toLowerCase().includes('safety') || msg.toLowerCase().includes('nsfw'));
     if (isSafetyBlock && !isFallback) {
-      console.warn(`Flux safety filter hit — using safe fallback prompt`);
-      const safe = `Cheerful fox cub with bright amber eyes and fluffy orange tail in a sunny meadow. Children's picture book illustration, soft watercolour, warm pastel palette. High quality, safe for children, no text, no watermarks, no borders, no frames.`;
-      return generateWithFlux(safe, { seed, loraUrl, loraScale, isFallback: true, isCover });
+      console.warn('Flux safety filter hit — using safe fallback prompt');
+      const safe = "Cheerful fox cub with bright amber eyes and fluffy orange tail in a sunny meadow. Children's picture book illustration, soft watercolour, warm pastel palette. High quality, safe for children, no text, no watermarks, no borders, no frames.";
+      return generateWithFlux(safe, { seed: seed, loraUrl: loraUrl, loraScale: loraScale, isFallback: true, isCover: isCover });
     }
-    throw new Error(`Flux generation failed: ${msg}`);
+    throw new Error('Flux generation failed: ' + msg);
   }
 
   const data = await response.json();
-  const imageUrl = data?.images?.[0]?.url;
+  const imageUrl = data && data.images && data.images[0] ? data.images[0].url : null;
   if (!imageUrl) throw new Error('Flux response contained no image URL');
 
   const imgRes = await fetch(imageUrl);
-  if (!imgRes.ok) throw new Error(`Failed to fetch Flux image: ${imgRes.status}`);
-  // Return both the buffer and the fal.ai-hosted URL (needed for two-pass reference)
+  if (!imgRes.ok) throw new Error('Failed to fetch Flux image: ' + imgRes.status);
   return { buffer: Buffer.from(await imgRes.arrayBuffer()), hostedUrl: imageUrl };
 }
 
 /* ─────────────────────────────────────────────────────────────
    Save buffer to Vercel Blob.
 ───────────────────────────────────────────────────────────── */
-async function saveBufferToBlob(imageBuffer, blobPath, contentType = 'image/jpeg') {
+async function saveBufferToBlob(imageBuffer, blobPath, contentType) {
+  if (!contentType) contentType = 'image/jpeg';
   const blob = await put(blobPath, imageBuffer, {
     access:          'public',
     contentType,
@@ -160,99 +197,138 @@ async function saveBufferToBlob(imageBuffer, blobPath, contentType = 'image/jpeg
 
    illustrations[0]   = cover prompt
    illustrations[1+]  = page prompts
+   characterAnchor    = { protagonist, companion } from story JSON
 
-   TWO-PASS FLOW:
-   1. Generate cover (pass 1) — no reference
-   2. Save cover, capture its fal.ai hosted URL
-   3. Generate each page (pass 2) — inject cover URL as
-      image_prompt so Flux uses it as a visual style anchor
+   THREE-PASS FLOW:
+   Pass 0 - Style portrait (not saved as deliverable).
+            Built from characterAnchor + artStyle.
+            Its fal.ai URL is used as IP-Adapter reference for pages.
+   Pass 1 - Cover: independent, no reference, high steps + guidance.
+   Pass 2 - Pages: portrait URL as reference at strength 0.17.
+            Falls back to seed-only if portrait generation failed.
 
    All images share a single storySeed for style coherence.
 
    Returns array of { page, prompt, url } where page 0 = cover.
 ───────────────────────────────────────────────────────────── */
-async function generateIllustrations(illustrations, storyBase, artStyle, quality = GPT_IMAGE_MINI_QUALITY, loraUrl = null) {
-  const results    = [];
-  const mode       = loraUrl ? 'flux-lora' : 'flux-dev';
-  const storySeed  = Math.floor(Math.random() * 2147483647);
+async function generateIllustrations(illustrations, storyBase, artStyle, quality, loraUrl, characterAnchor) {
+  if (!quality) quality = GPT_IMAGE_MINI_QUALITY;
+  if (!loraUrl) loraUrl = null;
+  if (!characterAnchor) characterAnchor = null;
 
-  console.log(`[IMG] Generating ${illustrations.length} illustrations | mode: ${mode} | seed: ${storySeed}${loraUrl ? ' | lora: ' + loraUrl : ''}`);
+  const results   = [];
+  const mode      = loraUrl ? 'flux-lora' : 'flux-dev';
+  const storySeed = Math.floor(Math.random() * 2147483647);
+
+  console.log('[IMG] Generating ' + illustrations.length + ' illustrations | mode: ' + mode + ' | seed: ' + storySeed + (loraUrl ? ' | lora: ' + loraUrl : ''));
+
+  // ── Pass 0: Style portrait ────────────────────────────────
+  // Generates a clean, composition-neutral character portrait that
+  // serves as the IP-Adapter reference for all page images.
+  // Saved to blob for debugging only — not surfaced to the user.
+  let portraitHostedUrl = null;
+
+  if (characterAnchor && characterAnchor.protagonist) {
+    const portraitPrompt = buildStylePortraitPrompt(characterAnchor, artStyle);
+    try {
+      console.log('[IMG] Pass 0 — style portrait');
+      const portraitResult = await generateWithFlux(portraitPrompt, { seed: storySeed, loraUrl: loraUrl });
+      portraitHostedUrl = portraitResult.hostedUrl;
+      const blobPath = 'stories/' + storyBase + '/style-portrait.jpg';
+      await saveBufferToBlob(portraitResult.buffer, blobPath, 'image/jpeg');
+      console.log('[IMG] Style portrait ready | hosted: ' + !!portraitHostedUrl);
+    } catch (err) {
+      // Non-fatal — pages fall back to seed-only consistency
+      console.warn('[IMG] Style portrait failed (non-fatal): ' + err.message);
+    }
+  } else {
+    console.log('[IMG] Pass 0 — no characterAnchor protagonist, skipping style portrait');
+  }
 
   // ── Pass 1: Cover (index 0) ───────────────────────────────
-  let coverHostedUrl = null;
-
+  // Cover is fully independent — no IP reference — so it renders
+  // with maximum fidelity to its own rich prompt and scene direction.
   if (illustrations.length > 0) {
     const coverPrompt = illustrations[0];
     try {
-      console.log(`[IMG] Pass 1 — cover (steps:38, guidance:4.5)`);
-      const { buffer: coverBuffer, hostedUrl } = await generateWithFlux(coverPrompt, { seed: storySeed, loraUrl, isCover: true });
-      coverHostedUrl = hostedUrl;
-      const blobPath = `stories/${storyBase}/page-00.jpg`;
-      const savedUrl = await saveBufferToBlob(coverBuffer, blobPath, 'image/jpeg');
-      results.push({ page: 0, prompt: coverPrompt, url: savedUrl, mode, seed: storySeed });
-      console.log(`[IMG] Cover saved: ${blobPath}`);
+      console.log('[IMG] Pass 1 — cover (steps:38, guidance:4.5, no reference)');
+      const coverResult = await generateWithFlux(coverPrompt, {
+        seed:    storySeed,
+        loraUrl: loraUrl,
+        isCover: true,
+        // Deliberately no referenceUrl — cover is fully prompt-driven
+      });
+      const blobPath = 'stories/' + storyBase + '/page-00.jpg';
+      const savedUrl = await saveBufferToBlob(coverResult.buffer, blobPath, 'image/jpeg');
+      results.push({ page: 0, prompt: coverPrompt, url: savedUrl, mode: mode, seed: storySeed });
+      console.log('[IMG] Cover saved: ' + blobPath);
     } catch (err) {
-      console.error(`[IMG] Cover failed: ${err.message}`);
+      console.error('[IMG] Cover failed: ' + err.message);
       try {
-        const fb = await generateWithGptImageMini(illustrations[0], quality);
-        const blobPath = `stories/${storyBase}/page-00.jpg`;
+        const fb       = await generateWithGptImageMini(illustrations[0], quality);
+        const blobPath = 'stories/' + storyBase + '/page-00.jpg';
         const savedUrl = await saveBufferToBlob(fb, blobPath);
         results.push({ page: 0, prompt: illustrations[0], url: savedUrl, mode: 'gpt-image-mini-fallback' });
-        console.warn(`[IMG] Cover fallback succeeded`);
+        console.warn('[IMG] Cover fallback succeeded');
       } catch (fbErr) {
-        console.error(`[IMG] Cover fallback failed: ${fbErr.message}`);
+        console.error('[IMG] Cover fallback failed: ' + fbErr.message);
         results.push({ page: 0, prompt: illustrations[0], url: null, error: err.message });
       }
     }
   }
 
   // ── Pass 2: Page images (indices 1..N) ────────────────────
+  // Every page uses the style portrait as IP-Adapter reference.
+  // If portrait generation failed, portraitHostedUrl is null and
+  // pages fall back gracefully to seed-only consistency.
   for (let i = 1; i < illustrations.length; i++) {
-    const prompt  = illustrations[i];
-    await new Promise(r => setTimeout(r, 300));
+    const prompt = illustrations[i];
+    await new Promise(function(r) { setTimeout(r, 300); });
 
     try {
-      console.log(`[IMG] Pass 2 — page ${i}/${illustrations.length - 1}${coverHostedUrl ? ' [+cover ref]' : ''}`);
-      const { buffer: pageBuffer } = await generateWithFlux(prompt, {
+      console.log('[IMG] Pass 2 — page ' + i + '/' + (illustrations.length - 1) + (portraitHostedUrl ? ' [+portrait ref 0.17]' : ' [seed-only]'));
+      const pageResult = await generateWithFlux(prompt, {
         seed:         storySeed,
-        loraUrl,
-        referenceUrl: coverHostedUrl,
+        loraUrl:      loraUrl,
+        referenceUrl: portraitHostedUrl,
       });
-      const blobPath = `stories/${storyBase}/page-${String(i).padStart(2, '0')}.jpg`;
-      const savedUrl = await saveBufferToBlob(pageBuffer, blobPath, 'image/jpeg');
-      results.push({ page: i, prompt, url: savedUrl, mode, seed: storySeed });
-      console.log(`[IMG] Page ${i} saved: ${blobPath}`);
+      const blobPath = 'stories/' + storyBase + '/page-' + String(i).padStart(2, '0') + '.jpg';
+      const savedUrl = await saveBufferToBlob(pageResult.buffer, blobPath, 'image/jpeg');
+      results.push({ page: i, prompt: prompt, url: savedUrl, mode: mode, seed: storySeed });
+      console.log('[IMG] Page ' + i + ' saved: ' + blobPath);
     } catch (err) {
-      console.error(`[IMG] Page ${i} failed: ${err.message}`);
+      console.error('[IMG] Page ' + i + ' failed: ' + err.message);
       try {
         const fb       = await generateWithGptImageMini(prompt, quality);
-        const blobPath = `stories/${storyBase}/page-${String(i).padStart(2, '0')}.jpg`;
+        const blobPath = 'stories/' + storyBase + '/page-' + String(i).padStart(2, '0') + '.jpg';
         const savedUrl = await saveBufferToBlob(fb, blobPath);
-        results.push({ page: i, prompt, url: savedUrl, mode: 'gpt-image-mini-fallback' });
-        console.warn(`[IMG] Page ${i} fallback succeeded`);
+        results.push({ page: i, prompt: prompt, url: savedUrl, mode: 'gpt-image-mini-fallback' });
+        console.warn('[IMG] Page ' + i + ' fallback succeeded');
       } catch (fbErr) {
-        console.error(`[IMG] Page ${i} fallback failed: ${fbErr.message}`);
-        results.push({ page: i, prompt, url: null, error: err.message });
+        console.error('[IMG] Page ' + i + ' fallback failed: ' + fbErr.message);
+        results.push({ page: i, prompt: prompt, url: null, error: err.message });
       }
     }
   }
 
   // ── Manifest ──────────────────────────────────────────────
   const manifest = {
-    storyBase, artStyle, mode,
-    endpoint:    loraUrl ? 'fal-ai/flux-lora' : 'fal-ai/flux/dev',
-    loraUrl:     loraUrl || null,
-    seed:        storySeed,
-    twoPass:     !!coverHostedUrl,
-    generatedAt: new Date().toISOString(),
-    images:      results,
+    storyBase:     storyBase,
+    artStyle:      artStyle,
+    mode:          mode,
+    endpoint:      loraUrl ? 'fal-ai/flux-lora' : 'fal-ai/flux/dev',
+    loraUrl:       loraUrl || null,
+    seed:          storySeed,
+    stylePortrait: !!portraitHostedUrl,
+    generatedAt:   new Date().toISOString(),
+    images:        results,
   };
 
-  await put(`stories/${storyBase}/images-manifest.json`, JSON.stringify(manifest, null, 2), {
+  await put('stories/' + storyBase + '/images-manifest.json', JSON.stringify(manifest, null, 2), {
     access: 'public', contentType: 'application/json', addRandomSuffix: false,
   });
 
-  console.log(`[IMG] Manifest saved | seed: ${storySeed} | two-pass: ${!!coverHostedUrl}`);
+  console.log('[IMG] Manifest saved | seed: ' + storySeed + ' | portrait ref: ' + !!portraitHostedUrl);
   return results;
 }
 

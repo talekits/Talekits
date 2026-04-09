@@ -763,66 +763,46 @@ function buildPictureBookPdf(story, childName, imageResults) {
 
     // ── Cover page ──
     async function drawCover(coverBuf) {
+      // Slim cream footer — just enough for title + byline, maximises image area
+      const COVER_FOOTER_H = 56;
+      const IMG_H          = PH - HEADER - COVER_FOOTER_H;
+
+      // ── Cream header — identical to interior spread pages ──
+      drawHeader(PW);
+
+      // ── Illustration fills between header and footer, no bleed under bars ──
       if (coverBuf) {
-        // Full-bleed illustration — fills the entire page
-        doc.image(coverBuf, 0, 0, { width: PW, height: PH, cover: [PW, PH], align: 'center', valign: 'center' });
+        doc.image(coverBuf, 0, HEADER, {
+          width:  PW,
+          height: IMG_H,
+          cover:  [PW, IMG_H],
+          align:  'center',
+          valign: 'center',
+        });
       } else {
-        // Solid fallback — brand orange with a soft circle motif
-        doc.rect(0, 0, PW, PH).fill('#E8830A');
-        doc.save().fillOpacity(0.15).circle(PW / 2, PH * 0.38, 150).fillColor('#FFFFFF').fill().restore();
+        // Solid fallback
+        doc.rect(0, HEADER, PW, IMG_H).fill('#E8830A');
+        doc.save().fillOpacity(0.15)
+           .circle(PW / 2, HEADER + IMG_H * 0.45, 130).fillColor('#FFFFFF').fill()
+           .restore();
       }
 
-      // ── Gradient scrim at bottom — layered semi-transparent rects simulate a gradient ──
-      // PDFKit has no native gradient opacity, so we stack increasingly opaque fills.
-      // This creates a natural fade from image → dark title area.
-      const SCRIM_TOP   = PH * 0.48;   // scrim starts ~halfway down
-      const SCRIM_H     = PH - SCRIM_TOP;
-      const SCRIM_STEPS = 8;
-      for (let s = 0; s < SCRIM_STEPS; s++) {
-        const frac     = s / SCRIM_STEPS;
-        const opacity  = frac * frac * 0.88;  // quadratic ramp, max ~0.88
-        const stepY    = SCRIM_TOP + (frac * SCRIM_H);
-        const stepH    = (SCRIM_H / SCRIM_STEPS) + 1; // +1 prevents hairline gaps
-        doc.save().fillOpacity(opacity).rect(0, stepY, PW, stepH).fillColor('#0E0D0B').fill().restore();
-      }
-      // Final solid bottom strip to anchor text clearly
-      const SOLID_Y = PH * 0.76;
-      doc.rect(0, SOLID_Y, PW, PH - SOLID_Y).fill('#0E0D0B');
+      // ── Cream footer bar ──
+      const FOOTER_Y = PH - COVER_FOOTER_H;
+      doc.rect(0, FOOTER_Y, PW, COVER_FOOTER_H).fill('#FAFAF8');
+      doc.moveTo(0, FOOTER_Y).lineTo(PW, FOOTER_Y)
+         .lineWidth(0.5).strokeColor(C.border).stroke();
 
-      // ── Story title — large, centred, white ──
-      const titleFontSize = story.title.length > 36 ? 26 : story.title.length > 24 ? 32 : story.title.length > 16 ? 38 : 44;
-      const titleY        = SOLID_Y + 16;
-      doc.font(fonts.italic).fontSize(titleFontSize).fillColor('#FFFFFF').lineGap(4)
-         .text(story.title, PAD, titleY, { width: PW - PAD * 2, align: 'center' });
+      // Story title — sized to fit, dark brand text, centred
+      const titleFontSize = story.title.length > 36 ? 17 : story.title.length > 24 ? 20 : story.title.length > 16 ? 23 : 26;
+      doc.font(fonts.italic).fontSize(titleFontSize).fillColor(C.text).lineGap(2)
+         .text(story.title, PAD, FOOTER_Y + 8, { width: PW - PAD * 2, align: 'center' });
 
-      // ── "A story for [child]" subtitle ──
-      const subtitleY = doc.y + 8;
-      doc.font(fonts.sans).fontSize(10).fillColor('rgba(255,255,255,0.65)')
-         .text(`A story for ${childName}`, PAD, subtitleY, { width: PW - PAD * 2, align: 'center' });
-
-      // ── Talekits wordmark — bottom right corner, small, orange accent ──
-      const wmY   = PH - 22;
-      const kitsW = doc.font(fonts.italic).fontSize(11).widthOfString('kits');
-      const taleW = doc.font(fonts.italic).fontSize(11).widthOfString('Tale');
-      const wmX   = PW - PAD - taleW - kitsW;
-      doc.font(fonts.italic).fontSize(11).fillColor('rgba(255,255,255,0.5)')
-         .text('Tale', wmX, wmY, { lineBreak: false });
-      doc.font(fonts.italic).fontSize(11).fillColor('#E8830A')
-         .text('kits', wmX + taleW, wmY, { lineBreak: false });
-
-      // ── Slim top bar — keeps Talekits brand visible at top ──
-      // Semi-transparent so the illustration shows through
-      doc.save().fillOpacity(0.72).rect(0, 0, PW, HEADER).fillColor('#0E0D0B').fill().restore();
-      doc.moveTo(0, HEADER).lineTo(PW, HEADER).lineWidth(0.3).strokeColor('rgba(255,255,255,0.15)').stroke();
-      // Wordmark in white on dark bar
-      const topTaleW = doc.font(fonts.italic).fontSize(13).widthOfString('Tale');
-      const topKitsW = doc.font(fonts.italic).fontSize(13).widthOfString('kits');
-      const topWmX   = (PW - topTaleW - topKitsW) / 2;
-      doc.font(fonts.italic).fontSize(13).fillColor('rgba(255,255,255,0.75)')
-         .text('Tale', topWmX, 10, { lineBreak: false });
-      doc.font(fonts.italic).fontSize(13).fillColor('#E8830A')
-         .text('kits', topWmX + topTaleW, 10, { lineBreak: false });
+      // "A story for [child]" — muted subtitle beneath title
+      doc.font(fonts.sans).fontSize(8.5).fillColor(C.text3)
+         .text(`A story for ${childName}`, PAD, doc.y + 3, { width: PW - PAD * 2, align: 'center' });
     }
+
 
     // ── End page ──
     function drawEndPage(totalSpreads) {
@@ -1495,7 +1475,8 @@ async function generateStory(profileContent, childName, profileFilename, plan = 
         base,
         artStyle,
         undefined,
-        loraUrl
+        loraUrl,
+        story.characterAnchor   // Pass 0: style portrait for IP-Adapter consistency
       );
 
       // generateIllustrations now returns page: 0 for cover, page: 1..N for story pages
