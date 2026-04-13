@@ -25,17 +25,36 @@ const C = {
 };
 
 /* ─────────────────────────────────────────────────────────────
-   Fonts — pdfkit built-ins only (always available in serverless)
+   Fonts
+   Built-ins: always available in serverless (no registration needed).
+   Custom:    TTF files committed to /fonts/ in the repo root.
+              Registered via doc.registerFont() before first use.
 ───────────────────────────────────────────────────────────── */
+const path = require('path');
+
 const fonts = {
-  body:     'Times-Roman',
-  italic:   'Times-Italic',
-  bold:     'Times-Bold',
-  sans:     'Helvetica',
-  sansBold: 'Helvetica-Bold',
+  body:      'Times-Roman',
+  italic:    'Times-Italic',
+  bold:      'Times-Bold',
+  sans:      'Helvetica',
+  sansBold:  'Helvetica-Bold',
+  yeseva:    'YesevaOne',   // custom — registered in ensureFonts()
 };
 
-function ensureFonts() { /* no-op — built-ins need no registration */ }
+// Path to the fonts directory (repo root /fonts/, one level up from /api/)
+const FONTS_DIR = path.join(__dirname, '..', 'fonts');
+
+function ensureFonts(doc) {
+  // Register Yeseva One for cover titles.
+  // Falls back silently to Times-Italic if the TTF isn't present yet
+  // (e.g. during local dev before the font is committed).
+  try {
+    doc.registerFont(fonts.yeseva, path.join(FONTS_DIR, 'YesevaOne-Regular.ttf'));
+  } catch (e) {
+    fonts.yeseva = 'Times-Italic';
+    console.warn('[PDF] YesevaOne-Regular.ttf not found — falling back to Times-Italic');
+  }
+}
 
 /* ─────────────────────────────────────────────────────────────
    Plan output rules
@@ -365,7 +384,7 @@ function buildPdf(story, childName, plan) {
     doc.on('end',   ()  => resolve(Buffer.concat(chunks)));
     doc.on('error', err => reject(err));
 
-    ensureFonts();
+    ensureFonts(doc);
 
     const PW   = doc.page.width;
     const PH   = doc.page.height;
@@ -582,7 +601,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
     doc.on('end',   ()  => resolve(Buffer.concat(chunks)));
     doc.on('error', err => reject(err));
 
-    ensureFonts();
+    ensureFonts(doc);
 
     const PW     = doc.page.width;   // 841.89
     const PH     = doc.page.height;  // 595.28
@@ -787,47 +806,44 @@ function buildPictureBookPdf(story, childName, imageResults) {
            .restore();
       }
 
-      // ── Auto-fit title font size ──
-      // Start large and step down until the title fits on at most 2 lines
-      // within the safe text width (page width minus generous padding).
-      const TEXT_W    = PW - PAD * 3;   // generous side padding for visual comfort
-      const MAX_SIZE  = 52;
-      const MIN_SIZE  = 22;
-      const LINE_GAP  = 5;
+      // ── Auto-fit title font size (Yeseva One) ──
+      // Start large and step down in 2pt increments until the title
+      // fits within 2 lines of the safe text width.
+      const TEXT_W   = PW - PAD * 4;   // generous side padding — outline needs breathing room
+      const MAX_SIZE = 54;
+      const MIN_SIZE = 24;
+      const LINE_GAP = 6;
 
       let titleSize = MAX_SIZE;
-      // Step down until the title fits within 2 lines
       while (titleSize > MIN_SIZE) {
-        const lineH  = titleSize * 1.25;          // approximate line height
-        const textH  = doc.font(fonts.italic).fontSize(titleSize)
-                          .heightOfString(story.title, { width: TEXT_W, lineGap: LINE_GAP });
-        if (textH <= lineH * 2.1) break;          // fits in 2 lines — stop
+        const lineH = titleSize * 1.25;
+        const textH = doc.font(fonts.yeseva).fontSize(titleSize)
+                         .heightOfString(story.title, { width: TEXT_W, lineGap: LINE_GAP });
+        if (textH <= lineH * 2.1) break;
         titleSize -= 2;
       }
 
-      // ── Title block position — lower quarter of image area ──
-      // Measure actual height so we can anchor the block cleanly above the bottom.
-      const titleH    = doc.font(fonts.italic).fontSize(titleSize)
+      // ── Title block position — lower quarter of image ──
+      const titleH    = doc.font(fonts.yeseva).fontSize(titleSize)
                            .heightOfString(story.title, { width: TEXT_W, lineGap: LINE_GAP });
-      const subSize   = 11;
-      const subH      = subSize * 1.4;
-      const BLOCK_H   = titleH + 8 + subH;         // title + gap + subtitle
-      const BOTTOM_PAD = 28;                        // breathing room from page bottom
-      const BLOCK_Y   = PH - BOTTOM_PAD - BLOCK_H; // anchor block above bottom edge
+      const BOTTOM_PAD = 30;
+      const BLOCK_Y    = PH - BOTTOM_PAD - titleH;
+      const titleX     = PAD + (PW - PAD * 2 - TEXT_W) / 2;  // centred origin
 
-      // ── Shadow duplicate pass (offset dark layer) ──
-      // Renders the title 2pt right and 2.5pt down in near-black.
-      // No transparency — pure solid fill, fully reliable in PDF.
-      const SX = 2;    // shadow x offset
-      const SY = 2.5;  // shadow y offset
-      const titleX = PAD + (PW - PAD * 2 - TEXT_W) / 2; // centred origin
+      // ── Outline stroke pass — dark border around each letterform ──
+      // Drawn first so the white fill renders cleanly on top.
+      // lineWidth controls outline thickness; 3pt gives strong separation
+      // without obscuring the letterform detail of Yeseva One.
+      doc.font(fonts.yeseva).fontSize(titleSize).lineGap(LINE_GAP)
+         .lineWidth(3)
+         .strokeColor('#0E0D0B')
+         .fillColor('#0E0D0B')   // fill=true and stroke=true activates PDF rendering mode 2
+         .text(story.title, titleX, BLOCK_Y, { width: TEXT_W, align: 'center', fill: false, stroke: true });
 
-      doc.font(fonts.italic).fontSize(titleSize).fillColor('#0E0D0B').lineGap(LINE_GAP)
-         .text(story.title, titleX + SX, BLOCK_Y + SY, { width: TEXT_W, align: 'center' });
-
-      // ── White title pass — rendered over the shadow ──
-      doc.font(fonts.italic).fontSize(titleSize).fillColor('#FFFFFF').lineGap(LINE_GAP)
-         .text(story.title, titleX, BLOCK_Y, { width: TEXT_W, align: 'center' });
+      // ── White fill pass — rendered over the stroke outline ──
+      doc.font(fonts.yeseva).fontSize(titleSize).lineGap(LINE_GAP)
+         .fillColor('#FFFFFF')
+         .text(story.title, titleX, BLOCK_Y, { width: TEXT_W, align: 'center', fill: true, stroke: false });
 
       // Subtitle intentionally omitted — title only on cover.
     }
