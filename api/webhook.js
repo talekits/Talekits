@@ -194,7 +194,7 @@ module.exports = async function handler(req, res) {
     console.log(`[4] Starting story generation | Child: ${child} | Plan: ${plan} | Email: ${email}`);
 
     // Fetch narrator_voice from subscriber record (defaults to au_female if not set)
-    let narratorVoice = 'au_female';
+    narratorVoice = 'au_female'; // re-use var declared above from session metadata
     if (subscriberId) {
       try {
         const supabase = getSupabase();

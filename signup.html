@@ -562,6 +562,20 @@
   /* ── Highlight on search ── */
   mark { background: rgba(239,159,39,0.35); color: inherit; border-radius: 2px; padding: 0 1px; }
 
+  /* ── Field validation errors ── */
+  .name-input.field-error,
+  .name-select.field-error {
+    border-color: #E05050 !important;
+    box-shadow: 0 0 0 2.5px rgba(224,80,80,0.14);
+  }
+  .field-error-msg {
+    font-size: 11px;
+    color: #E05050;
+    margin-top: 4px;
+    font-weight: 500;
+    animation: fadeIn 0.15s ease;
+  }
+
   /* ── Empty state ── */
   .empty { padding: 3rem 0; text-align: center; }
   .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
@@ -864,7 +878,7 @@
           </div>
         </div>
       </div>
-      <p class="name-preview empty" id="name-preview" style="display:none;"></p>
+      <p class="name-preview empty" id="name-preview"></p>
     </div>
   </div>
 
@@ -1334,7 +1348,17 @@ const selected = new Set();
 
 
 /* ── Name ── */
-function onNameInput() {}
+function onNameInput() {
+  const val = document.getElementById('child-name').value.trim();
+  const preview = document.getElementById('name-preview');
+  if (val) {
+    preview.textContent = `Personalising stories for ${val}`;
+    preview.classList.remove('empty');
+  } else {
+    preview.textContent = '\u00A0';
+    preview.classList.add('empty');
+  }
+}
 
 /* ── Gender pills ── */
 function selectGender(value, el) {
@@ -1833,6 +1857,42 @@ function validatePasswordMatch() {
 }
 
 function openImagineModal() {
+  // ── Validate required fields before opening ──
+  const name      = document.getElementById('child-name').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  const state     = document.getElementById('child-state')?.value || '';
+  const yearLevel = document.getElementById('child-year-level')?.value || '';
+
+  // Clear previous errors
+  document.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+  document.querySelectorAll('.name-input.field-error, .name-select.field-error').forEach(el => el.classList.remove('field-error'));
+
+  const errors = [];
+
+  function markError(inputId, message) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.classList.add('field-error');
+    const msg = document.createElement('p');
+    msg.className = 'field-error-msg';
+    msg.textContent = message;
+    input.parentNode.appendChild(msg);
+    errors.push(message);
+  }
+
+  if (!name)      markError('child-name',      'Please enter your child\'s name.');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+                  markError('email',            'Please enter a valid email address.');
+  if (!state)     markError('child-state',      'Please select a state or territory.');
+  if (!yearLevel) markError('child-year-level', 'Please select a school year.');
+
+  if (errors.length > 0) {
+    // Scroll to the first errored field
+    const first = document.querySelector('.field-error');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   selectedPlan = null;
 
   // Restore original modal content if it was replaced by the success state
