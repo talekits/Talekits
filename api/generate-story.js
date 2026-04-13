@@ -1106,8 +1106,19 @@ function buildEmailHtml(childName, storyTitle, parentNote, plan = 'kit', planLab
                 </td>
               </tr>
             </table>
+            ${isPaid ? `
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0 0;">
+              <tr>
+                <td style="background:#E6F1FB;border:0.5px solid #85B7EB;border-radius:10px;padding:18px 22px;">
+                  <p style="margin:0 0 4px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0C447C;">Set up your account</p>
+                  <p style="margin:0 0 14px;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#0C447C;line-height:1.6;">To access your subscriber dashboard — where you can manage your profile, change delivery time, and view your story archive — you need to set a password for your account.</p>
+                  <p style="margin:0 0 14px;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#0C447C;line-height:1.6;">You should have received a separate <strong>password setup email</strong> from Talekits. Click the link in that email to choose your password and access your dashboard.</p>
+                  <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#185FA5;line-height:1.6;">Didn't receive it? Visit your dashboard and use <strong>"Forgot your password?"</strong> with your email address — <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.com'}/dashboard" style="color:#185FA5;">talekits.com/dashboard</a></p>
+                </td>
+              </tr>
+            </table>` : ''}
             ${footerCta}
-            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#1C1B18;line-height:1.8;">${sign}</p>
+            <p style="margin:${isPaid ? '24px' : '0'} 0 0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#1C1B18;line-height:1.8;">${sign}</p>
           </td>
         </tr>
         <tr>
@@ -1142,9 +1153,17 @@ function buildEmailText(childName, storyTitle, parentNote, plan = 'kit', planLab
     attachMsg = `Today's story is ready to read:\n\n${links}`;
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.com';
   const closing = isPaid
-    ? `You're on the Talekits ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.`
-    : `You're on a 7-day free trial. Visit ${process.env.NEXT_PUBLIC_BASE_URL || 'https://talekits.vercel.app'} to choose a plan and keep the stories coming.`;
+    ? `You're on the Talekits ${planLabel} plan. A new story arrives every day — each one unique, always made just for ${childName}.
+
+─────────────────────────────────────
+SET UP YOUR ACCOUNT
+─────────────────────────────────────
+To access your subscriber dashboard (story archive, delivery settings, profile management), set a password for your account using the separate password setup email we sent you.
+
+No setup email? Visit ${baseUrl}/dashboard and click "Forgot your password?" to get a new link.`
+    : `You're on a 7-day free trial. Visit ${baseUrl} to choose a plan and keep the stories coming.`;
 
   return `${childName}'s Talekits story is ready
 
@@ -1173,7 +1192,7 @@ async function sendStoryEmail({ to, childName, storyTitle, parentNote, plan, has
 
   const resend    = new Resend(process.env.RESEND_API_KEY);
   const isPaid    = plan !== 'kit';
-  const planLabel = { kit: 'free trial', cub: 'Cub', scout: 'Scout', den: 'Den', pack: 'Pack' }[plan] || plan;
+  const planLabel = { kit: 'free trial', cub: 'Cub', scout: 'Scout', den: 'Den', grove: 'Grove', pack: 'Pack' }[plan] || plan;
 
   const { data, error } = await resend.emails.send({
     from:    'Kit from Talekits <kit@talekits.com>',

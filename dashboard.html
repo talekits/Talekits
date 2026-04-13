@@ -405,11 +405,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v4l2.5 2"/></svg>
           Delivery time
         </button>
-        <button class="nav-item" data-section="character" id="nav-character" style="display:none;" onclick="showSection('character', this)">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="2.5"/><path d="M4 13c0-2.21 1.79-4 4-4s4 1.79 4 4"/><circle cx="12.5" cy="10.5" r="2" fill="none"/><path d="M11.5 10.5h2M12.5 9.5v2"/></svg>
-          Character
-          <span class="nav-badge" id="char-pending-badge" style="display:none;background:var(--amber-bg);color:var(--amber-text);border-color:var(--amber-border);">Upload</span>
-        </button>
+
         <button class="nav-item" data-section="narrator" id="nav-narrator" style="display:none;" onclick="showSection('narrator', this)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M4 9a4 4 0 0 0 8 0M8 13v2"/></svg>
           Narrator voice
@@ -601,16 +597,7 @@ async function loadDashboard() {
     const narratorNav = document.getElementById('nav-narrator');
     if (narratorNav) narratorNav.style.display = AUDIO_PLANS.has(plan) ? 'flex' : 'none';
 
-    // Show character customisation nav if any profile has char_custom = true
-    const profiles = data.subscriber?.child_profiles || [];
-    const hasCharCustom = profiles.some(p => p.char_custom);
-    const charNav = document.getElementById('nav-character');
-    if (charNav) charNav.style.display = hasCharCustom ? 'flex' : 'none';
 
-    // Show "Upload" badge if any char_custom profile hasn't uploaded photos yet
-    const needsUpload = profiles.some(p => p.char_custom && !p.char_custom_photos_uploaded);
-    const charBadge = document.getElementById('char-pending-badge');
-    if (charBadge) charBadge.style.display = needsUpload ? 'inline-flex' : 'none';
 
     // Show admin nav for admin accounts
     const ADMIN_EMAILS = new Set(['test@talekits.com', 'james.loo.229@gmail.com']);
@@ -628,7 +615,7 @@ async function loadDashboard() {
 const SECTION_TITLES = {
   overview: 'Overview', archive: 'Story archive',
   profiles: 'Child profiles', delivery: 'Delivery time',
-  narrator: 'Narrator voice', character: 'Character Customisation',
+  narrator: 'Narrator voice',
   subscription: 'Subscription', account: 'Account settings',
   admin: '⚡ Admin',
 };
@@ -652,7 +639,6 @@ function renderSection(name) {
     case 'profiles':     renderProfiles(area, actions);    break;
     case 'delivery':     renderDelivery(area, actions);    break;
     case 'narrator':     renderNarrator(area, actions);    break;
-    case 'character':    renderCharacter(area, actions);   break;
     case 'subscription': renderSubscription(area);         break;
     case 'account':      renderAccount(area);              break;
     case 'admin':        renderAdmin(area);                break;
@@ -1095,40 +1081,6 @@ function profileCardHtml(profile, limit) {
             </div>
           </div>
         </div>
-        <div style="padding:1.25rem 1.5rem;border-bottom:0.5px solid var(--border);">
-          <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:0.875rem;">Character details</p>
-          <div class="form-grid" style="margin-bottom:0;">
-            <div class="form-group" style="grid-column:1/-1;">
-              <label class="form-label">What does your child look like? <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
-              <textarea class="form-input" id="pedit-detail-appearance-${profile.id}" rows="2"
-                placeholder="e.g. long black hair, light skin, brown eyes, usually wears glasses…"
-                oninput="markProfileDirty('${profile.id}')"
-                style="resize:vertical;min-height:60px;">${esc(profile.profile_json?.details?.["Child's own name as the hero"] || '')}</textarea>
-              <p style="font-size:11px;color:var(--text-3);margin-top:4px;">Helps us draw your child consistently across every illustration.</p>
-            </div>
-            <div class="form-group" style="grid-column:1/-1;">
-              <label class="form-label">Tell us about your pet <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
-              <textarea class="form-input" id="pedit-detail-pet-${profile.id}" rows="2"
-                placeholder="e.g. Biscuit, a golden retriever who loves chasing sticks and is very loyal…"
-                oninput="markProfileDirty('${profile.id}')"
-                style="resize:vertical;min-height:60px;">${esc(profile.profile_json?.details?.["Child's real pet as a supporting character"] || '')}</textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Friend&rsquo;s name <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
-              <input class="form-input" type="text" id="pedit-detail-friend-${profile.id}"
-                placeholder="e.g. Mia"
-                value="${esc(profile.profile_json?.details?.["Child's friend incorporated as sidekick"] || '')}"
-                oninput="markProfileDirty('${profile.id}')" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Family members <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
-              <input class="form-input" type="text" id="pedit-detail-family-${profile.id}"
-                placeholder="e.g. Grandma Rose, little brother Leo, Dad…"
-                value="${esc(profile.profile_json?.details?.["Family members woven into the story"] || '')}"
-                oninput="markProfileDirty('${profile.id}')" />
-            </div>
-          </div>
-        </div>
         <div style="padding:1.25rem 1.5rem;">
           <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem;">Story preferences</p>
           <div id="pedit-library-${profile.id}" class="pedit-library"></div>
@@ -1185,20 +1137,11 @@ async function saveProfileEdit(id) {
   if (!name) { if (status) { status.textContent = 'Name cannot be empty.'; status.style.color = '#E05050'; } return; }
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:1.5px;vertical-align:middle;display:inline-block;"></span> Saving…'; }
 
-  const sel = profileSelections[id] || new Set();
-
-  // Collect updated detail box values from the edit panel
-  const rawDetails = {
-    "Child's own name as the hero":                  document.getElementById(`pedit-detail-appearance-${id}`)?.value.trim() || '',
-    "Child's real pet as a supporting character":     document.getElementById(`pedit-detail-pet-${id}`)?.value.trim() || '',
-    "Child's friend incorporated as sidekick":        document.getElementById(`pedit-detail-friend-${id}`)?.value.trim() || '',
-    "Family members woven into the story":            document.getElementById(`pedit-detail-family-${id}`)?.value.trim() || '',
-  };
-  // Strip empty values so the profile stays clean
-  const newDetails = Object.fromEntries(Object.entries(rawDetails).filter(([, v]) => v));
-
-  const profile_json    = buildProfileJsonFromSelections(name, gender, sel, newDetails, state, yearLevel);
-  const profile_content = buildProfileContent(name, gender, sel, newDetails);
+  const sel             = profileSelections[id] || new Set();
+  const existingProfile = subscriberData?.child_profiles?.find(p => p.id === id);
+  const existingDetails = existingProfile?.profile_json?.details || {};
+  const profile_json    = buildProfileJsonFromSelections(name, gender, sel, existingDetails, state, yearLevel);
+  const profile_content = buildProfileContent(name, gender, sel, existingDetails);
 
   try {
     const res  = await fetch('/api/dashboard-api?action=update-profile', {
@@ -1711,222 +1654,6 @@ function toggleProfileTag(profileId, key, el) {
    Helpers
 ─────────────────────────────────────────────── */
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/* ─────────────────────────────────────────────
-   Character Customisation
-─────────────────────────────────────────────── */
-function renderCharacter(area, actions) {
-  const profiles = (subscriberData?.child_profiles || []).filter(p => p.char_custom);
-
-  if (!profiles.length) {
-    area.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">🎨</div>
-        <h3>No Character Customisation</h3>
-        <p>Character Customisation is a one-off add-on available at checkout on Scout plans and above.</p>
-      </div>`;
-    return;
-  }
-
-  area.innerHTML = profiles.map(p => charCustomSectionHtml(p)).join('');
-}
-
-function charCustomSectionHtml(profile) {
-  const uploaded = profile.char_custom_photos_uploaded;
-  const pid = profile.id;
-
-  return `
-    <div class="section" id="char-section-${pid}">
-      <p class="section-title">${esc(profile.child_name)}</p>
-      <div class="card">
-        <div class="card-header">
-          <span class="card-header-title">Character photos</span>
-          ${uploaded
-            ? `<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--green-bg);color:var(--green-text);border:0.5px solid var(--green-border);">Photos uploaded</span>`
-            : `<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--amber-bg);color:var(--amber-text);border:0.5px solid var(--amber-border);">Awaiting upload</span>`}
-        </div>
-        <div class="card-body">
-
-          <div class="banner banner-blue" style="margin-bottom:1.25rem;">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 5.5v.5"/></svg>
-            <div>
-              Upload <strong>3–6 clear, well-lit photos</strong> of ${esc(profile.child_name)}'s face — ideally looking at the camera. Kit will use these to illustrate the protagonist to look like ${esc(profile.child_name)} from the <strong>next story onwards</strong>. The first story used a default character.
-            </div>
-          </div>
-
-          ${uploaded ? `
-          <div class="char-status-uploaded" style="margin-bottom:1.25rem;">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,8.5 6,12 13.5,4"/></svg>
-            <p><strong>Photos received.</strong> Character Customisation will appear in ${esc(profile.child_name)}'s stories from tomorrow's story onwards.</p>
-          </div>` : ''}
-
-          <div id="char-photos-preview-${pid}" class="char-photo-grid" style="${uploaded ? '' : 'display:none;'}"></div>
-
-          <div class="char-upload-zone" id="char-upload-zone-${pid}"
-            ondragover="charDragOver(event, '${pid}')"
-            ondragleave="charDragLeave(event, '${pid}')"
-            ondrop="charDrop(event, '${pid}')">
-            <input type="file" accept="image/jpeg,image/png,image/webp" multiple
-              onchange="charFilesChosen(event, '${pid}')" />
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--purple-text)" stroke-width="1.5" style="margin:0 auto 10px;display:block;opacity:0.6;">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <p class="char-upload-title">Drop photos here, or click to browse</p>
-            <p class="char-upload-sub">JPEG, PNG or WebP · 3–6 photos · Max 5MB each</p>
-          </div>
-
-          <div id="char-upload-selected-${pid}" style="display:none;margin-top:1rem;">
-            <div id="char-upload-thumbs-${pid}" class="char-photo-grid"></div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:1rem;">
-              <button class="btn-primary" onclick="submitCharPhotos('${pid}')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload photos
-              </button>
-              <button class="btn-secondary" onclick="clearCharPhotos('${pid}')">Clear</button>
-              <p id="char-upload-count-${pid}" style="font-size:12px;color:var(--text-3);"></p>
-            </div>
-            <p id="char-upload-error-${pid}" style="font-size:12px;color:#E05050;margin-top:6px;min-height:14px;"></p>
-          </div>
-
-        </div>
-      </div>
-    </div>`;
-}
-
-// Selected files per profile id
-const charPhotoFiles = {};
-
-function charFilesChosen(e, pid) {
-  const files = Array.from(e.target.files);
-  addCharFiles(pid, files);
-}
-
-function charDragOver(e, pid) {
-  e.preventDefault();
-  document.getElementById(`char-upload-zone-${pid}`)?.classList.add('drag-over');
-}
-function charDragLeave(e, pid) {
-  document.getElementById(`char-upload-zone-${pid}`)?.classList.remove('drag-over');
-}
-function charDrop(e, pid) {
-  e.preventDefault();
-  document.getElementById(`char-upload-zone-${pid}`)?.classList.remove('drag-over');
-  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-  addCharFiles(pid, files);
-}
-
-function addCharFiles(pid, newFiles) {
-  if (!charPhotoFiles[pid]) charPhotoFiles[pid] = [];
-  const errEl = document.getElementById(`char-upload-error-${pid}`);
-  if (errEl) errEl.textContent = '';
-
-  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-  const toAdd = newFiles.filter(f => {
-    if (f.size > MAX_SIZE) {
-      if (errEl) errEl.textContent = `${f.name} is over 5MB — please use a smaller file.`;
-      return false;
-    }
-    return true;
-  });
-
-  charPhotoFiles[pid] = [...charPhotoFiles[pid], ...toAdd].slice(0, 6);
-  renderCharThumbs(pid);
-}
-
-function renderCharThumbs(pid) {
-  const files     = charPhotoFiles[pid] || [];
-  const container = document.getElementById(`char-upload-thumbs-${pid}`);
-  const selected  = document.getElementById(`char-upload-selected-${pid}`);
-  const countEl   = document.getElementById(`char-upload-count-${pid}`);
-
-  if (!container) return;
-
-  if (!files.length) {
-    if (selected) selected.style.display = 'none';
-    return;
-  }
-
-  if (selected) selected.style.display = 'block';
-  if (countEl) countEl.textContent = `${files.length} photo${files.length !== 1 ? 's' : ''} selected`;
-
-  container.innerHTML = files.map((f, i) => {
-    const url = URL.createObjectURL(f);
-    return `
-      <div class="char-photo-thumb">
-        <img src="${url}" alt="Photo ${i + 1}" />
-        <button class="char-photo-remove" onclick="removeCharPhoto('${pid}', ${i})" title="Remove">✕</button>
-      </div>`;
-  }).join('');
-}
-
-function removeCharPhoto(pid, idx) {
-  if (!charPhotoFiles[pid]) return;
-  charPhotoFiles[pid].splice(idx, 1);
-  renderCharThumbs(pid);
-}
-
-function clearCharPhotos(pid) {
-  charPhotoFiles[pid] = [];
-  renderCharThumbs(pid);
-  const errEl = document.getElementById(`char-upload-error-${pid}`);
-  if (errEl) errEl.textContent = '';
-}
-
-async function submitCharPhotos(pid) {
-  const files  = charPhotoFiles[pid] || [];
-  const errEl  = document.getElementById(`char-upload-error-${pid}`);
-  const btn    = document.querySelector(`#char-section-${pid} .btn-primary`);
-
-  if (errEl) errEl.textContent = '';
-
-  if (files.length < 3) {
-    if (errEl) errEl.textContent = 'Please add at least 3 photos before uploading.';
-    return;
-  }
-
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Uploading…'; }
-
-  try {
-    // Convert files to base64 for the API
-    const photos = await Promise.all(files.map(f => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload  = () => resolve({ name: f.name, type: f.type, data: reader.result.split(',')[1] });
-      reader.onerror = reject;
-      reader.readAsDataURL(f);
-    })));
-
-    const res = await fetch('/api/upload-char-photos', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-      body:    JSON.stringify({ profileId: pid, photos }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Upload failed');
-
-    // Update local state and re-render
-    const profile = subscriberData?.child_profiles?.find(p => p.id === pid);
-    if (profile) {
-      profile.char_custom_photos_uploaded = true;
-      profile.char_custom_photos_path     = data.path;
-    }
-
-    // Hide "Upload" badge if no more pending profiles
-    const stillPending = (subscriberData?.child_profiles || []).some(p => p.char_custom && !p.char_custom_photos_uploaded);
-    const charBadge = document.getElementById('char-pending-badge');
-    if (charBadge) charBadge.style.display = stillPending ? 'inline-flex' : 'none';
-
-    // Re-render just this section
-    const section = document.getElementById(`char-section-${pid}`);
-    if (section) section.outerHTML = charCustomSectionHtml({ ...profile, char_custom_photos_uploaded: true });
-
-  } catch (err) {
-    if (errEl) errEl.textContent = err.message;
-    if (btn) { btn.disabled = false; btn.innerHTML = 'Upload photos'; }
-  }
-}
 
 /* ─────────────────────────────────────────────
    Admin panel

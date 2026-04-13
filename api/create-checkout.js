@@ -1,6 +1,5 @@
 const Stripe = require('stripe');
 const { put } = require('@vercel/blob');
-const bcrypt  = require('bcryptjs');
 
 const PLANS = {
   kit:   { name: 'Kit',   trialDays: 7,  priceEnvKey: null },
@@ -16,7 +15,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { planId, childName, email, gender, password, filename, content, profileJson, narratorVoice, charCustom } = req.body;
+  const { planId, childName, email, gender, filename, content, profileJson, narratorVoice } = req.body;
 
   if (!planId || !PLANS[planId]) {
     return res.status(400).json({ error: 'Invalid plan selected' });
@@ -30,11 +29,6 @@ module.exports = async function handler(req, res) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
 
   try {
-    let passwordHash = '';
-    if (password && planId !== 'kit') {
-      passwordHash = await bcrypt.hash(password, 10);
-    }
-
     // Save profile text as pending
     console.log(`[CC-1] Saving pending profile: pending/${filename}`);
     const blobResult = await put(`pending/${filename}`, content, {
@@ -58,9 +52,7 @@ module.exports = async function handler(req, res) {
       filename,
       plan:         planId,
       email:        email     || '',
-      passwordHash,
       narratorVoice: narratorVoice || 'au_female',
-      charCustom:    charCustom ? 'true' : 'false',
     };
 
     // Paid plans
@@ -71,23 +63,7 @@ module.exports = async function handler(req, res) {
 
     console.log(`[CC-3] Creating Stripe session | Plan: ${planId} | Child: ${childName} | Email: ${email}`);
 
-    // Build line items — always the subscription, plus optional one-time char customisation
     const lineItems = [{ price: priceId, quantity: 1 }];
-    if (charCustom) {
-      // One-time $14.99 charge for character customisation
-      // Requires a pre-created one-time price in Stripe, or use inline price_data
-      lineItems.push({
-        price_data: {
-          currency:     'aud',
-          product_data: {
-            name:        'Character Customisation',
-            description: 'Make the protagonist look like your child. Upload photos in your dashboard after signup.',
-          },
-          unit_amount: 1499, // $14.99 AUD in cents
-        },
-        quantity: 1,
-      });
-    }
 
     const session = await stripe.checkout.sessions.create({
       mode:           'subscription',

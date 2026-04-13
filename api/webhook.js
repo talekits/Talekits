@@ -15,7 +15,7 @@ async function getRawBody(req) {
   });
 }
 
-async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl, narratorVoice, charCustom }) {
+async function createSubscriberAccount({ email, plan, childName, gender, stripeCustomerId, stripeSubId, profileContent, profileJson, profileBlobUrl, narratorVoice }) {
   const supabase = getSupabase();
 
   const { data: existing } = await supabase
@@ -55,11 +55,16 @@ async function createSubscriberAccount({ email, plan, childName, gender, stripeC
     if (subErr) throw new Error(`Subscriber row creation failed: ${subErr.message}`);
     subscriberId = sub.id;
 
-    // Send password setup email
-    await supabase.auth.admin.generateLink({
-      type: 'recovery', email,
-      options: { redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?setup=true` },
-    });
+    // Send password setup email — resetPasswordForEmail actually dispatches the email
+    // (generateLink only returns a URL; it does not send anything)
+    try {
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard?setup=true`,
+      });
+      console.log(`[3b] Password setup email sent to: ${email}`);
+    } catch (emailErr) {
+      console.warn(`[3b] Could not send password setup email (non-fatal): ${emailErr.message}`);
+    }
   } else {
     await supabase.from('subscribers').update({
       stripe_customer_id: stripeCustomerId,
@@ -77,7 +82,6 @@ async function createSubscriberAccount({ email, plan, childName, gender, stripeC
       profile_json:     profileJson || null,
       profile_blob_url: profileBlobUrl,
       is_active:        true,
-      char_custom:      charCustom || false,
     })
     .select('id').single();
   if (profileErr) throw new Error(`Child profile creation failed: ${profileErr.message}`);
@@ -131,8 +135,8 @@ module.exports = async function handler(req, res) {
   const child         = meta.childName;
   const gender        = meta.gender;
   const email         = session.customer_email || meta.email || null;
-  const narratorVoice = meta.narratorVoice || 'au_female';
-  const charCustom    = meta.charCustom === 'true';
+  let narratorVoice = meta.narratorVoice || 'au_female';
+
 
   if (!filename) {
     console.warn('No filename in session metadata');
@@ -182,7 +186,7 @@ module.exports = async function handler(req, res) {
         email, plan, childName: child, gender,
         stripeCustomerId: session.customer, stripeSubId: session.subscription,
         profileContent, profileJson, profileBlobUrl: confirmedBlob.url,
-        narratorVoice, charCustom,
+        narratorVoice,
       });
       subscriberId   = result.subscriberId;
       childProfileId = result.childProfileId;
@@ -193,8 +197,7 @@ module.exports = async function handler(req, res) {
 
     console.log(`[4] Starting story generation | Child: ${child} | Plan: ${plan} | Email: ${email}`);
 
-    // Fetch narrator_voice from subscriber record (defaults to au_female if not set)
-    narratorVoice = 'au_female'; // re-use var declared above from session metadata
+    // Fetch narrator_voice from subscriber record, falling back to the value from session metadata
     if (subscriberId) {
       try {
         const supabase = getSupabase();
@@ -204,7 +207,7 @@ module.exports = async function handler(req, res) {
       } catch { /* non-fatal */ }
     }
 
-    const outputs = await generateStory(profileContent, child, filename, plan, email, profileJson, narratorVoice, charCustom);
+    const outputs = await generateStory(profileContent, child, filename, plan, email, profileJson, narratorVoice);
     console.log(`[4] Story generation complete. Outputs: ${outputs.length}`);
     outputs.forEach(o => console.log(`[4] Output: ${o.type} → ${o.url || o.count}`));
 
