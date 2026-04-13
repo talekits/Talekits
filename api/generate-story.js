@@ -829,15 +829,7 @@ function buildPictureBookPdf(story, childName, imageResults) {
       doc.font(fonts.italic).fontSize(titleSize).fillColor('#FFFFFF').lineGap(LINE_GAP)
          .text(story.title, titleX, BLOCK_Y, { width: TEXT_W, align: 'center' });
 
-      // ── Subtitle: "A story for [child]" ──
-      // Shadow pass first, then white on top — same technique.
-      const subY = BLOCK_Y + titleH + 8;
-      doc.font(fonts.sans).fontSize(subSize).fillColor('#0E0D0B')
-         .text(`A story for ${childName}`, titleX + SX, subY + SY,
-               { width: TEXT_W, align: 'center' });
-      doc.font(fonts.sans).fontSize(subSize).fillColor('rgba(255,255,255,0.88)')
-         .text(`A story for ${childName}`, titleX, subY,
-               { width: TEXT_W, align: 'center' });
+      // Subtitle intentionally omitted — title only on cover.
     }
 
 
